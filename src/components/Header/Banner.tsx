@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 function Banner() {
   const t = useTranslations("Banner");
   return (
-    <div className="bg-[#F9E2E7] py-1.5 text-center text-xs md:text-sm text-stone-900 font-medium">
+    <div className=" py-1.5 text-center text-xs md:text-sm text-stone-900 font-medium">
       {t("bannerTitle")}
     </div>
   );
