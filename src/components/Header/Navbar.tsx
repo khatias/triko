@@ -37,7 +37,7 @@ export default function Navbar() {
     "text-sm font-medium text-slate-700 transition-colors hover:text-red-600";
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 ">
       {/* Top bar */}
       <div className="flex items-center justify-between p-3 px-4">
         <div className="flex items-center gap-3">
@@ -65,9 +65,9 @@ export default function Navbar() {
             priority
           />
         </Link>
-
+        {/* desktop links for now */}
         <div className="hidden items-center gap-6 lg:flex">
-          <ul className="flex items-center gap-6">
+          {/* <ul className="flex items-center gap-6">
             {navItems.map((item) => (
               <li key={item.name}>
                 <Link href={item.href} className={linkBase}>
@@ -75,25 +75,25 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-          </ul>
+          </ul> */}
 
-          <div className="ml-2 flex items-center gap-4 text-sm">
+          {/* <div className="ml-2 flex items-center gap-4 text-sm">
             <Link href="/about" className="text-slate-600 hover:text-red-600">
               About Us
             </Link>
             <Link href="/contact" className="text-slate-600 hover:text-red-600">
               Contact
             </Link>
-          </div>
+          </div> */}
 
-          <button className="rounded-full bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-500">
+          {/* <button className="rounded-full bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-500">
             {t("login")}
-          </button>
+          </button> */}
         </div>
 
         <div className="flex items-center gap-3 lg:hidden">
-          <UserIcon className="h-6 w-6 cursor-pointer text-slate-600 hover:text-red-500" />
-          <ShoppingCartIcon className="h-6 w-6 cursor-pointer text-slate-600 hover:text-red-500" />
+          <UserIcon className="h-6 w-6 cursor-pointer text-slate-700" />
+          <ShoppingCartIcon className="h-6 w-6 cursor-pointer text-slate-600 hover:text-[#f3cad2]" />
         </div>
       </div>
 
@@ -108,7 +108,7 @@ export default function Navbar() {
 
       {/* Drawer */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-full transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         role="dialog"
@@ -117,7 +117,7 @@ export default function Navbar() {
         <div className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-md">
           <div className={`${container} flex items-center justify-between`}>
             <div className="flex items-center gap-2">
-              <UserIcon className="h-6 w-6 text-slate-700" />
+              <UserIcon className="h-6 w-6 text-[#bb6f7d]" />
               <span className="text-xs font-semibold tracking-[0.18em] text-slate-700">
                 {t("login")}
               </span>
@@ -172,7 +172,7 @@ export default function Navbar() {
 
           <section className={`${container} border-b border-slate-100 py-3`}>
             <h3 className="px-5 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Info
+              {t("info")}
             </h3>
             <ul className="flex flex-col gap-1 px-2">
               <li className="pl-1 pb-1">
@@ -186,7 +186,7 @@ export default function Navbar() {
                 >
                   <span className="inline-flex items-center gap-3">
                     <Info className="h-6 w-6 text-slate-400" />
-                    About Us
+                    {t("aboutUs")}
                   </span>
                   <ChevronRight className="h-5 w-5 text-slate-300" />
                 </Link>
@@ -199,7 +199,7 @@ export default function Navbar() {
                 >
                   <span className="inline-flex items-center gap-3">
                     <Mail className="h-6 w-6 text-slate-400" />
-                    Contact
+                    {t("contact")}
                   </span>
                   <ChevronRight className="h-5 w-5 text-slate-300" />
                 </Link>
