@@ -1,5 +1,9 @@
 {
   "HomePage": {
     "title": "გამარჯობა მსოფლიო!"
+  },
+  "LanguageSwitcher": {
+    "labelEn": "ინგლისური",
+    "labelKa": "ქართული"
   }
 }
