@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "Hello world!"
+  },
+  "LanguageSwitcher": {
+    "labelEn": "ENGLISH",
+    "labelKa": "GEORGIAN"
+  }
+}
