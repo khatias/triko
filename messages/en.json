@@ -17,5 +17,37 @@
     "aboutUs": "About Us",
     "contact": "Contact",
     "info": "Info"
+  },
+  "Form": {
+  "fields": {
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "message": "Your Message",
+    "messagePlaceholder": "Enter your message here"
+  },
+  "actions": {
+    "submit": "Submit",
+    "login": "Log In",
+    "register": "Sign Up",
+      "sending": "Sending..."
   }
+},
+  "Errors": {
+  "required": "This field is required",
+  "tooShortName": "Too short name, minimum 3 characters",
+  "tooLongName": "Too long name, maximum 100 characters",
+  "tooLongEmail": "Too long email, maximum 254 characters",
+  "tooShortMessage": "Message is too short, minimum 10 characters",
+  "tooLongMessage": "Message is too long, maximum 2000 characters",
+  "invalidEmail": "Email format is incorrect",
+  "passwordTooShort": "Password must be at least 6 characters",
+  "passwordsDontMatch": "Passwords do not match"
+},
+"Contact": {
+  "title": "Contact Us",
+  "success": "Your message has been sent!"
+}  
 }
