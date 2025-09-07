@@ -5,6 +5,7 @@ import { routing } from "@/i18n/routing";
 import { Montserrat, Noto_Sans_Georgian } from "next/font/google";
 import Header from "@/components/Header/Header";
 import "../globals.css";
+import { Toaster } from "sonner";
 
 
 interface LocaleLayoutProps {
@@ -41,6 +42,8 @@ export default async function LocaleLayout({
       >
   <Header />
         {children}
+                <Toaster richColors position="top-right" />
+
       </div>
     </NextIntlClientProvider>
   );
