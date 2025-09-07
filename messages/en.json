@@ -5,5 +5,17 @@
   "LanguageSwitcher": {
     "labelEn": "ENGLISH",
     "labelKa": "GEORGIAN"
+  },
+  "Banner": {
+    "bannerTitle": "Explore the best products and services we have to offer!"
+  },
+  "Header": {
+    "login": "Login",
+    "featured": "Featured",
+    "newArrivals": "New Arrivals",
+    "kimano": "Kimono",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "info": "Info"
   }
 }
