@@ -1,12 +1,17 @@
-// components/contact/ContactForm.tsx
 "use client";
 
 import { FC } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
-import { sendEmail } from "../../utils/sendEmail";
+import { sendEmail } from "../../utils/contact/sendEmail";
 
-export type FormData = { name: string; email: string; message: string };
+export type FormData = {
+  name: string;
+  email: string;
+  message: string;
+  // Honeypot (bot trap) — not shown to real users
+  hp?: string;
+};
 
 const ContactForm: FC = () => {
   const {
@@ -22,7 +27,8 @@ const ContactForm: FC = () => {
       toast.success(res?.message ?? "Message sent!");
       reset();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Something went wrong.";
+      const msg =
+        e instanceof Error ? e.message : "Something went wrong. Please try again.";
       toast.error(msg);
     }
   };
@@ -33,6 +39,16 @@ const ContactForm: FC = () => {
       noValidate
       className="mx-auto max-w-full min-w-80 px-8 py-6 bg-white lg:min-w-[500px] dark:bg-gray-800 rounded-lg"
     >
+      {/* Honeypot field (hidden) */}
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        className="hidden"
+        aria-hidden="true"
+        {...register("hp")}
+      />
+
       {/* Name */}
       <div className="mb-6">
         <label
@@ -52,7 +68,11 @@ const ContactForm: FC = () => {
             errors.name ? "border-red-500" : "border-gray-300 dark:border-gray-600"
           }`}
           disabled={isSubmitting}
-          {...register("name", { required: "required" })}
+          {...register("name", {
+            required: "required",
+            minLength: { value: 2, message: "too short" },
+            maxLength: { value: 100, message: "too long" },
+          })}
         />
         {errors.name && (
           <p id="name-error" className="text-red-500 text-sm mt-1">
@@ -84,8 +104,9 @@ const ContactForm: FC = () => {
             required: "required",
             pattern: {
               value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/i,
-              message: "invalidEmail",
+              message: "invalid email",
             },
+            maxLength: { value: 254, message: "too long" },
           })}
         />
         {errors.email && (
@@ -113,7 +134,11 @@ const ContactForm: FC = () => {
             errors.message ? "border-red-500" : "border-gray-300 dark:border-gray-600"
           }`}
           disabled={isSubmitting}
-          {...register("message", { required: "required" })}
+          {...register("message", {
+            required: "required",
+            minLength: { value: 10, message: "too short" },
+            maxLength: { value: 2000, message: "too long" },
+          })}
         />
         {errors.message && (
           <p id="message-error" className="text-red-500 text-sm mt-1">
