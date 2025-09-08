@@ -210,7 +210,7 @@ export default function Navbar() {
               <li>
                 <Link
                   onClick={() => setOpen(false)}
-                  href="/about"
+                  href="/aboutUs"
                   className="flex items-center justify-between rounded-xl px-3 py-3 text-[15px] text-slate-700 hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                 >
                   <span className="inline-flex items-center gap-3">
