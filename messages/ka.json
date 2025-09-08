@@ -20,6 +20,8 @@
     "info": "ინფო"
   },
   "Form": {
+    "contactTitle": "დაგვიკავშირდით",
+    "contactSubtitle": "გვსურს გაგვიზიაროთ თქვენი აზრი — მოგვწერეთ ქვემოთ",
     "fields": {
       "fullName": "სრული სახელი",
       "fullNamePlaceholder": "შეიყვანეთ თქვენი  სახელი",

@@ -19,6 +19,8 @@
     "info": "Info"
   },
   "Form": {
+    "contactTitle": "Get in Touch",
+    "contactSubtitle": "We’d love to hear from you. Send us a message below.",
   "fields": {
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
