@@ -9,17 +9,26 @@ import aboutCover3 from "../../../assets/aboutCover7.jpg";
 // ---------- types ----------
 type Store = { title: string; address: string; mapsHref?: string };
 
-// ---------- metadata (localized) ----------
-export async function generateMetadata({ params }: { params: { locale: string } }) {
-  const t = await getTranslations({ locale: params.locale, namespace: "About" });
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "About" });
+
   return {
     title: t("meta.title"),
     description: t("meta.description"),
     alternates: {
-      canonical: "/about",
-      languages: { "en-US": "/en/about", "ka-GE": "/ka/about" },
+      canonical: "/aboutUs",
+      languages: { "en-US": "/en/aboutUs", "ka-GE": "/ka/aboutUs" },
     },
-    openGraph: { title: t("meta.title"), description: t("meta.description"), type: "website" },
+    openGraph: {
+      title: t("meta.title"),
+      description: t("meta.description"),
+      type: "website",
+    },
   } as const;
 }
 
@@ -28,7 +37,9 @@ const Section = ({
   children,
   className = "",
 }: React.PropsWithChildren<{ className?: string }>) => (
-  <section className={`container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 ${className}`}>
+  <section
+    className={`container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 ${className}`}
+  >
     {children}
   </section>
 );
@@ -45,10 +56,15 @@ const Card = ({
 );
 
 const H2 = ({ children }: React.PropsWithChildren) => (
-  <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-900">{children}</h2>
+  <h2 className="text-2xl md:text-[28px] font-semibold tracking-tight text-gray-900">
+    {children}
+  </h2>
 );
 
-const P = ({ children, className = "" }: React.PropsWithChildren<{ className?: string }>) => (
+const P = ({
+  children,
+  className = "",
+}: React.PropsWithChildren<{ className?: string }>) => (
   <p className={`text-base leading-7 text-gray-700 ${className}`}>{children}</p>
 );
 
@@ -61,7 +77,9 @@ export default function AboutPage() {
 
   // locations from messages to keep everything translatable
   const storesRaw = t.raw("locations.items") as Record<string, Store> | Store[];
-  const stores: Store[] = Array.isArray(storesRaw) ? storesRaw : Object.values(storesRaw);
+  const stores: Store[] = Array.isArray(storesRaw)
+    ? storesRaw
+    : Object.values(storesRaw);
 
   return (
     <main className="min-h-screen selection:bg-rose-200/60 bg-[linear-gradient(to_bottom,#fff,#fff_30%,#fff1f3_60%,#fff_95%)]">
@@ -69,13 +87,23 @@ export default function AboutPage() {
       <Section className="py-16">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-rose-500">{t("hero.kicker")}</p>
-            <h1 className="mt-3 text-3xl md:text-4xl font-bold leading-tight text-gray-900">{t("hero.title")}</h1>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-rose-500">
+              {t("hero.kicker")}
+            </p>
+            <h1 className="mt-3 text-3xl md:text-4xl font-bold leading-tight text-gray-900">
+              {t("hero.title")}
+            </h1>
             <P className="mt-4 max-w-prose">{t("hero.subtitle")}</P>
           </div>
 
           <Card className="relative mx-auto aspect-[4/3] w-full max-w-lg overflow-hidden ring-1 ring-rose-100">
-            <Image src={aboutCover} alt={t("hero.imageAlt")} fill className="object-cover" priority />
+            <Image
+              src={aboutCover}
+              alt={t("hero.imageAlt")}
+              fill
+              className="object-cover"
+              priority
+            />
           </Card>
         </div>
       </Section>
@@ -83,7 +111,13 @@ export default function AboutPage() {
       {/* Story (image card FIRST, then text card) */}
       <Section className="py-10 grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
         <Card className="relative mx-auto aspect-[4/3] w-full max-w-lg overflow-hidden ring-1 ring-rose-100">
-          <Image src={aboutCover3} alt={t("hero.imageAlt")} fill className="object-cover" priority />
+          <Image
+            src={aboutCover3}
+            alt={t("hero.imageAlt")}
+            fill
+            className="object-cover"
+            priority
+          />
         </Card>
 
         <Card className="p-8">
@@ -105,11 +139,16 @@ export default function AboutPage() {
             <H2>{t("values.title")}</H2>
             <ul className="mt-5 grid gap-4 sm:grid-cols-2">
               {values.map((k) => (
-                <li key={k} className="rounded-2xl border border-rose-100 bg-white/80 p-5 shadow-sm">
+                <li
+                  key={k}
+                  className="rounded-2xl border border-rose-100 bg-white/80 p-5 shadow-sm"
+                >
                   <h4 className="text-base font-semibold tracking-tight text-gray-900">
                     {t(`values.items.${k}.title`)}
                   </h4>
-                  <p className="mt-2 text-sm leading-6 text-gray-600">{t(`values.items.${k}.desc`)}</p>
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    {t(`values.items.${k}.desc`)}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -125,7 +164,9 @@ export default function AboutPage() {
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {stores.map(({ title, address, mapsHref }) => (
             <Card key={title} className="p-6">
-              <h4 className="text-base font-semibold tracking-tight text-gray-900">{title}</h4>
+              <h4 className="text-base font-semibold tracking-tight text-gray-900">
+                {title}
+              </h4>
               <p className="mt-2 text-sm text-gray-700">{address}</p>
               {mapsHref && (
                 <Link
@@ -144,7 +185,9 @@ export default function AboutPage() {
       {/* CTA */}
       <Section className="py-16">
         <Card className="p-10 text-center bg-gradient-to-r from-rose-50/70 to-white">
-          <h3 className="text-2xl font-semibold tracking-tight text-gray-900">{t("cta.title")}</h3>
+          <h3 className="text-2xl font-semibold tracking-tight text-gray-900">
+            {t("cta.title")}
+          </h3>
           <P className="mx-auto mt-3 max-w-xl">{t("cta.subtitle")}</P>
           <Link
             href="/new-arrivals"
