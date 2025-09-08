@@ -1,25 +1,29 @@
-# 🛍️ Triko  
+#  Triko  
 
 Triko is an e-commerce web application built with **Next.js**.  
 It provides a modern shopping experience with responsive design and multilingual support.  
 
----
+--
 
 ## ✨ Features  
 
-- 📱 **Responsive Design** – Optimized for mobile, tablet, and desktop  
-- 🌍 **Internationalisation (i18n)** – Supports **Georgian** and **English**  
-- 🎨 **UI/UX** – Tailwind CSS v4 with custom design system  
+-  **Responsive Design** – Optimized for mobile, tablet, and desktop  
+-  **Internationalisation (i18n)** – Supports **Georgian** and **English**  
+-  **Contact Form** – Users can easily send messages via integrated email service
+-  **UI/UX** – Tailwind CSS v4 with custom design system  
 
----
+
+--
 
 ## 🚀 Tech Stack  
 
 - **Framework:** [Next.js](https://nextjs.org/)  
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)  
 - **Internationalisation:** [next-intl](https://next-intl-docs.vercel.app/)  
+- **Email Service:** [Nodemailer](https://nodemailer.com/) with SMTP support  
 
----
+
+--
 
 ## ⚙️ Installation  
 
@@ -86,6 +90,24 @@ export default function HomePage() {
 - Locale comes from the URL (`/en/...`, `/ka/...`)  
 - A **LanguageSwitcher** component is included for changing languages  
 
+--
+
 ---
 
+## 📩 Contact Page  
+
+The **Contact** page includes a responsive form where users can send inquiries directly from the website.  
+
+### 🔧 Implementation  
+
+- Uses **react-hook-form** for validation  
+- Honeypot field to prevent spam submissions  
+- **Sonner toast** notifications for success/error feedback  
+- Server-side handling with **Nodemailer**  
+
+### 📂 Structure  
+
+- `src/components/contact/ContactForm.tsx` → Contact form component  
+- `src/app/[locale]/contact/page.tsx` → Contact page with form and cover image  
+- `src/utils/contact/sendEmail.ts` → Email sending utility  
 
