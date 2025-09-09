@@ -2,7 +2,12 @@ import React from "react";
 import Image from "next/image";
 import ContactForm from "@/components/contact/ContactForm";
 import beautImage from "../../../assets/cotactCover.jpeg";
-
+import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
+  return generateLocalizedMetadata(ctx, { namespace: "Contact", path: "/contact" });
+}
 export default function Page() {
   return (
     <main className="min-h-screen bg-[linear-gradient(to_bottom,#f3f3f3_45%,#ffffff_30%)]">
