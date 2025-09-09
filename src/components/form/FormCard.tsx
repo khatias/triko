@@ -1,5 +1,5 @@
 import { PropsWithChildren, ReactNode } from "react";
-
+import { P } from "../UI/primitives";
 export default function FormCard({
   title,
   subtitle,
@@ -17,9 +17,7 @@ export default function FormCard({
           <h3 className="text-3xl pb-4 font-semibold tracking-tight text-zinc-900 ">
             {title}
           </h3>
-          {subtitle ? (
-            <p className="mt-1 text-sm text-zinc-600 ">{subtitle}</p>
-          ) : null}
+          {subtitle ? <P>{subtitle}</P> : null}
         </div>
         {accent && (
           <div className="h-1 w-12 mt-2 bg-gradient-to-r from-[#fdd5a2] to-[#fc5c5c] rounded-full" />

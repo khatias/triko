@@ -99,12 +99,13 @@ export default function AboutPage() {
               {values.map((k) => (
                 <li
                   key={k}
-                  className="rounded-2xl border border-rose-100 bg-white/80 p-5 shadow-sm"
+                  className="min-w-0 break-words rounded-2xl border border-rose-100 bg-white/80 p-5" // 👈 min-w-0 is key in grid
                 >
-                  <h4 className="text-base font-semibold tracking-tight text-gray-900">
+                  <h4 className="min-w-0 text-base font-semibold tracking-tight text-gray-900">
                     {t(`values.items.${k}.title`)}
                   </h4>
-                  <p className="mt-2 text-sm leading-6 text-gray-600">
+
+                  <p className="mt-2 min-w-0 break-words text-sm leading-6 text-gray-600">
                     {t(`values.items.${k}.desc`)}
                   </p>
                 </li>
@@ -122,7 +123,7 @@ export default function AboutPage() {
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {stores.map(({ title, address, mapsHref }) => (
             <li key={title}>
-              <RegularCard className="p-6">
+              <RegularCard className="p-6 min-h-[150px]">
                 <article aria-labelledby={`store-${title}`}>
                   <h4
                     id={`store-${title}`}
@@ -130,7 +131,7 @@ export default function AboutPage() {
                   >
                     {title}
                   </h4>
-                  <address className="mt-2 not-italic text-sm text-gray-700">
+                  <address className="mt-2  not-italic text-sm text-gray-700">
                     {address}
                   </address>
                   {mapsHref && (
@@ -151,28 +152,27 @@ export default function AboutPage() {
       </Section>
 
       {/* CTA */}
-<Section className="py-12 sm:py-16 lg:py-24" labelledBy="about-cta">
-  <RegularCard className="flex flex-col items-center p-6 sm:p-10 text-center bg-gradient-to-r from-rose-50/70 to-white">
-    <h3
-      id="about-cta"
-      className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 break-words"
-    >
-      {t("cta.title")}
-    </h3>
+      <Section className="py-12 sm:py-16 lg:py-24" labelledBy="about-cta">
+        <RegularCard className="flex flex-col items-center p-6 sm:p-10 text-center bg-gradient-to-r from-rose-50/70 to-white">
+          <h3
+            id="about-cta"
+            className="text-3xl min-w-0 break-words pb-4 font-semibold tracking-tight text-zinc-900 "
+          >
+            {t("cta.title")}
+          </h3>
 
-    <P className="mt-2 sm:mt-3 max-w-xl text-sm sm:text-base lg:text-lg">
-      {t("cta.subtitle")}
-    </P>
+          <P className="mt-2 min-w-0 break-words sm:mt-3 max-w-xl text-sm sm:text-base lg:text-lg">
+            {t("cta.subtitle")}
+          </P>
 
-    <Link
-      href="/new-arrivals"
-      className="mt-6 inline-block rounded-xl border border-rose-500 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm md:text-base font-semibold uppercase tracking-[0.14em] text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-600 hover:text-white motion-reduce:hover:translate-y-0"
-    >
-      {t("cta.button")}
-    </Link>
-  </RegularCard>
-</Section>
-
+          <Link
+            href="/new-arrivals"
+            className="mt-6 inline-block rounded-xl border border-rose-500 px-4 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm md:text-base font-semibold uppercase tracking-[0.14em] text-rose-700 transition hover:-translate-y-0.5 hover:bg-rose-600 hover:text-white motion-reduce:hover:translate-y-0"
+          >
+            {t("cta.button")}
+          </Link>
+        </RegularCard>
+      </Section>
     </main>
   );
 }

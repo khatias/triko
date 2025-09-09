@@ -30,7 +30,7 @@ export const H2 = ({
 }: React.PropsWithChildren<{ id?: string }>) => (
   <h2
     id={id}
-className="text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 leading-snug"
+className="min-w-0 break-words text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 leading-snug"
   >
     {children}
   </h2>
