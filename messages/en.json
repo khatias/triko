@@ -21,35 +21,110 @@
   "Form": {
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
-  "fields": {
-    "fullName": "Full Name",
-    "fullNamePlaceholder": "Enter your full name",
-    "email": "Email Address",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "message": "Your Message",
-    "messagePlaceholder": "Enter your message here"
-  },
-  "actions": {
-    "submit": "Submit",
-    "login": "Log In",
-    "register": "Sign Up",
+    "fields": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "message": "Your Message",
+      "messagePlaceholder": "Enter your message here"
+    },
+    "actions": {
+      "submit": "Submit",
+      "login": "Log In",
+      "register": "Sign Up",
       "sending": "Sending..."
-  }
-},
+    }
+  },
   "Errors": {
-  "required": "This field is required",
-  "tooShortName": "Too short name, minimum 3 characters",
-  "tooLongName": "Too long name, maximum 100 characters",
-  "tooLongEmail": "Too long email, maximum 254 characters",
-  "tooShortMessage": "Message is too short, minimum 10 characters",
-  "tooLongMessage": "Message is too long, maximum 2000 characters",
-  "invalidEmail": "Email format is incorrect",
-  "passwordTooShort": "Password must be at least 6 characters",
-  "passwordsDontMatch": "Passwords do not match"
-},
-"Contact": {
-  "title": "Contact Us",
-  "success": "Your message has been sent!"
-}  
+    "required": "This field is required",
+    "tooShortName": "Too short name, minimum 3 characters",
+    "tooLongName": "Too long name, maximum 100 characters",
+    "tooLongEmail": "Too long email, maximum 254 characters",
+    "tooShortMessage": "Message is too short, minimum 10 characters",
+    "tooLongMessage": "Message is too long, maximum 2000 characters",
+    "invalidEmail": "Email format is incorrect",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordsDontMatch": "Passwords do not match"
+  },
+  "Contact": {
+    "title": "Contact Us",
+    "success": "Your message has been sent!"
+  },
+
+  "About": {
+    "meta": {
+      "title": "About — Triko",
+      "description": "Discover Triko: our story, mission, values, and store locations."
+    },
+    "hero": {
+      "kicker": "Our story",
+      "title": "Comfort-first essentials designed in Tbilisi",
+      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again.",
+      "imageAlt": "Lifestyle composition of Triko garments"
+    },
+    "story": {
+      "title": "Where we began",
+      "paragraph1": "Founded in Tbilisi, Triko started with a simple goal: make comfortable, durable, and beautifully minimal pieces that feel great from morning to night.",
+      "paragraph2": "Today, we keep production nimble, materials carefully sourced, and designs focused on what matters: fit, comfort, and longevity."
+    },
+    "mission": {
+      "title": "Our mission",
+      "desc": "Build a reliable wardrobe of everyday basics—crafted with care, priced fairly, and made to last. We design for movement, softness, and simplicity."
+    },
+    "values": {
+      "title": "What we value",
+      "items": {
+        "quality": {
+          "title": "Quality",
+          "desc": "We source comfortable fabrics and use careful stitching for durability."
+        },
+        "comfort": {
+          "title": "Comfort",
+          "desc": "Every pattern is tested to move with you throughout the day."
+        },
+        "design": {
+          "title": "Timeless Design",
+          "desc": "Clean silhouettes, neutral palettes, and subtle details."
+        },
+        "service": {
+          "title": "Service",
+          "desc": "Fast responses and friendly support across channels."
+        }
+      }
+    },
+    "locations": {
+      "title": "Our stores",
+      "subtitle": "Visit us in person—try on styles, feel fabrics, and get fit advice.",
+      "openInMaps": "Open in Maps",
+      "items": {
+        "store1": {
+          "title": "Tbilisi · Galleria Tbilisi",
+          "address": "2/4 Shota Rustaveli Ave, 3rd floor",
+          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
+        },
+        "store2": {
+          "title": "Tbilisi · Tbilisi Mall",
+          "address": "16th km, Davit Aghmashenebeli Ave, 2nd floor",
+          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Tbilisi+Mall+16km+Agmashenebeli+Ave"
+        },
+        "store3": {
+          "title": "Tbilisi · Gldani Mall",
+          "address": "Near Akhmeteli metro, 2nd floor",
+          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Gldani+Mall+Tbilisi"
+        },
+        "store4": {
+          "title": "Kutaisi",
+          "address": "14 Tamar Mepe St (Cinema Georgia building, 2nd floor)",
+          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Kutaisi+Tamar+Mepe+14"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to feel the difference?",
+      "subtitle": "Explore our latest drops and everyday staples.",
+      "button": "Shop New Arrivals"
+    }
+  }
 }
