@@ -1,10 +1,14 @@
-import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/toggle/LanguageSwitcher";
+import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
+
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
+  return generateLocalizedMetadata(ctx, { namespace: "Home", path: "/" });
+}
 export default function Home() {
-  const t = useTranslations("HomePage");
   return (
     <div>
-      <h1>{t("title")}</h1>
       <LanguageSwitcher />
     </div>
   );

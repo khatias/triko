@@ -1,6 +1,9 @@
 {
-  "HomePage": {
-    "title": "Hello world!"
+  "Home": {
+    "meta": {
+      "title": "Triko — Online Shop",
+      "description": "Discover Triko: shop the latest trends in pants, pajamas, and more. Find your perfect fit online or in our Tbilisi stores."
+    }
   },
   "LanguageSwitcher": {
     "labelEn": "ENGLISH",
@@ -49,6 +52,11 @@
     "passwordsDontMatch": "Passwords do not match"
   },
   "Contact": {
+    "meta": {
+      "title": "Contact — Triko",
+      "description": "Get in touch with Triko. Find our store locations in Tbilisi and Kutaisi, or reach us online for support and inquiries."
+    },
+
     "title": "Contact Us",
     "success": "Your message has been sent!"
   },

@@ -2,11 +2,20 @@ import React from "react";
 import Image from "next/image";
 import ContactForm from "@/components/contact/ContactForm";
 import beautImage from "../../../assets/cotactCover.jpeg";
-
+import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
+import { Section } from "@/components/UI/primitives";
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
+  return generateLocalizedMetadata(ctx, {
+    namespace: "Contact",
+    path: "/contact",
+  });
+}
 export default function Page() {
   return (
     <main className="min-h-screen bg-[linear-gradient(to_bottom,#f3f3f3_45%,#ffffff_30%)]">
-      <div className="container mx-auto flex items-center px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-16">
+      <Section className=" py-16">
         <div className="grid w-full items-center gap-10 lg:grid-cols-2">
           {/* Image side */}
           <div className="order-2 lg:order-1">
@@ -28,7 +37,7 @@ export default function Page() {
             <ContactForm />
           </div>
         </div>
-      </div>
+      </Section>
     </main>
   );
 }
