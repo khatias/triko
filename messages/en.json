@@ -73,6 +73,13 @@
     "passwordTooShort": "Password must be at least 6 characters",
     "passwordsDontMatch": "Passwords do not match"
   },
+    "Login": {
+    "meta": {
+      "title": "Sign in — Triko",
+      "description": "Sign in to your Triko account to track orders, manage your profile, and save favorites. Secure login with email or Google."
+    }
+  },
+ 
   "Contact": {
     "meta": {
       "title": "Contact — Triko",
