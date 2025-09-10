@@ -37,10 +37,30 @@
       "messagePlaceholder": "შეიყვანეთ თქვენი შეტყობინება აქ"
     },
     "actions": {
-      "submit": "გაგზავნა",
-      "login": "შესვლა",
-      "register": "რეგისტრაცია",
-      "sending": "გაგზავნა..."
+      "submit": "შესვლა",
+      "sending": "იგზავნება…",
+      "signIn": "შესვლა",
+      "signUp": "რეგისტრაცია",
+      "google": "შესვლა Google-ით"
+    },
+    "ui": {
+      "or": "ან"
+    },
+    "notices": {
+      "trustEmailPrivacy": "თქვენს ელ. ფოსტას არასოდეს გავუზიარებთ."
+    },
+
+    "links": {
+      "forgotPassword": "დაგავიწყდათ პაროლი?",
+      "rememberMe": "დამიმახსოვრე",
+      "createAccount": "შექმენით ანგარიში",
+      "dontHaveAccount": "არ გაქვთ ანგარიში?",
+      "haveAccount": "უკვე გაქვთ ანგარიში?",
+      "terms": "წესები და პირობები",
+      "privacy": "კონფიდენციალურობის პოლიტიკა"
+    },
+    "legal": {
+      "notice": "გაგრძელებით, თქვენ ეთანხმებით ჩვენს <terms>წესებსა და პირობებს</terms> და <privacy>კონფიდენციალურობის პოლიტიკას</privacy>."
     }
   },
   "Errors": {

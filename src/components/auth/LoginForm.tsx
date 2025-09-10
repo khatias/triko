@@ -1,17 +1,138 @@
+"use client";
+
 import React from "react";
-import FormCard from "../form/FormCard";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-function LoginForm() {
+import FormCard from "../form/FormCard";
+import { InputField, PasswordField } from "../form/Field";
+import { UserIcon, LockIcon } from "../form/icons";
+import SubmitButton from "../form/SubmitButton";
+import { GoogleMark } from "../form/icons";
+
+export default function LoginForm() {
   const tForm = useTranslations("Form");
 
+  // UI-only placeholders so SubmitButton renders without wiring up react-hook-form
+  const isSubmitting = false;
+  const isValid = true;
+
   return (
-    <div>
-      <FormCard
-        title={tForm("loginTitle")}
-        subtitle={tForm("loginSubTitle")}
-      ></FormCard>
-    </div>
+    <form noValidate>
+      <FormCard title={tForm("loginTitle")} subtitle={tForm("loginSubTitle")}>
+        {/* google authentication */}
+        <div>
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300/80 bg-white/70 px-4 py-3 text-sm font-medium text-zinc-800 shadow-sm "
+          >
+            <GoogleMark />
+            <span className="translate-x-0 transition group-hover:translate-x-[1px]">
+              {tForm("actions.google")}
+            </span>
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="my-6">
+          <div className="flex justify-center">
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-zinc-500 shadow-[0_0_0_1px_rgba(0,0,0,0.02)]">
+              {tForm("ui.or")}
+            </span>
+          </div>
+        </div>
+
+        {/* Email + Password */}
+        <div className="grid">
+          <InputField
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            label={tForm("fields.email")}
+            icon={UserIcon}
+            required
+          />
+
+          <div>
+            <PasswordField
+              id="password"
+              name="password"
+              autoComplete="current-password"
+              label={tForm("fields.password")}
+              icon={LockIcon}
+              required
+            />
+
+            <div className="flex items-center justify-between">
+              <label className="inline-flex select-none items-center gap-2 text-sm text-zinc-700">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-zinc-300 text-rose-600 accent-rose-600 focus:ring-rose-300"
+                />
+                <span> {tForm("links.rememberMe")}</span>
+              </label>
+
+              <Link
+                href="/forgot-password"
+                className="text-sm text-rose-600 underline-offset-4 hover:underline"
+              >
+                <span> {tForm("links.forgotPassword")}</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Primary action */}
+        <div className="mt-2">
+          <SubmitButton loading={isSubmitting} disabled={!isValid}>
+            {isSubmitting ? tForm("actions.sending") : tForm("actions.submit")}
+          </SubmitButton>
+
+          {/* Trust note */}
+          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              className="fill-none stroke-current"
+            >
+              <path
+                d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M9 12l2 2 4-4"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {tForm("notices.trustEmailPrivacy")}
+          </p>
+        </div>
+
+        {/* Secondary / register */}
+        <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
+          {tForm.rich("legal.notice", {
+            terms: (chunk) => (
+              <Link
+                href="/terms"
+                className="underline underline-offset-2 hover:text-rose-600"
+              >
+                {chunk}
+              </Link>
+            ),
+            privacy: (chunk) => (
+              <Link
+                href="/privacy"
+                className="underline underline-offset-2 hover:text-rose-600"
+              >
+                {chunk}
+              </Link>
+            ),
+          })}
+        </p>
+      </FormCard>
+    </form>
   );
 }
-
-export default LoginForm;

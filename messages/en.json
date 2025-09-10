@@ -36,10 +36,30 @@
       "messagePlaceholder": "Enter your message here"
     },
     "actions": {
-      "submit": "Submit",
-      "login": "Log In",
-      "register": "Sign Up",
-      "sending": "Sending..."
+      "submit": "Sign in",
+      "sending": "Sending…",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "google": "Continue with Google"
+    },
+    "ui": {
+      "or": "or"
+    },
+
+    "notices": {
+      "trustEmailPrivacy": "We’ll never share your email."
+    },
+    "links": {
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Remember me",
+      "createAccount": "Create one",
+      "dontHaveAccount": "Don’t have an account?",
+      "haveAccount": "Already have an account?",
+      "terms": "Terms",
+      "privacy": "Privacy Policy"
+    },
+    "legal": {
+      "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
     }
   },
   "Errors": {
