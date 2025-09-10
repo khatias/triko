@@ -22,6 +22,8 @@
     "info": "Info"
   },
   "Form": {
+    "loginTitle": "Welcome back",
+    "loginSubTitle": "Sign in to your account to continue.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "fields": {
