@@ -83,6 +83,13 @@
     }
   },
 
+  "SignUp": {
+    "meta": {
+      "title": "Sign up — Triko",
+      "description": "Create a Triko account to track orders, manage your profile, and save favorites. Fast, secure sign up with email or Google."
+    }
+  },
+
   "Contact": {
     "meta": {
       "title": "Contact — Triko",
