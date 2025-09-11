@@ -28,6 +28,8 @@
     "signUpSubtitle": "Join Triko to save favorites, track orders, and check out faster.",
     "forgotPasswordTitle": "Forgot password",
     "forgotPasswordSubtitle": "Enter your email and we’ll send you a reset link.",
+    "resetPasswordTitle": "Reset password",
+    "resetPasswordSubtitle": "Choose a new password and confirm it below.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "fields": {
@@ -35,6 +37,7 @@
       "fullNamePlaceholder": "Enter your full name",
       "email": "Email Address",
       "password": "Password",
+      "newPassword": "New password",
       "confirmPassword": "Confirm Password",
       "message": "Your Message",
       "messagePlaceholder": "Enter your message here"
@@ -45,7 +48,8 @@
       "signIn": "Sign in",
       "signUp": "Create account",
       "google": "Continue with Google",
-      "sendResetLink": "Send reset link"
+      "sendResetLink": "Send reset link",
+      "updatePassword": "Update password"
     },
     "ui": {
       "or": "or"
@@ -53,7 +57,8 @@
 
     "notices": {
       "trustEmailPrivacy": "We’ll never share your email.",
-      "resetHelp": "If you don’t see the email in a few minutes, check your spam folder."
+      "resetHelp": "If you don’t see the email in a few minutes, check your spam folder.",
+      "passwordHint": "Use at least 8 characters, including a number and a letter."
     },
     "links": {
       "forgotPassword": "Forgot password?",
