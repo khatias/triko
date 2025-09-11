@@ -32,7 +32,7 @@ export default function SignUpForm() {
         </span>
       </h2>
 
-      <p className="text-center text-sm text-zinc-600 sm:text-base">
+      <p className="text-center text-sm text-zinc-600 sm:text-base pb-6">
         {tForm("signUpSubtitle")}
       </p>
 
@@ -123,7 +123,7 @@ export default function SignUpForm() {
             href="/login"
             className="font-semibold text-rose-600 underline-offset-4 hover:underline"
           >
-            {tForm("actions.signUp")}
+            {tForm("actions.signIn")}
           </Link>
         </p>
       </div>
