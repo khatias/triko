@@ -82,6 +82,12 @@
       "description": "Sign in to your Triko account to track orders, manage your profile, and save favorites. Secure login with email or Google."
     }
   },
+  "ForgotPassword": {
+  "meta": {
+    "title": "Forgot Password — Triko",
+    "description": "Reset your Triko account password securely. Enter your email to receive reset instructions and regain access to your profile and orders."
+  }
+},
 
   "SignUp": {
     "meta": {
