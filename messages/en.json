@@ -24,6 +24,9 @@
   "Form": {
     "loginTitle": "Welcome back",
     "loginSubTitle": "Sign in to your account to continue.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join Triko to save favorites, track orders, and check out faster.",
+
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "fields": {
@@ -73,13 +76,13 @@
     "passwordTooShort": "Password must be at least 6 characters",
     "passwordsDontMatch": "Passwords do not match"
   },
-    "Login": {
+  "Login": {
     "meta": {
       "title": "Sign in — Triko",
       "description": "Sign in to your Triko account to track orders, manage your profile, and save favorites. Secure login with email or Google."
     }
   },
- 
+
   "Contact": {
     "meta": {
       "title": "Contact — Triko",

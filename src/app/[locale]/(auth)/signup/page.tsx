@@ -1,8 +1,13 @@
 import React from 'react'
-
+import SignUpForm from '@/components/auth/SignUpForm'
+import { Section } from '@/components/UI/primitives'
 function page() {
   return (
-    <div>page</div>
+<main>
+<Section>
+    <SignUpForm/>
+</Section>
+</main>
   )
 }
 
