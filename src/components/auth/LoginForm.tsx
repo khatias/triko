@@ -20,7 +20,7 @@ export default function LoginForm() {
       <h2
         className="
     relative mx-auto mb-6 max-w-2xl text-center
-    text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-[-0.015em] text-zinc-900
+    text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900
     [text-wrap:balance] selection:bg-[#fdd5a2]/30
     before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6
     before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10
@@ -127,7 +127,7 @@ export default function LoginForm() {
           </p>
         </div>
 
-        {/* Secondary / register */}
+        {/* Legal */}
         <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
           {tForm.rich("legal.notice", {
             terms: (chunk) => (
@@ -147,6 +147,17 @@ export default function LoginForm() {
               </Link>
             ),
           })}
+        </p>
+
+        {/* 🔗 Sign up CTA */}
+        <p className="mt-4 text-center text-sm text-zinc-700">
+          {tForm("links.dontHaveAccount")}{" "}
+          <Link
+            href="/signup"
+            className="font-semibold text-rose-600 underline-offset-4 hover:underline"
+          >
+            {tForm("actions.signUp")}
+          </Link>
         </p>
       </div>
     </form>
