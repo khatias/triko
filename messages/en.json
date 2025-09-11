@@ -88,8 +88,14 @@
   },
   "ForgotPassword": {
     "meta": {
-      "title": "Forgot Password — Triko",
-      "description": "Reset your Triko account password securely. Enter your email to receive reset instructions and regain access to your profile and orders."
+      "title": "Forgot password — Reset your Triko account",
+      "description": "Enter your email to get a secure password reset link from Triko. Recover access to your account, orders, favorites, and profile in minutes."
+    }
+  },
+  "ResetPassword": {
+    "meta": {
+      "title": "Set new password — Secure your Triko account",
+      "description": "Create a strong new password to finish your Triko password reset. Then sign in to manage orders, favorites, and your profile securely."
     }
   },
 
