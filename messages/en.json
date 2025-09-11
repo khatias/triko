@@ -26,7 +26,8 @@
     "loginSubTitle": "Sign in to your account to continue.",
     "signUpTitle": "Create your account",
     "signUpSubtitle": "Join Triko to save favorites, track orders, and check out faster.",
-
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordSubtitle": "Enter your email and we’ll send you a reset link.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "fields": {
@@ -43,14 +44,16 @@
       "sending": "Sending…",
       "signIn": "Sign in",
       "signUp": "Create account",
-      "google": "Continue with Google"
+      "google": "Continue with Google",
+      "sendResetLink": "Send reset link"
     },
     "ui": {
       "or": "or"
     },
 
     "notices": {
-      "trustEmailPrivacy": "We’ll never share your email."
+      "trustEmailPrivacy": "We’ll never share your email.",
+      "resetHelp": "If you don’t see the email in a few minutes, check your spam folder."
     },
     "links": {
       "forgotPassword": "Forgot password?",
@@ -59,7 +62,8 @@
       "dontHaveAccount": "Don’t have an account?",
       "haveAccount": "Already have an account?",
       "terms": "Terms",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "backToLogin": "Back to sign in"
     },
     "legal": {
       "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
@@ -83,11 +87,11 @@
     }
   },
   "ForgotPassword": {
-  "meta": {
-    "title": "Forgot Password — Triko",
-    "description": "Reset your Triko account password securely. Enter your email to receive reset instructions and regain access to your profile and orders."
-  }
-},
+    "meta": {
+      "title": "Forgot Password — Triko",
+      "description": "Reset your Triko account password securely. Enter your email to receive reset instructions and regain access to your profile and orders."
+    }
+  },
 
   "SignUp": {
     "meta": {
