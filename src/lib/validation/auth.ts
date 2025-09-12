@@ -49,7 +49,21 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
         });
       }
     });
-
+  const resetPasswordSchema = z
+    .object({
+      password: passwordSchema,
+      confirmPassword: requiredString(t("confirmPasswordRequired")),
+      website: honeypot,
+    })
+    .superRefine(({ password, confirmPassword }, ctx) => {
+      if (password !== confirmPassword) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["confirmPassword"],
+          message: t("passwordsDontMatch"),
+        });
+      }
+    });
   const forgotPasswordSchema = z.object({
     email: emailSchema,
     website: honeypot,
@@ -60,6 +74,7 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
     loginSchema,
     signupSchema,
     forgotPasswordSchema,
+    resetPasswordSchema,
   };
 };
 

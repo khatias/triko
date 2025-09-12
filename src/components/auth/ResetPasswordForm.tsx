@@ -1,21 +1,43 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { makeAuthSchemas } from "@/lib/validation/auth";
 import { PasswordField } from "../form/Field";
 import { LockIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-import Link from "next/link";
 
 export default function ResetPasswordForm() {
   const tForm = useTranslations("Form");
+  const tErrors = useTranslations("Errors");
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
 
-  // UI-only placeholders so SubmitButton renders without wiring up react-hook-form
-  const isSubmitting = false;
-  const isValid = true;
+  type ResetPasswordInput = z.input<typeof schemas.resetPasswordSchema>;
+  type ResetPasswordData = z.output<typeof schemas.resetPasswordSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<ResetPasswordInput>({
+    resolver: zodResolver(schemas.resetPasswordSchema),
+    defaultValues: { website: "" },
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+
+  const onSubmit: SubmitHandler<ResetPasswordInput> = (raw) => {
+    const data: ResetPasswordData = schemas.resetPasswordSchema.parse(raw);
+    console.log("Reset password submit:", data);
+    // TODO: Call your API endpoint for password reset
+  };
 
   return (
-    <form noValidate aria-labelledby="reset-title">
+    <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <h2
         id="reset-title"
         className="
@@ -37,31 +59,40 @@ export default function ResetPasswordForm() {
 
       <div className="mt-6 grid">
         <PasswordField
-          id="new-password"
-          name="password"
+          id="password"
           autoComplete="new-password"
-          label={tForm("fields.newPassword")}
-          icon={LockIcon}
+          label={tForm("fields.password")}
+          icon={LockIcon}  // ← kept as-is
+          maxLength={72}
+          {...register("password")}
+          error={errors.password?.message}
           required
         />
 
         <PasswordField
-          id="confirm-password"
-          name="confirmPassword"
+          id="confirmPassword"
           autoComplete="new-password"
           label={tForm("fields.confirmPassword")}
-          icon={LockIcon}
+          icon={LockIcon}  // ← kept as-is
+          maxLength={72}
+          {...register("confirmPassword")}
+          error={errors.confirmPassword?.message}
           required
         />
 
+        {/* Honeypot hidden field */}
+        <input type="hidden" {...register("website")} />
+
         {/* Password requirements / hint */}
-        <div className=" text-xs leading-relaxed text-zinc-500">
+        <div className="text-xs leading-relaxed text-zinc-500">
           {tForm("notices.passwordHint")}
         </div>
 
         <div className="mt-1 text-center">
           <SubmitButton loading={isSubmitting} disabled={!isValid}>
-            {tForm("actions.updatePassword")}
+            {isSubmitting
+              ? tForm("actions.sending")
+              : tForm("actions.updatePassword")}
           </SubmitButton>
         </div>
 
