@@ -88,6 +88,7 @@ const ContactForm: FC = () => {
               value: 100,
               message: tErrors("tooLongName", { max: 100 }),
             },
+            
           })}
           error={errors.name?.message}
         />

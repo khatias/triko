@@ -76,14 +76,24 @@
   },
   "Errors": {
     "required": "This field is required",
+    "emailRequired": "Email is required",
+    "emailTooLong": "Email is too long",
+    "invalidEmail": "Email format is incorrect",
     "tooShortName": "Too short name, minimum 3 characters",
     "tooLongName": "Too long name, maximum 100 characters",
     "tooLongEmail": "Too long email, maximum 254 characters",
     "tooShortMessage": "Message is too short, minimum 10 characters",
     "tooLongMessage": "Message is too long, maximum 2000 characters",
-    "invalidEmail": "Email format is incorrect",
+    "passwordRequired": "Password is required",
+    "passwordTooLong": "Password is too long",
     "passwordTooShort": "Password must be at least 6 characters",
-    "passwordsDontMatch": "Passwords do not match"
+    "passwordUpper": "Add at least one uppercase letter",
+    "passwordLower": "Add at least one lowercase letter",
+    "passwordNumber": "Add at least one number",
+    "passwordSymbol": "Add at least one symbol",
+    "confirmPasswordRequired": "Confirm your password",
+    "passwordsDontMatch": "Passwords do not match",
+    "termsRequired": "You must accept the terms"
   },
   "Login": {
     "meta": {
