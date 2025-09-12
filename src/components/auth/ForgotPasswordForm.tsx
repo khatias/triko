@@ -1,17 +1,44 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { makeAuthSchemas } from "@/lib/validation/auth";
+
 import { InputField } from "../form/Field";
 import { UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-import Link from "next/link";
 
 export default function ForgotPasswordForm() {
   const tForm = useTranslations("Form");
+  const tErrors = useTranslations("Errors");
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
+
+  type ForgotPasswordInput = z.input<typeof schemas.forgotPasswordSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<ForgotPasswordInput>({
+    resolver: zodResolver(schemas.forgotPasswordSchema),
+    defaultValues: { website: "" },
+    mode: "onChange",
+    reValidateMode: "onChange",
+  });
+
+  async function onSubmit(raw: ForgotPasswordInput) {
+    const data = schemas.forgotPasswordSchema.parse(raw);
+    console.log("Forgot password submit:", data);
+
+    // TODO: Call your API endpoint for password reset
+  }
 
   return (
-    <form noValidate>
+    <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <h2
         id="forgot-title"
         className="
@@ -31,27 +58,30 @@ export default function ForgotPasswordForm() {
         {tForm("forgotPasswordSubtitle")}
       </p>
 
-      <div className="mt-6 grid ">
+      <div className="mt-6 grid">
         <InputField
           id="reset-email"
-          name="email"
           type="email"
-          autoComplete="email"
           label={tForm("fields.email")}
-          icon={UserIcon}
+          icon={UserIcon }
+          error={errors.email?.message}
           required
+          {...register("email")}
         />
 
-        <div className="mt-1 text-center">
-          <SubmitButton>{tForm("actions.sendResetLink")}</SubmitButton>
+        {/* Honeypot hidden field */}
+        <input type="hidden" {...register("website")} />
 
-          {/* Helper note */}
+        <div className="mt-1 text-center">
+          <SubmitButton disabled={!isValid} loading={isSubmitting}>
+            {tForm("actions.sendResetLink")}
+          </SubmitButton>
+
           <p className="mt-3 text-xs text-zinc-500">
             {tForm("notices.resetHelp")}
           </p>
         </div>
 
-        {/* Back to sign in */}
         <p className="mt-4 text-center text-sm text-zinc-700">
           <Link
             href="/login"

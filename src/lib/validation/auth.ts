@@ -1,6 +1,4 @@
-
 import { z, zEmail, requiredString } from "../validation/z";
-
 
 export const makeAuthSchemas = (t: (k: string) => string) => {
   const emailSchema = requiredString(t("emailRequired"))
@@ -16,7 +14,7 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
     .regex(/\d/, { message: t("passwordNumber") })
     .regex(/[^A-Za-z0-9]/, { message: t("passwordSymbol") });
 
-      // Input: string | undefined (optional), Output: string (always)
+  // Input: string | undefined (optional), Output: string (always)
   const honeypot = z
     .string()
     .default("") // makes input optional; output is string
@@ -51,9 +49,18 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
         });
       }
     });
-  return { emailSchema, passwordSchema, loginSchema, signupSchema };
 
+  const forgotPasswordSchema = z.object({
+    email: emailSchema,
+    website: honeypot,
+  });
+  return {
+    emailSchema,
+    passwordSchema,
+    loginSchema,
+    signupSchema,
+    forgotPasswordSchema,
+  };
 };
-
 
 export type AuthSchemas = ReturnType<typeof makeAuthSchemas>;
