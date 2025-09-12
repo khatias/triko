@@ -4,17 +4,38 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { InputField, PasswordField } from "../form/Field";
 import { LockIcon, UserIcon } from "../form/icons";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { makeAuthSchemas } from "@/lib/validation/auth";
 import SubmitButton from "../form/SubmitButton";
 import Link from "next/link";
 export default function SignUpForm() {
   const tForm = useTranslations("Form");
+  const tErrors = useTranslations("Errors");
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
 
-  // UI-only placeholders so SubmitButton renders without wiring up react-hook-form
-  const isSubmitting = false;
-  const isValid = true;
+  type SignUpInput = z.input<typeof schemas.signupSchema>;
+  type SignUpData = z.output<typeof schemas.signupSchema>;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<SignUpInput>({
+    resolver: zodResolver(schemas.signupSchema),
+    mode: "onChange",
+    criteriaMode: "all",
+    defaultValues: { website: "" } as Partial<SignUpInput>,
+  });
+
+  const onSubmit: SubmitHandler<SignUpInput> = (raw) => {
+    const parsed: SignUpData = schemas.signupSchema.parse(raw);
+    console.log("Sign up (UI-only):", parsed);
+  };
 
   return (
-    <form noValidate>
+    <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <h2
         className="
           relative mx-auto mb-6 max-w-2xl text-center
@@ -39,35 +60,53 @@ export default function SignUpForm() {
       <div className="grid">
         <InputField
           id="email"
-          name="email"
           type="email"
           autoComplete="email"
           label={tForm("fields.email")}
           icon={UserIcon}
+          inputMode="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          maxLength={254}
+          {...register("email")}
+          error={errors.email?.message}
           required
         />
 
         <PasswordField
           id="password"
-          name="password"
           autoComplete="new-password"
           label={tForm("fields.password")}
           icon={LockIcon}
+          maxLength={72}
+          {...register("password")}
+          error={errors.password?.message}
           required
         />
 
         <PasswordField
-          id="repeatPassword"
-          name="repeatPassword"
+          id="confirmPassword"
           autoComplete="new-password"
           label={tForm("fields.confirmPassword")}
           icon={LockIcon}
+          maxLength={72}
+          {...register("confirmPassword")}
+          error={errors.confirmPassword?.message}
           required
+        />
+        {/* Honeypot */}
+        <input
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden"
+          {...register("website")}
         />
 
         <div className="mt-2 text-center">
           <SubmitButton loading={isSubmitting} disabled={!isValid}>
-            {isSubmitting ? tForm("actions.sending") : tForm("actions.submit")}
+            {isSubmitting ? tForm("actions.sending") : tForm("actions.signUp")}
           </SubmitButton>
 
           {/* Trust note */}
