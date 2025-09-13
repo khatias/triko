@@ -22,6 +22,14 @@
     "info": "Info"
   },
   "Form": {
+    "loginTitle": "Welcome back",
+    "loginSubTitle": "Sign in to your account to continue.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join Triko to save favorites, track orders, and check out faster.",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordSubtitle": "Enter your email and we’ll send you a reset link.",
+    "resetPasswordTitle": "Reset password",
+    "resetPasswordSubtitle": "Choose a new password and confirm it below.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "fields": {
@@ -29,28 +37,90 @@
       "fullNamePlaceholder": "Enter your full name",
       "email": "Email Address",
       "password": "Password",
+      "newPassword": "New password",
       "confirmPassword": "Confirm Password",
       "message": "Your Message",
       "messagePlaceholder": "Enter your message here"
     },
     "actions": {
-      "submit": "Submit",
-      "login": "Log In",
-      "register": "Sign Up",
-      "sending": "Sending..."
+      "submit": "Sign in",
+      "sending": "Sending…",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "google": "Continue with Google",
+      "sendResetLink": "Send reset link",
+      "updatePassword": "Update password"
+    },
+    "ui": {
+      "or": "or"
+    },
+
+    "notices": {
+      "trustEmailPrivacy": "We’ll never share your email.",
+      "resetHelp": "If you don’t see the email in a few minutes, check your spam folder.",
+      "passwordHint": "Use at least 8 characters, including a number and a letter."
+    },
+    "links": {
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Remember me",
+      "createAccount": "Create one",
+      "dontHaveAccount": "Don’t have an account?",
+      "haveAccount": "Already have an account?",
+      "terms": "Terms",
+      "privacy": "Privacy Policy",
+      "backToLogin": "Back to sign in"
+    },
+    "legal": {
+      "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
     }
   },
   "Errors": {
     "required": "This field is required",
+    "emailRequired": "Email is required",
+    "emailTooLong": "Email is too long",
+    "invalidEmail": "Email format is incorrect",
     "tooShortName": "Too short name, minimum 3 characters",
     "tooLongName": "Too long name, maximum 100 characters",
     "tooLongEmail": "Too long email, maximum 254 characters",
     "tooShortMessage": "Message is too short, minimum 10 characters",
     "tooLongMessage": "Message is too long, maximum 2000 characters",
-    "invalidEmail": "Email format is incorrect",
+    "passwordRequired": "Password is required",
+    "passwordTooLong": "Password is too long",
     "passwordTooShort": "Password must be at least 6 characters",
-    "passwordsDontMatch": "Passwords do not match"
+    "passwordUpper": "Add at least one uppercase letter",
+    "passwordLower": "Add at least one lowercase letter",
+    "passwordNumber": "Add at least one number",
+    "passwordSymbol": "Add at least one symbol",
+    "confirmPasswordRequired": "Confirm your password",
+    "passwordsDontMatch": "Passwords do not match",
+    "termsRequired": "You must accept the terms"
   },
+  "Login": {
+    "meta": {
+      "title": "Sign in — Triko",
+      "description": "Sign in to your Triko account to track orders, manage your profile, and save favorites. Secure login with email or Google."
+    }
+  },
+  "ForgotPassword": {
+    "meta": {
+      "title": "Forgot password — Reset your Triko account",
+      "description": "Enter your email to get a secure password reset link from Triko. Recover access to your account, orders, favorites, and profile in minutes."
+    }
+  },
+  "ResetPassword": {
+    "meta": {
+      "title": "Set new password — Secure your Triko account",
+      "description": "Create a strong new password to finish your Triko password reset. Then sign in to manage orders, favorites, and your profile securely."
+    }
+  },
+
+  "SignUp": {
+    "meta": {
+      "title": "Sign up — Triko",
+      "description": "Create a Triko account to track orders, manage your profile, and save favorites. Fast, secure sign up with email or Google."
+    }
+  },
+
   "Contact": {
     "meta": {
       "title": "Contact — Triko",
