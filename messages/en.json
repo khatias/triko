@@ -1,9 +1,49 @@
 {
+
   "Home": {
     "meta": {
-      "title": "Triko — Online Shop",
-      "description": "Discover Triko: shop the latest trends in pants, pajamas, and more. Find your perfect fit online or in our Tbilisi stores."
+      "title": "Triko — Everyday Comfort, Made for You",
+      "description": "Discover Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
+    },
+    "Hero": {
+      "h1": "Soft by design, Made for everyday comfort",
+      "sub": "Kimono, pajamas, and loungewear — comfort and simplicity for every day.",
+      "ctaPrimary": "Shop New Arrivals",
+      "ctaSecondary": "Size Guide",
+      "imgAlt": "Triko loungewear on a model in a soft-lit studio"
+    },
+    "Categories": {
+      "title": "Shop by category",
+      "items": {
+        "pants": "Pants",
+        "pajamas": "Pajamas",
+        "sets": "Sets"
+      }
+    },
+    "USP": {
+      "freeReturns": "Free returns within 14 days",
+      "fastDelivery": "Fast delivery in Georgia",
+      "securePayments": "Secure payments",
+      "storeLocations": "Two store locations"
+    },
+    "Featured": {
+      "title": "Featured",
+      "viewAll": "View all"
+    },
+    "Story": {
+      "title": "Designed in Georgia. Made for slow mornings.",
+      "sub": "Thoughtful fits, breathable fabrics, and details that matter.",
+      "cta": "About Us",
+      "imgAlt": "Lifestyle photo showing Triko products in a cozy home"
+    },
+    "Social": {
+      "rating": "Average rating",
+      "customers": "Happy customers",
+      "returns": "Free returns"
     }
+  
+
+
   },
   "LanguageSwitcher": {
     "labelEn": "ENGLISH",
