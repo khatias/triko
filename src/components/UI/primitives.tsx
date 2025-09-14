@@ -4,14 +4,21 @@ export const Section = ({
   children,
   className = "",
   labelledBy,
-}: React.PropsWithChildren<{ className?: string; labelledBy?: string }>) => (
+  id,
+}: React.PropsWithChildren<{
+  className?: string;
+  labelledBy?: string;
+  id?: string;
+}>) => (
   <section
-    aria-labelledby={labelledBy}
+    {...(id ? { id } : {})}
+    {...(labelledBy ? { "aria-labelledby": labelledBy } : {})}
     className={`container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 ${className}`}
   >
     {children}
   </section>
 );
+
 
 export const RegularCard = ({
   children,

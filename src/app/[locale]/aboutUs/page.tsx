@@ -116,7 +116,7 @@ export default function AboutPage() {
       </Section>
 
       {/* Locations */}
-      <Section className="py-10" labelledBy="about-locations">
+      <Section id="locations"  className="py-10" labelledBy="about-locations">
         <H2 id="about-locations">{t("locations.title")}</H2>
         <P className="mt-3 max-w-2xl">{t("locations.subtitle")}</P>
 

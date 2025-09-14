@@ -15,7 +15,7 @@ export default async function Footer() {
     help: {
       title: t("nav.help") ?? "Help",
       links: [
-        { label: t("links.about"), href: withLocale("/about") },
+        { label: t("links.about"), href: withLocale("/aboutUs") },
         { label: t("links.contact"), href: withLocale("/contact") },
         { label: t("links.shipping"), href: withLocale("/shipping-returns") },
         { label: t("links.sizeGuide"), href: withLocale("/size-guide") },
@@ -57,10 +57,6 @@ export default async function Footer() {
         {
           label: t("links.contact") ?? "Contact Us",
           href: withLocale("/contact"),
-        },
-        {
-          label: t("links.chat") ?? "Live Chat",
-          href: withLocale("/contact#chat"),
         },
       ],
     },
