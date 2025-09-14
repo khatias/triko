@@ -6,6 +6,7 @@ import { Montserrat, Noto_Sans_Georgian } from "next/font/google";
 import Header from "@/components/Header/Header";
 import "../globals.css";
 import { Toaster } from "sonner";
+import Footer from "@/components/footer/Footer";
 
 
 interface LocaleLayoutProps {
@@ -43,7 +44,7 @@ export default async function LocaleLayout({
   <Header />
         {children}
                 <Toaster richColors position="top-right" />
-
+<Footer/>
       </div>
     </NextIntlClientProvider>
   );

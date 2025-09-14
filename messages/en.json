@@ -21,6 +21,45 @@
     "contact": "Contact",
     "info": "Info"
   },
+
+  "Footer": {
+    "brand": {
+      "aria": "Brand information",
+      "tagline": "Everyday comfort, made for you.",
+      "storeTitle": "Our Stores",
+      "storesAria": "Store locations"
+    },
+    "nav": {
+      "help": "Help",
+      "orders": "Orders & Returns",
+      "services": "Services",
+      "stores": "Store Locations",
+      "legal": "Legal"
+    },
+    "links": {
+      "about": "About Us",
+      "contact": "Contact Us",
+      "shipping": "Shipping & Returns",
+      "sizeGuide": "Size Guide",
+      "faq": "FAQ",
+      "orderStatus": "Order Status",
+      "returns": "Returns & Exchanges",
+      "trackOrder": "Track Your Order",
+      "giftCards": "Gift Cards",
+      "offers": "Offers & Events",
+      "chat": "Live Chat",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "cookies": "Cookie Policy",
+      "adPreferences": "Ad Preferences",
+      "view": "View"
+    },
+    "legal": {
+      "allRights": "All rights reserved.",
+      "madeWith": "Made with love."
+    }
+  },
+
   "Form": {
     "loginTitle": "Welcome back",
     "loginSubTitle": "Sign in to your account to continue.",
