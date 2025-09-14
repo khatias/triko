@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import SocialMedia from "../socialMedia/SocialMedia";
 import StoreLocations from "../locations/StoreLocations";
-
+import { linkCls, headCls } from "../UI/primitives";
 export default async function Footer() {
   const locale = await getLocale();
   const t = await getTranslations("Footer");
@@ -95,11 +95,13 @@ export default async function Footer() {
               aria-labelledby={`footer-${idFrom(title)}`}
               className="min-w-0"
             >
-              <h3 id={`footer-${idFrom(title)}`}>{title}</h3>
+              <h3 className={headCls} id={`footer-${idFrom(title)}`}>
+                {title}{" "}
+              </h3>
               <ul className="mt-5 space-y-3.5">
                 {links.map(({ label, href }) => (
                   <li key={href}>
-                    <Link prefetch={false} href={href}>
+                    <Link prefetch={false} href={href} className={linkCls}>
                       {label}
                     </Link>
                   </li>
@@ -112,7 +114,7 @@ export default async function Footer() {
             aria-label={t("brand.storesAria") ?? "Store Locations"}
             className="min-w-0"
           >
-            <h3>{t("brand.storeTitle") ?? "Stores"}</h3>
+            <h3 className={headCls}>{t("brand.storeTitle") ?? "Stores"}</h3>
             <div className="mt-5">
               <StoreLocations locale={locale} t={t} />
             </div>
@@ -124,7 +126,7 @@ export default async function Footer() {
             aria-label={t("brand.storesAria") ?? "Store Locations"}
             className="mb-6"
           >
-            <h3>{t("brand.storeTitle") ?? "Stores"}</h3>
+            <h3 className={headCls}>{t("brand.storeTitle") ?? "Stores"}</h3>
             <div className="mt-4">
               <StoreLocations locale={locale} t={t} />
             </div>
@@ -140,6 +142,7 @@ export default async function Footer() {
                     "[&::-webkit-details-marker]:hidden",
                     idx !== 0 ? "border-t border-zinc-200/70" : "",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fdd5a2]/50",
+                    headCls,
                   ].join(" ")}
                 >
                   <span>{title}</span>
@@ -153,7 +156,7 @@ export default async function Footer() {
                 <ul className="px-4 pb-4 space-y-3">
                   {links.map(({ label, href }) => (
                     <li key={href}>
-                      <Link prefetch={false} href={href}>
+                      <Link prefetch={false} href={href} className={linkCls}>
                         {label}
                       </Link>
                     </li>

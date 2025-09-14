@@ -46,3 +46,18 @@ export const P = ({
     {children}
   </p>
 );
+
+  export const linkCls = [
+    "relative inline-block text-sm text-zinc-700/90",
+    "transition-colors hover:text-zinc-900 focus:text-zinc-900",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fdd5a2]/50 rounded",
+    // underline animation
+    "after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-[1.5px]",
+    "after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-200",
+    "hover:after:scale-x-100 focus:after:scale-x-100",
+  ].join(" ");
+
+  export const headCls = [
+    "text-[12px] font-semibold tracking-[0.18em] text-zinc-900/90",
+    "uppercase select-none",
+  ].join(" ");
