@@ -12,8 +12,8 @@ const socials = [
 
 export default function SocialMedia() {
   return (
-    <div className="mx-auto max-w-3xl px-4">
-      <div className="mt-4 flex justify-start gap-4">
+    <div className="">
+      <div className=" flex items-center justify-center gap-4">
         {socials.map(({ href, label, icon }) => (
           <Link key={label} href={href} target="_blank" aria-label={label}>
             <Image
