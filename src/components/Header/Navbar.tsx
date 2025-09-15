@@ -13,7 +13,7 @@ import {
 import { Search, Info, Mail } from "lucide-react";
 import logo from "../../assets/logo.png";
 import newarrivals from "../../assets/new-arrivals.jpg";
-import kimanoex from "../../assets/kimano-ex.jpg";
+import pajama from "../../assets/pajama.jpg";
 import FeaturedCircles from "../cards/FeatureCircle";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import SocialMedia from "../socialMedia/SocialMedia";
@@ -176,7 +176,7 @@ export default function Navbar() {
                 {
                   href: "/kimano",
                   label: t("kimano"),
-                  image: kimanoex,
+                  image: pajama,
                   alt: "Kimono Collection",
                 },
               ]}
