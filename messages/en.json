@@ -13,11 +13,12 @@
       "imgAlt": "Triko loungewear on a model in a soft-lit studio"
     },
     "Categories": {
-      "title": "Shop by category",
+      "title": "Shop by popular category",
       "items": {
-        "pants": "Pants",
+        "boxers": "Boxers",
         "pajamas": "Pajamas",
-        "sets": "Sets"
+        "kimano": "Kimano",
+        "dress": "Dress"
       }
     },
     "USP": {
