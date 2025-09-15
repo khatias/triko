@@ -1,179 +1,128 @@
-"use client";
-
 import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
-import { Section } from "../UI/primitives";
-// your assets
+import { getTranslations } from "next-intl/server";
+
+// assets
 import img1 from "../../assets/hero2.jpg";
 import img2 from "../../assets/hero1.jpg";
 import img3 from "../../assets/hero3.jpg";
 import img4 from "../../assets/hero4.jpg";
-import img5 from "../../assets/hero5.jpg";
-import img6 from "../../assets/hero6.jpg";
-import img7 from "../../assets/hero7.jpg";
-import TileCarousel from "../UI/carusels/TileCarousel";
-type Tile = { src: StaticImageData; alt: string };
 
-const TILES: Tile[] = [
+type Tile = { src: StaticImageData; alt: string };
+const TILES: readonly Tile[] = [
   { src: img1, alt: "Couple in colorful pajamas" },
   { src: img2, alt: "Man in blue pajamas" },
   { src: img3, alt: "Couple in SpongeBob pajamas" },
-  { src: img4, alt: "Colorful Robe" },
-  { src: img5, alt: "Couple in matching pajamas" },
-  { src: img6, alt: "girl in swimsuit" },
-  { src: img7, alt: "Couple in matching underwear" },
-];
+  { src: img4, alt: "Colorful robe" },
+] as const;
 
-export default function HeroGallery() {
-  const t = useTranslations("Home.Hero");
+export default async function Hero() {
+  const t = await getTranslations("Home.Hero");
+
+  const titleId = "home-hero-title";
+  const descId = "home-hero-desc";
 
   return (
-    <Section>
-      <div className="">
-        <div className="hidden xl:grid grid-cols-12 gap-10 py-16 xl:py-20">
-          {/*  sidebar  (left) */}
-          <aside className="col-span-5 xl:col-span-6 xl:pt-16">
-            <div className=" xl:top-20">
-              <h1 className="text-4xl sm:text-5xl xl:text-6xl text-[#1C1917] leading-tight tracking-tight drop-shadow-sm">
-                {t("h1")}
-              </h1>
-              <p className="mt-4 text-base xl:text-lg text-[#5c534b] font-light">
-                {t("sub")}
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 xl:gap-4">
-                <Link
-                  href="/shop?sort=new"
-                  className="inline-flex h-12 items-center rounded-2xl bg-red-400 px-6 text-sm font-medium text-white hover:bg-red-400/90 transition"
-                >
-                  {t("ctaPrimary")}
-                </Link>
-                <Link
-                  href="/size-guide"
-                  className="inline-flex h-12 items-center rounded-2xl border border-red-400 px-6 text-sm font-medium text-red-400 hover:bg-red-400 hover:text-white transition"
-                >
-                  {t("ctaSecondary")}
-                </Link>
-              </div>
-            </div>
-          </aside>
+    <section
+      className="relative isolate overflow-hidden pb-5"
+      aria-labelledby={titleId}
+      aria-describedby={descId}
+    >
+      {/* angled peach sheet */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 right-0 h-full w-[100%] md:w-[70%] bg-orange-100/70 -z-10
+                   [clip-path:polygon(0_0,_100%_0,_100%_100%,_18%_100%)]
+                   lg:[clip-path:polygon(0_0,_100%_0,_100%_100%,_35%_100%)]"
+      />
 
-          {/* Masonry gallery (right) */}
-          <div className="col-span-7 xl:col-span-6">
-            <div className="columns-2 xl:columns-3 gap-6">
-              {TILES.map((tile, i) => (
-                <figure
-                  key={i}
-                  className="mb-6 break-inside-avoid rounded-3xl overflow-hidden border border-zinc-200 bg-white shadow-[0_12px_40px_rgba(0,0,0,0.08)]"
-                >
-                  <div className="relative w-full">
-                    <div
-                      className={
-                        i % 5 === 0
-                          ? "aspect-[3/4]"
-                          : i % 3 === 0
-                          ? "aspect-[4/3]"
-                          : "aspect-square"
-                      }
-                    >
-                      <Image
-                        src={tile.src}
-                        alt={tile.alt}
-                        fill
-                        sizes="(max-width:1280px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 will-change-transform hover:scale-105"
-                        priority={i < 3}
-                      />
-                    </div>
-                  </div>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tablet 768–1023 */}
-        <div className="hidden md:block xl:hidden py-12">
-          
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl text-[#1C1917] leading-tight tracking-tight">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32">
+        <div className="relative py-12 md:py-20 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          {/* LEFT */}
+          <div className="md:pl-4 lg:pl-8">
+            <h1
+              id={titleId}
+              className="mt-2 text-4xl sm:text-5xl lg:text-6xl text-[#1C1917] font-bold leading-tight tracking-tight"
+            >
               {t("h1")}
             </h1>
-            <p className="mt-3 text-base md:text-lg text-[#5c534b] font-light">
+            <p
+              id={descId}
+              className="mt-4 text-base lg:text-lg text-[#5c534b] font-light max-w-xl"
+            >
               {t("sub")}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+
+            <nav className="mt-8 flex gap-3" aria-label="primary">
               <Link
                 href="/shop?sort=new"
-                className="inline-flex h-11 items-center rounded-2xl bg-red-400 px-5 text-sm font-medium text-white hover:bg-red-400/90 transition"
+                className="inline-flex h-12 items-center rounded-2xl bg-orange-600 px-6 text-sm font-medium text-white shadow-sm
+                           transition hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-300/50"
               >
                 {t("ctaPrimary")}
               </Link>
               <Link
                 href="/size-guide"
-                className="inline-flex h-11 items-center rounded-2xl border border-red-400 px-5 text-sm font-medium text-red-400 hover:bg-red-400 hover:text-white transition"
+                className="inline-flex h-12 items-center rounded-2xl border border-orange-600 px-6 text-sm font-medium text-orange-700
+                           transition hover:bg-orange-600 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-300/40"
               >
                 {t("ctaSecondary")}
               </Link>
-            </div>
+            </nav>
           </div>
 
-          {/* Gallery below, 2 columns with tighter gap for tablet */}
-          <div className="mt-8 columns-2 gap-4">
-            {TILES.map((tile, i) => (
-              <figure
-                key={i}
-                className="mb-4 break-inside-avoid rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-[0_8px_28px_rgba(0,0,0,0.06)]"
-              >
-                <div className="relative w-full">
-                  <div
-                    className={
-                      i % 7 === 0
-                        ? "aspect-[3/4]"
-                        : i % 3 === 0
-                        ? "aspect-[4/3]"
-                        : "aspect-square"
-                    }
-                  >
-                    <Image
-                      src={tile.src}
-                      alt={tile.alt}
-                      fill
-                      sizes="(max-width:1024px) 90vw"
-                      className="object-cover"
-                      priority={i < 2}
-                    />
-                  </div>
+          {/* RIGHT */}
+          <div className="relative">
+            {/* main wide (priority for LCP) */}
+            <figure className="overflow-hidden rounded-3xl shadow-xl border border-zinc-200 bg-white/50">
+              <div className="relative w-full aspect-[16/9]">
+                <Image
+                  src={TILES[0].src}
+                  alt={TILES[0].alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-500 motion-safe:hover:scale-[1.03] motion-reduce:transform-none select-none"
+                  priority
+                  placeholder="blur"
+                  draggable={false}
+                />
+              </div>
+            </figure>
+
+            {/* two tall cards (lazy by default) */}
+            <div className="mt-6 grid grid-cols-2 gap-6">
+              <figure className="overflow-hidden rounded-3xl shadow-xl border border-zinc-200 bg-white/50">
+                <div className="relative h-64 md:h-80">
+                  <Image
+                    src={TILES[1].src}
+                    alt={TILES[1].alt}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 motion-safe:hover:scale-[1.03] motion-reduce:transform-none select-none"
+                    loading="lazy"
+                    draggable={false}
+                    placeholder="blur"
+                  />
                 </div>
               </figure>
-            ))}
+              <figure className="overflow-hidden rounded-3xl shadow-xl border border-zinc-200 bg-white/50">
+                <div className="relative h-64 md:h-80">
+                  <Image
+                    src={TILES[2].src}
+                    alt={TILES[2].alt}
+                    fill
+                    sizes="(max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 motion-safe:hover:scale-[1.03] motion-reduce:transform-none select-none"
+                    loading="lazy"
+                    draggable={false}
+                    placeholder="blur"
+                  />
+                </div>
+              </figure>
+            </div>
           </div>
-        </div>
-
-        {/* Mobile */}
-        <div className="md:hidden py-10">
-          <h1 className=" text-3xl font-semibold tracking-tight text-stone-900">
-            {t("h1")}
-          </h1>
-          <p className="mt-3 text-stone-700 font-light">{t("sub")}</p>
-          <div className="mt-5 flex gap-3">
-            <Link
-              href="/shop?sort=new"
-              className="inline-flex h-11 items-center rounded-2xl bg-red-400 px-5 text-sm font-medium text-white hover:bg-red-400/90"
-            >
-              {t("ctaPrimary")}
-            </Link>
-            <Link
-              href="/size-guide"
-              className="inline-flex h-11 items-center rounded-2xl border border-red-400 px-5 text-sm font-medium text-red-400 hover:bg-red-400 hover:text-white"
-            >
-              {t("ctaSecondary")}
-            </Link>
-          </div>
-
-          <TileCarousel tiles={TILES} />
         </div>
       </div>
-    </Section>
+    </section>
   );
 }
