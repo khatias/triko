@@ -1,11 +1,24 @@
-import createMiddleware from 'next-intl/middleware';
-import {routing} from './i18n/routing';
- 
-export default createMiddleware(routing);
- 
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
+import { updateSession } from "./utils/supabse/middleware";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
+const intl = createMiddleware(routing);
+
+export async function middleware(request: NextRequest) {
+  // Run i18n routing first (this may redirect or rewrite)
+  const intlResponse = intl(request) as NextResponse;
+
+  // Ensure we always return the intl response (to preserve its headers/redirects),
+  // but let Supabase attach/refresh cookies on the SAME response.
+  const finalResponse = await updateSession(request, intlResponse);
+  return finalResponse;
+}
+
+// Single, consolidated matcher (excludes API, Next internals, static assets, and dot-files)
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
-  matcher: '/((?!api|trpc|_next|_vercel|.*\\..*).*)'
+  matcher: [
+    "/((?!api|trpc|_next|_vercel|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)|.*\\..*).*)",
+  ],
 };
