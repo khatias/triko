@@ -1,6 +1,6 @@
 // app/api/auth/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "../../../utils/supabse/server";
+import { createClient } from "../../../utils/supabase/server";
 import { getTranslations } from "next-intl/server";
 
 export const runtime = "nodejs";
