@@ -284,5 +284,13 @@
       "subtitle": "Explore our latest drops and everyday staples.",
       "button": "Shop New Arrivals"
     }
-  }
+  },
+      "auth": {
+       "emailInUse": "This email is already registered. Try signing in or resetting your password.",
+  "signupSuccess": "Sign-up successful. Check your inbox for a confirmation link.",
+  "invalidAction": "Invalid action.",
+  "unexpected": "An unexpected error occurred. Please try again.",
+  "supabase": "We couldn’t complete the sign-up. Please try again."
+
+    }
 }
