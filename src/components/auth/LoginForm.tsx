@@ -1,42 +1,95 @@
 "use client";
-
-import React from "react";
+import React, { useCallback, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { makeAuthSchemas } from "@/lib/validation/auth";
 import { z } from "zod";
+
+import { makeAuthSchemas } from "@/lib/validation/auth";
 import { InputField, PasswordField } from "../form/Field";
-import { UserIcon, LockIcon } from "../form/icons";
+import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-import { GoogleMark } from "../form/icons";
+import { handleLoginSubmit } from "@/utils/auth/handleAuthSubmit";
 
 export default function LoginForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
-  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
+  const locale = useLocale();
 
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
   type LoginInput = z.infer<typeof schemas.loginSchema>;
 
-const {
-  register,
-  handleSubmit,
-  formState: { errors, isSubmitting, isValid },
-} = useForm<LoginInput>({
-  resolver: zodResolver(schemas.loginSchema),
-  mode: "onChange",
-  criteriaMode: "all", // ✅ collect all issues per field
-});
+  const {
+    register,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(schemas.loginSchema),
+    mode: "onChange",
+    criteriaMode: "all",
+  });
 
+  const [pending, setPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
-  function onSubmit(data: LoginInput) {
-    // UI-only for now
-    console.log("Login (UI-only):", data);
-  }
+  const onSubmit = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (pending) return;
+
+      setErrorMessage(null);
+      setNoticeMessage(null);
+      setPending(true);
+
+      try {
+        const result = await handleLoginSubmit(e, locale);
+
+        if (!result.ok) {
+          setErrorMessage(result.message ?? tForm("errors.unknown"));
+          reset({ email: "", password: "", website: "" });
+          return;
+        }
+
+        setNoticeMessage(result.message ?? tForm("notices.signedIn"));
+        reset({ email: "", password: "", website: "" });
+      } finally {
+        setPending(false);
+      }
+    },
+    [locale, pending, reset, tForm]
+  );
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
+    <form
+      noValidate
+      aria-busy={pending}
+      onSubmit={onSubmit}
+      className="space-y-0"
+    >
+      {/* Error */}
+      {errorMessage && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="my-8 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-700"
+        >
+          <strong>{errorMessage}</strong>
+        </div>
+      )}
+
+      {/* Success / Next step */}
+      {noticeMessage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="my-8 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700"
+        >
+          <strong>{noticeMessage}</strong>
+        </div>
+      )}
+
       <h2
         className="
           relative mx-auto mb-6 max-w-2xl text-center
@@ -58,7 +111,9 @@ const {
       <div>
         <button
           type="button"
-          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300/80 bg-white/70 px-4 py-3 text-sm font-medium text-zinc-800 shadow-sm"
+          disabled={pending}
+          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300/80 bg-white/70 px-4 py-3 text-sm font-medium text-zinc-800 shadow-sm disabled:opacity-60"
+          // onClick={...} // wire when provider is ready
         >
           <GoogleMark />
           <span className="translate-x-0 transition group-hover:translate-x-[1px]">
@@ -81,11 +136,10 @@ const {
         <InputField
           id="email"
           type="email"
-                    autoComplete="email"
+          autoComplete="email"
+          inputMode="email"
           label={tForm("fields.email")}
           icon={UserIcon}
-          inputMode="email"
-
           autoCapitalize="none"
           spellCheck={false}
           maxLength={254}
@@ -109,6 +163,7 @@ const {
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-zinc-300 text-rose-600 accent-rose-600 focus:ring-rose-300"
+                // {...register("remember")} // enable when you persist sessions
               />
               <span>{tForm("links.rememberMe")}</span>
             </label>
@@ -128,14 +183,15 @@ const {
         type="text"
         tabIndex={-1}
         autoComplete="off"
+        aria-hidden="true"
         className="hidden"
         {...register("website")}
       />
 
       {/* Primary action */}
       <div className="mt-2">
-        <SubmitButton loading={isSubmitting} disabled={!isValid}>
-          {isSubmitting ? tForm("actions.sending") : tForm("actions.signIn")}
+        <SubmitButton loading={pending} disabled={!isValid || pending}>
+          {pending ? tForm("actions.sending") : tForm("actions.signIn")}
         </SubmitButton>
 
         {/* Trust note */}

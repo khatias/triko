@@ -6,12 +6,11 @@ import { InputField, PasswordField } from "../form/Field";
 import { LockIcon, UserIcon } from "../form/icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { handleAuthSubmit } from "@/utils/auth/handleAuthSubmit";
 import { z } from "zod";
 import { makeAuthSchemas } from "@/lib/validation/auth";
 import SubmitButton from "../form/SubmitButton";
 import Link from "next/link";
-
+import { handleSignupSubmit } from "@/utils/auth/handleAuthSubmit";
 export default function SignUpForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
@@ -45,7 +44,7 @@ export default function SignUpForm() {
         setErrorMessage(null);
         setNoticeMessage(null);
 
-        const result = await handleAuthSubmit(e, "signup", locale);
+        const result = await handleSignupSubmit(e, locale);
 
         if (!result.ok) {
           setErrorMessage(result.message ?? "");
@@ -97,7 +96,6 @@ export default function SignUpForm() {
           required
         />
 
-  
         <PasswordField
           id="password"
           autoComplete="new-password"
@@ -135,7 +133,10 @@ export default function SignUpForm() {
         />
 
         <div className="mt-2 text-center">
-          <SubmitButton loading={isSubmitting} disabled={!isValid || isSubmitting}>
+          <SubmitButton
+            loading={isSubmitting}
+            disabled={!isValid || isSubmitting}
+          >
             {isSubmitting ? tForm("actions.sending") : tForm("actions.signUp")}
           </SubmitButton>
 
@@ -148,12 +149,18 @@ export default function SignUpForm() {
         <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
           {tForm.rich("legal.notice", {
             terms: (chunk) => (
-              <Link href="/terms" className="underline underline-offset-2 hover:text-rose-600">
+              <Link
+                href="/terms"
+                className="underline underline-offset-2 hover:text-rose-600"
+              >
                 {chunk}
               </Link>
             ),
             privacy: (chunk) => (
-              <Link href="/privacy" className="underline underline-offset-2 hover:text-rose-600">
+              <Link
+                href="/privacy"
+                className="underline underline-offset-2 hover:text-rose-600"
+              >
                 {chunk}
               </Link>
             ),
@@ -163,7 +170,10 @@ export default function SignUpForm() {
         {/* 🔗 Sign In CTA */}
         <p className="mt-4 text-center text-sm text-zinc-700">
           {tForm("links.haveAccount")}{" "}
-          <Link href="/login" className="font-semibold text-rose-600 underline-offset-4 hover:underline">
+          <Link
+            href="/login"
+            className="font-semibold text-rose-600 underline-offset-4 hover:underline"
+          >
             {tForm("actions.signIn")}
           </Link>
         </p>

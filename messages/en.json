@@ -1,5 +1,4 @@
 {
-
   "Home": {
     "meta": {
       "title": "Triko — Everyday Comfort, Made for You",
@@ -42,9 +41,6 @@
       "customers": "Happy customers",
       "returns": "Free returns"
     }
-  
-
-
   },
   "LanguageSwitcher": {
     "labelEn": "ENGLISH",
@@ -285,12 +281,17 @@
       "button": "Shop New Arrivals"
     }
   },
-      "auth": {
-       "emailInUse": "This email is already registered. Try signing in or resetting your password.",
-  "signupSuccess": "Sign-up successful. Check your inbox for a confirmation link.",
-  "invalidAction": "Invalid action.",
-  "unexpected": "An unexpected error occurred. Please try again.",
-  "supabase": "We couldn’t complete the sign-up. Please try again."
-
-    }
+  "auth": {
+    "unsupported": "Unsupported media type.",
+    "required": "Email and password are required.",
+    "signupSuccess": "We’ve sent a confirmation link to {email}.",
+    "emailInUse": "This email is already registered.",
+    "supabase": "Something went wrong. Please try again.",
+    "invalidAction": "Invalid action.",
+    "unexpected": "Unexpected error. Please try again.",
+    "signinSuccess": "Signed in successfully.",
+    "badCredentials": "Invalid email or password.",
+    "emailNotConfirmed": "Please confirm your email. We’ve sent a new confirmation link to {email}.",
+    "rateLimit": "Too many attempts. Please try again later."
+  }
 }
