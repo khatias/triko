@@ -11,6 +11,7 @@ import { InputField, PasswordField } from "../form/Field";
 import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
 import { handleLoginSubmit } from "@/utils/auth/handleAuthSubmit";
+import { LegalNotice } from "./LegalNotice";
 
 export default function LoginForm() {
   const tForm = useTranslations("Form");
@@ -194,51 +195,10 @@ export default function LoginForm() {
           {pending ? tForm("actions.sending") : tForm("actions.signIn")}
         </SubmitButton>
 
-        {/* Trust note */}
-        <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            className="fill-none stroke-current"
-            aria-hidden="true"
-          >
-            <path
-              d="M12 3l7 4v5c0 5-3.5 8-7 9-3.5-1-7-4-7-9V7l7-4z"
-              strokeWidth="1.4"
-            />
-            <path
-              d="M9 12l2 2 4-4"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {tForm("notices.trustEmailPrivacy")}
-        </p>
+<LegalNotice />
       </div>
 
-      {/* Legal */}
-      <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
-        {tForm.rich("legal.notice", {
-          terms: (chunk) => (
-            <Link
-              href="/terms"
-              className="underline underline-offset-2 hover:text-rose-600"
-            >
-              {chunk}
-            </Link>
-          ),
-          privacy: (chunk) => (
-            <Link
-              href="/privacy"
-              className="underline underline-offset-2 hover:text-rose-600"
-            >
-              {chunk}
-            </Link>
-          ),
-        })}
-      </p>
+
 
       {/* 🔗 Sign up CTA */}
       <p className="mt-4 text-center text-sm text-zinc-700">

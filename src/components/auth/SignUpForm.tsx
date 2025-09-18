@@ -12,7 +12,7 @@ import { InputField, PasswordField } from "../form/Field";
 import { formHeading } from "../UI/primitives";
 import { LockIcon, UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-
+import { LegalNotice } from "./LegalNotice";
 export default function SignUpForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
@@ -141,33 +141,9 @@ export default function SignUpForm() {
           >
             {isSubmitting ? tForm("actions.sending") : tForm("actions.signUp")}
           </SubmitButton>
-
-          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
-            {tForm("notices.trustEmailPrivacy")}
-          </p>
+       
         </div>
-
-        {/* Legal */}
-        <p className="mt-3 text-center text-xs leading-relaxed text-zinc-500">
-          {tForm.rich("legal.notice", {
-            terms: (chunk) => (
-              <Link
-                href="/terms"
-                className="underline underline-offset-2 hover:text-rose-600"
-              >
-                {chunk}
-              </Link>
-            ),
-            privacy: (chunk) => (
-              <Link
-                href="/privacy"
-                className="underline underline-offset-2 hover:text-rose-600"
-              >
-                {chunk}
-              </Link>
-            ),
-          })}
-        </p>
+      <LegalNotice />
 
         {/* 🔗 Sign In CTA */}
         <p className="mt-4 text-center text-sm text-zinc-700">
