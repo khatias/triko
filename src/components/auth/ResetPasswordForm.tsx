@@ -1,23 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
 import { makeAuthSchemas } from "@/lib/validation/auth";
 import { PasswordField } from "../form/Field";
 import { LockIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
+import { handleResetPassword } from "@/utils/auth/handleResetPassword";
 
 export default function ResetPasswordForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
-  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
+  const locale = useLocale();
 
+  // Build schemas with localized error messages
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
   type ResetPasswordInput = z.input<typeof schemas.resetPasswordSchema>;
-  type ResetPasswordData = z.output<typeof schemas.resetPasswordSchema>;
 
   const {
     register,
@@ -25,19 +28,26 @@ export default function ResetPasswordForm() {
     formState: { errors, isSubmitting, isValid },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(schemas.resetPasswordSchema),
-    defaultValues: { website: "" },
+    defaultValues: { password: "", confirmPassword: "", website: "" },
     mode: "onChange",
     reValidateMode: "onChange",
   });
 
-  const onSubmit: SubmitHandler<ResetPasswordInput> = (raw) => {
-    const data: ResetPasswordData = schemas.resetPasswordSchema.parse(raw);
-    console.log("Reset password submit:", data);
-    // TODO: Call your API endpoint for password reset
+  const [message, setMessage] = useState<string | null>(null);
+
+  const onSubmit: SubmitHandler<ResetPasswordInput> = async (data) => {
+    setMessage(null);
+    const result = await handleResetPassword(data.password);
+
+    if (result.ok) {
+      setMessage(tForm("messages.passwordUpdated")); // e.g., "Your password has been updated. You can now log in."
+    } else {
+      setMessage(result.error ?? tForm("messages.genericError"));
+    }
   };
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} aria-labelledby="reset-title">
       <h2
         id="reset-title"
         className="
@@ -57,12 +67,12 @@ export default function ResetPasswordForm() {
         {tForm("resetPasswordSubtitle")}
       </p>
 
-      <div className="mt-6 grid">
+      <div className="mt-6 grid gap-3">
         <PasswordField
           id="password"
           autoComplete="new-password"
           label={tForm("fields.password")}
-          icon={LockIcon}  // ← kept as-is
+          icon={LockIcon}
           maxLength={72}
           {...register("password")}
           error={errors.password?.message}
@@ -73,7 +83,7 @@ export default function ResetPasswordForm() {
           id="confirmPassword"
           autoComplete="new-password"
           label={tForm("fields.confirmPassword")}
-          icon={LockIcon}  // ← kept as-is
+          icon={LockIcon}
           maxLength={72}
           {...register("confirmPassword")}
           error={errors.confirmPassword?.message}
@@ -96,10 +106,14 @@ export default function ResetPasswordForm() {
           </SubmitButton>
         </div>
 
+        {message && (
+          <p className="mt-2 text-center text-sm text-rose-600">{message}</p>
+        )}
+
         {/* Back to sign in */}
         <p className="mt-4 text-center text-sm text-zinc-700">
           <Link
-            href="/login"
+            href={`/${locale}/login`}
             className="font-semibold text-rose-600 underline-offset-4 hover:underline"
           >
             {tForm("links.backToLogin")}

@@ -148,6 +148,10 @@
     },
     "legal": {
       "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
+    },
+        "messages": {
+      "passwordUpdated": "Your password has been updated successfully. You can now log in.",
+      "genericError": "Something went wrong. Please try again."
     }
   },
   "Errors": {
