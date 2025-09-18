@@ -2,15 +2,17 @@
 import { useLocale } from "next-intl";
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { InputField, PasswordField } from "../form/Field";
-import { LockIcon, UserIcon } from "../form/icons";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { makeAuthSchemas } from "@/lib/validation/auth";
-import SubmitButton from "../form/SubmitButton";
 import Link from "next/link";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { makeAuthSchemas } from "@/lib/validation/auth";
 import { handleSignupSubmit } from "@/utils/auth/handleAuthSubmit";
+import { InputField, PasswordField } from "../form/Field";
+import { formHeading } from "../UI/primitives";
+import { LockIcon, UserIcon } from "../form/icons";
+import SubmitButton from "../form/SubmitButton";
+
 export default function SignUpForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
@@ -70,7 +72,7 @@ export default function SignUpForm() {
         </div>
       )}
 
-      <h2 className="relative mx-auto mb-6 max-w-2xl text-center text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900 [text-wrap:balance] selection:bg-[#fdd5a2]/30 before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6 before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10 after:content-[''] after:mt-4 after:block after:h-[3px] after:w-16 sm:after:w-24 after:rounded-full after:mx-auto after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]">
+      <h2 className={formHeading}>
         <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("signUpTitle")}
         </span>
