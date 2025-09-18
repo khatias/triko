@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
+import { handleGoogleLogin } from "@/utils/auth/handleGoogleLogin";
 import { makeAuthSchemas } from "@/lib/validation/auth";
 import { InputField, PasswordField } from "../form/Field";
 import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
@@ -113,7 +113,7 @@ export default function LoginForm() {
           type="button"
           disabled={pending}
           className="group flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-300/80 bg-white/70 px-4 py-3 text-sm font-medium text-zinc-800 shadow-sm disabled:opacity-60"
-          // onClick={...} // wire when provider is ready
+          onClick={handleGoogleLogin}
         >
           <GoogleMark />
           <span className="translate-x-0 transition group-hover:translate-x-[1px]">
