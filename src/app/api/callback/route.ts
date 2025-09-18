@@ -1,14 +1,13 @@
 // app/api/callback/route.ts
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-
+import { redirect } from "next/navigation";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const nextParam = url.searchParams.get("next") ?? "/";
-
   if (!code) {
-    return NextResponse.json({ error: "No code provided" }, { status: 400 });
+    redirect("/error");
   }
 
   const supabase = await createClient();

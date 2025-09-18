@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { makeAuthSchemas } from "@/lib/validation/auth";
-
+import { handleForgotPasswordSubmit } from "@/utils/auth/handleForgotPassword";
 import { InputField } from "../form/Field";
 import { UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
@@ -21,7 +21,7 @@ export default function ForgotPasswordForm() {
 
   const {
     register,
-    handleSubmit,
+
     formState: { errors, isSubmitting, isValid },
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(schemas.forgotPasswordSchema),
@@ -29,16 +29,11 @@ export default function ForgotPasswordForm() {
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  async function onSubmit(raw: ForgotPasswordInput) {
-    const data = schemas.forgotPasswordSchema.parse(raw);
-    console.log("Forgot password submit:", data);
-
-    // TODO: Call your API endpoint for password reset
-  }
+const onSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+    handleForgotPasswordSubmit(e, "en"); // Replace "en" with dynamic locale if needed
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
+    <form  onSubmit={onSubmit}>
       <h2
         id="forgot-title"
         className="
