@@ -19,7 +19,6 @@ export async function handleAuthSubmit(
   const website = String(fd.get("website") ?? "");
   const full_name = String(fd.get("full_name") ?? "");
 
-
   const isSignup = action === "signup";
 
   if (!isNonEmptyString(email) || !isNonEmptyString(password)) {
@@ -45,7 +44,7 @@ export async function handleAuthSubmit(
   body.set("action", action);
   setIfNonEmpty(body, "website", website); // omit empty honeypot
   if (isSignup) {
-    setIfNonEmpty(body, "full_name", full_name.trim()); 
+    setIfNonEmpty(body, "full_name", full_name.trim());
   }
   try {
     const res = await fetch("/api/auth", {
@@ -62,7 +61,9 @@ export async function handleAuthSubmit(
     });
 
     const data = await safeJson(res);
-
+    if (res.ok && data.code === "SIGNIN_OK") {
+      window.location.assign(`/${locale}/profile`);
+    }
     return {
       ok: res.ok,
       status: res.status,

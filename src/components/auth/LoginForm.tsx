@@ -33,7 +33,6 @@ export default function LoginForm() {
 
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
   const onSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +40,7 @@ export default function LoginForm() {
       if (pending) return;
 
       setErrorMessage(null);
-      setNoticeMessage(null);
+
       setPending(true);
 
       try {
@@ -52,8 +51,6 @@ export default function LoginForm() {
           reset({ email: "", password: "", website: "" });
           return;
         }
-
-        setNoticeMessage(result.message ?? tForm("notices.signedIn"));
         reset({ email: "", password: "", website: "" });
       } finally {
         setPending(false);
@@ -77,17 +74,6 @@ export default function LoginForm() {
           className="my-8 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-700"
         >
           <strong>{errorMessage}</strong>
-        </div>
-      )}
-
-      {/* Success / Next step */}
-      {noticeMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="my-8 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700"
-        >
-          <strong>{noticeMessage}</strong>
         </div>
       )}
 
@@ -195,10 +181,8 @@ export default function LoginForm() {
           {pending ? tForm("actions.sending") : tForm("actions.signIn")}
         </SubmitButton>
 
-<LegalNotice />
+        <LegalNotice />
       </div>
-
-
 
       {/* 🔗 Sign up CTA */}
       <p className="mt-4 text-center text-sm text-zinc-700">
