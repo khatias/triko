@@ -1,4 +1,4 @@
-
+// utils/auth/codes.ts (or wherever you keep these)
 export const CODES = {
   VALIDATION: "VALIDATION",
   INVALID_ACTION: "INVALID_ACTION",
@@ -12,6 +12,9 @@ export const CODES = {
   // success codes
   SIGNUP_VERIFY_EMAIL_SENT: "SIGNUP_VERIFY_EMAIL_SENT",
   SIGNIN_OK: "SIGNIN_OK",
+  // ↓ forgot/reset flow
+  PASSWORD_RESET_SENT: "PASSWORD_RESET_SENT",
+  PASSWORD_RESET_FAILED: "PASSWORD_RESET_FAILED",
 } as const;
 
 export type ApiCode = (typeof CODES)[keyof typeof CODES];
@@ -29,4 +32,7 @@ export const STATUS: Record<ApiCode, number> = {
 
   [CODES.SIGNUP_VERIFY_EMAIL_SENT]: 200,
   [CODES.SIGNIN_OK]: 200,
+
+  [CODES.PASSWORD_RESET_SENT]: 200,
+  [CODES.PASSWORD_RESET_FAILED]: 400,
 };

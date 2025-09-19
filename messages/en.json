@@ -149,7 +149,7 @@
     "legal": {
       "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
     },
-        "messages": {
+    "messages": {
       "passwordUpdated": "Your password has been updated successfully. You can now log in.",
       "genericError": "Something went wrong. Please try again."
     }
@@ -296,6 +296,10 @@
     "signinSuccess": "Signed in successfully.",
     "badCredentials": "Invalid email or password.",
     "emailNotConfirmed": "Please confirm your email. We’ve sent a new confirmation link to {email}.",
-    "rateLimit": "Too many attempts. Please try again later."
+    "rateLimit": "Too many attempts. Please try again later.",
+    "passwordResetSent": "We’ve sent a password reset link if the address exists in our system.",
+    "passwordResetFailed": "Could not send password reset email.",
+    "network": "Network error. Please try again.",
+    "timeout": "Request timed out. Please try again."
   }
 }

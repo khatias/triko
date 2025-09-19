@@ -1,14 +1,11 @@
-// Define AuthResult type if not already imported
-export type AuthResult = {
-  ok: boolean;
-  status: number;
-  code: string;
-  message: string;
-  email?: string;
-};
-
-// Timeout in milliseconds for the forgot password request
+import type { AuthResult } from "@/types/auth";
+import { sanitizeEmail } from "../../lib/validation/auth";
+import { timeoutSignal, safeJson } from "../http";
 const TIMEOUT_MS = 10000;
+
+function isNonEmptyString(email: string): boolean {
+  return typeof email === "string" && email.trim().length > 0;
+}
 
 export async function handleForgotPasswordSubmit(
   e: React.FormEvent<HTMLFormElement>,
@@ -21,12 +18,21 @@ export async function handleForgotPasswordSubmit(
   const website = String(fd.get("website") ?? ""); // honeypot
 
   if (website) {
-    // Silently succeed for bots
-    return { ok: true, status: 200, code: "OK", message: "If the email exists, a reset link will be sent." };
+    return {
+      ok: true,
+      status: 200,
+      code: "OK",
+      message: "If the email exists, a reset link will be sent.",
+    };
   }
 
   if (!isNonEmptyString(email)) {
-    return { ok: false, status: 400, code: "VALIDATION", message: "Email is required." };
+    return {
+      ok: false,
+      status: 400,
+      code: "VALIDATION",
+      message: "Email is required.",
+    };
   }
 
   try {
@@ -48,13 +54,8 @@ export async function handleForgotPasswordSubmit(
     return {
       ok: res.ok,
       status: res.status,
-      code: typeof data.code === "string" ? data.code : res.ok ? "RESET_SENT" : "RESET_FAILED",
-      message:
-        typeof data.message === "string"
-          ? data.message
-          : res.ok
-          ? "We’ve sent a password reset link if the address exists."
-          : "Could not send password reset email.",
+      code: typeof data.code === "string" ? data.code : undefined,
+      message: typeof data.message === "string" ? data.message : undefined,
       email: typeof data.email === "string" ? data.email : undefined,
     };
   } catch (err) {
@@ -63,28 +64,9 @@ export async function handleForgotPasswordSubmit(
       ok: false,
       status: 0,
       code: aborted ? "TIMEOUT" : "NETWORK",
-      message: aborted ? "Request timed out. Please try again." : "Network error. Please try again.",
+      message: aborted
+        ? "Request timed out. Please try again."
+        : "Network error. Please try again.",
     };
   }
 }
-function sanitizeEmail(value: FormDataEntryValue | null): string {
-    if (typeof value !== "string") return "";
-    // Trim whitespace and convert to lowercase
-    return value.trim().toLowerCase();
-}
-function timeoutSignal(TIMEOUT_MS: number): AbortSignal {
-    const controller = new AbortController();
-    setTimeout(() => controller.abort(), TIMEOUT_MS);
-    return controller.signal;
-}
-async function safeJson(res: Response) {
-    try {
-        return await res.json();
-    } catch {
-        return {};
-    }
-}
-function isNonEmptyString(email: string): boolean {
-    return typeof email === "string" && email.trim().length > 0;
-}
-
