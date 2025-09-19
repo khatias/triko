@@ -12,7 +12,7 @@ import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
 import { handleLoginSubmit } from "@/utils/auth/submit";
 import { LegalNotice } from "./LegalNotice";
-
+import { formHeading } from "../UI/primitives";
 export default function LoginForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
@@ -60,12 +60,7 @@ export default function LoginForm() {
   );
 
   return (
-    <form
-      noValidate
-      aria-busy={pending}
-      onSubmit={onSubmit}
-      className="space-y-0"
-    >
+    <form noValidate aria-busy={pending} onSubmit={onSubmit}>
       {/* Error */}
       {errorMessage && (
         <div
@@ -77,18 +72,7 @@ export default function LoginForm() {
         </div>
       )}
 
-      <h2
-        className="
-          relative mx-auto mb-6 max-w-2xl text-center
-          text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900
-          [text-wrap:balance] selection:bg-[#fdd5a2]/30
-          before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6
-          before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10
-          after:content-[''] after:mt-4 after:block after:h-[3px]
-          after:w-16 sm:after:w-24 after:rounded-full after:mx-auto
-          after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]
-        "
-      >
+      <h2 className={formHeading}>
         <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("loginTitle")}
         </span>
@@ -110,7 +94,7 @@ export default function LoginForm() {
       </div>
 
       {/* Divider */}
-      <div className="my-6">
+      <div className="my-4">
         <div className="flex justify-center">
           <span className="rounded-full bg-white px-3 py-1 text-xs font-medium uppercase tracking-wide text-zinc-500 shadow-[0_0_0_1px_rgba(0,0,0,0.02)]">
             {tForm("ui.or")}
@@ -119,7 +103,7 @@ export default function LoginForm() {
       </div>
 
       {/* Email + Password */}
-      <div className="grid gap-4">
+      <div className="grid ">
         <InputField
           id="email"
           type="email"
@@ -145,16 +129,7 @@ export default function LoginForm() {
             error={errors.password?.message}
           />
 
-          <div className="mt-2 flex items-center justify-between">
-            <label className="inline-flex select-none items-center gap-2 text-sm text-zinc-700">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-zinc-300 text-rose-600 accent-rose-600 focus:ring-rose-300"
-                // {...register("remember")} // enable when you persist sessions
-              />
-              <span>{tForm("links.rememberMe")}</span>
-            </label>
-
+          <div className=" flex  justify-end">
             <Link
               href="/forgot-password"
               className="text-sm text-rose-600 underline-offset-4 hover:underline"
