@@ -10,7 +10,7 @@ import { makeAuthSchemas } from "@/lib/validation/auth";
 import { InputField, PasswordField } from "../form/Field";
 import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-import { handleLoginSubmit } from "@/utils/auth/handleAuthSubmit";
+import { handleLoginSubmit } from "@/utils/auth/submit";
 import { LegalNotice } from "./LegalNotice";
 
 export default function LoginForm() {

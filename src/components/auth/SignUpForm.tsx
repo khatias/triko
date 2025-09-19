@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { makeAuthSchemas } from "@/lib/validation/auth";
-import { handleSignupSubmit } from "@/utils/auth/handleAuthSubmit";
+import { handleSignupSubmit } from "@/utils/auth/submit";
 import { InputField, PasswordField } from "../form/Field";
 import { formHeading } from "../UI/primitives";
 import { LockIcon, UserIcon } from "../form/icons";

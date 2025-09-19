@@ -1,42 +1,9 @@
-// utils/auth/handleAuthSubmit.ts
+import type { AuthAction, AuthResult } from "@/types/auth";
+import { sanitizeEmail, isNonEmptyString } from "../../lib/validation/auth";
+import { TIMEOUT_MS, timeoutSignal, safeJson } from "@/utils/http";
 
-export type AuthResult = {
-  ok: boolean;
-  status: number;
-  code?: string;
-  message?: string;
-  email?: string;
-};
-
-type AuthAction = "signup" | "login";
-const TIMEOUT_MS = 10_000 as const;
-
-const sanitizeEmail = (v: unknown) =>
-  String(v ?? "")
-    .normalize("NFKC")
-    .trim()
-    .toLowerCase();
-
-const isNonEmptyString = (v: unknown): v is string =>
-  typeof v === "string" && v.length > 0;
-
-function timeoutSignal(ms: number): AbortSignal {
-  if ("timeout" in AbortSignal) {
-    return AbortSignal.timeout(ms);
-  }
-  const c = new AbortController();
-  setTimeout(() => c.abort(), ms);
-  return c.signal;
-}
-
-async function safeJson(res: Response): Promise<Record<string, unknown>> {
-  const ct = res.headers.get("content-type") || "";
-  if (!ct.toLowerCase().includes("application/json")) return {};
-  try {
-    return (await res.json()) as Record<string, unknown>;
-  } catch {
-    return {};
-  }
+function setIfNonEmpty(params: URLSearchParams, key: string, value: string) {
+  if (value) params.set(key, value);
 }
 
 export async function handleAuthSubmit(
@@ -46,16 +13,13 @@ export async function handleAuthSubmit(
 ): Promise<AuthResult> {
   e.preventDefault();
 
-  const form = e.currentTarget;
-  const fd = new FormData(form);
-
+  const fd = new FormData(e.currentTarget);
   const email = sanitizeEmail(fd.get("email"));
   const password = String(fd.get("password") ?? "");
-  const website = String(fd.get("website") ?? ""); // honeypot
+  const website = String(fd.get("website") ?? "");
 
   const isSignup = action === "signup";
 
-  // Minimal client-side validation (server stays authoritative)
   if (!isNonEmptyString(email) || !isNonEmptyString(password)) {
     return {
       ok: false,
@@ -64,7 +28,6 @@ export async function handleAuthSubmit(
       message: "Email and password are required.",
     };
   }
-  // Enforce strength only on signup; let server decide for login
   if (isSignup && (password.length < 8 || password.length > 72)) {
     return {
       ok: false,
@@ -74,12 +37,11 @@ export async function handleAuthSubmit(
     };
   }
 
-  // Build body
   const body = new URLSearchParams();
   body.set("email", email);
   body.set("password", password);
   body.set("action", action);
-  if (website) body.set("website", website); // keep empty honeypot out
+  setIfNonEmpty(body, "website", website); // omit empty honeypot
 
   try {
     const res = await fetch("/api/auth", {

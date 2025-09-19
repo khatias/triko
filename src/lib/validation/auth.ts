@@ -127,3 +127,15 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 };
 
 export type AuthSchemas = ReturnType<typeof makeAuthSchemas>;
+
+export const sanitizeEmail = (v: unknown) =>
+  String(v ?? "").normalize("NFKC").trim().toLowerCase();
+
+export const isNonEmptyString = (v: unknown): v is string =>
+  typeof v === "string" && v.trim().length > 0;
+
+export const isValidEmail = (v: string) =>
+  !!v && v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+export const isValidPassword = (v: string) =>
+  typeof v === "string" && v.length >= 8 && v.length <= 72;
