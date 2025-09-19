@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     const email = sanitizeEmail(String(form.get("email") ?? ""));
     const password = String(form.get("password") ?? "");
     const honeypot = String(form.get("website") ?? "");
+    const full_name = String(form.get("full_name") ?? "");
 
     // Bot trap: pretend success to waste their time
     if (honeypot) {
@@ -69,7 +70,15 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
 
     if (action === "signup") {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: full_name,
+          },
+        },
+      });
 
       // 1) Explicit collision from Supabase
       if (error) {

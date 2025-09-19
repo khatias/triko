@@ -98,6 +98,21 @@ export default function SignUpForm() {
           required
         />
 
+        <InputField
+          id="full_name"
+          type="text"
+          autoComplete="name"
+          label={tForm("fields.fullName")}
+          icon={UserIcon}
+          inputMode="text"
+          autoCapitalize="words"
+          spellCheck={false}
+          maxLength={100}
+          {...register("full_name")}
+          error={errors.full_name?.message}
+          required
+        />
+
         <PasswordField
           id="password"
           autoComplete="new-password"
@@ -141,9 +156,8 @@ export default function SignUpForm() {
           >
             {isSubmitting ? tForm("actions.sending") : tForm("actions.signUp")}
           </SubmitButton>
-       
         </div>
-      <LegalNotice />
+        <LegalNotice />
 
         {/* 🔗 Sign In CTA */}
         <p className="mt-4 text-center text-sm text-zinc-700">

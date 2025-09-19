@@ -71,6 +71,7 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
   const signupSchema = z
     .object({
       email: emailSchema,
+      full_name: requiredString(t("required")).min(3, { message: t("tooShortName") }).max(100 , { message: t("tooLongName") }),
       password: passwordSchema,
       confirmPassword: requiredString(t("confirmPasswordRequired")),
       website: honeypot,

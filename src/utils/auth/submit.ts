@@ -17,6 +17,8 @@ export async function handleAuthSubmit(
   const email = sanitizeEmail(fd.get("email"));
   const password = String(fd.get("password") ?? "");
   const website = String(fd.get("website") ?? "");
+  const full_name = String(fd.get("full_name") ?? "");
+
 
   const isSignup = action === "signup";
 
@@ -42,7 +44,9 @@ export async function handleAuthSubmit(
   body.set("password", password);
   body.set("action", action);
   setIfNonEmpty(body, "website", website); // omit empty honeypot
-
+  if (isSignup) {
+    setIfNonEmpty(body, "full_name", full_name.trim()); 
+  }
   try {
     const res = await fetch("/api/auth", {
       method: "POST",
