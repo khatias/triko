@@ -1,7 +1,10 @@
-// app/api/callback/route.ts
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
+
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -11,6 +14,10 @@ export async function GET(req: NextRequest) {
   if (!code) return NextResponse.redirect(new URL("/error", url.origin));
 
   const supabase = await createClient();
+
+  //  Dynamic import so the admin module is only evaluated at request time
+  const { getSupabaseAdmin } = await import("@/lib/supabase/admin");
+  const supabaseAdmin = getSupabaseAdmin();
 
   try {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -24,7 +31,7 @@ export async function GET(req: NextRequest) {
     const full_name = String(user.user_metadata?.full_name ?? "");
     const locale = String(user.user_metadata?.locale ?? "ka");
 
-    // 1) Ensure profile (idempotent)
+    // 1) Ensure profile
     {
       const { error: upsertErr } = await supabaseAdmin
         .from("profiles")
@@ -32,28 +39,22 @@ export async function GET(req: NextRequest) {
       if (upsertErr) console.error("profiles.upsert error:", upsertErr);
     }
 
-    // 2) Ensure an active cart for this user (RPC + fallback)
+    // 2) Ensure active cart via RPC + fallback
     {
       const { data: rpcCart, error: rpcErr } = await supabaseAdmin.rpc("get_or_create_cart", {
         p_user_id: user.id,
         p_cart_token: null,
         p_currency: "GEL",
       });
-      console.log("RPC get_or_create_cart result:", { rpcCart, rpcErr });
-
-      if (rpcErr) {
-        console.error("get_or_create_cart RPC error:", rpcErr);
-      }
+      if (rpcErr) console.error("get_or_create_cart RPC error:", rpcErr);
 
       if (!rpcCart?.id) {
-        // Fallback: check and insert manually (idempotent)
         const { data: existing, error: selErr } = await supabaseAdmin
           .from("carts")
           .select("id")
           .eq("user_id", user.id)
           .eq("status", "active")
           .maybeSingle();
-
         if (selErr) console.error("carts select error:", selErr);
 
         if (!existing?.id) {
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 3) Safe, same-origin redirect
+    // 3) Safe redirect
     const redirectUrl = (() => {
       try {
         const candidate = new URL(nextParam, url.origin);
