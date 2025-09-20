@@ -173,7 +173,14 @@
     "passwordSymbol": "Add at least one symbol",
     "confirmPasswordRequired": "Confirm your password",
     "passwordsDontMatch": "Passwords do not match",
-    "termsRequired": "You must accept the terms"
+    "termsRequired": "You must accept the terms",
+    "reset_link_invalid_or_expired": "The reset link is invalid or has expired. Please request a new email.",
+    "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
+    "rate_limited": "Too many attempts. Please wait a moment and try again.",
+    "server_error": "Server error. Please try again later.",
+    "unknown": "We couldn't update the password. Please try again.",
+    "network": "Network error. Please try again.",
+    "timeout": "Request timed out. Please try again."
   },
   "Login": {
     "meta": {
