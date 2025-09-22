@@ -1,6 +1,7 @@
+// app/api/callback/route.ts
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export const runtime = "nodejs";
 
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,92 +9,108 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const nextParam = url.searchParams.get("next") ?? "/";
 
-  if (!code) return NextResponse.redirect(new URL("/error", url.origin));
+  if (!code) {
+    return NextResponse.json({ error: "No code provided" }, { status: 400 });
+  }
 
   const supabase = await createClient();
 
-  //  Dynamic import so the admin module is only evaluated at request time
   const { getSupabaseAdmin } = await import("@/lib/supabase/admin");
   const supabaseAdmin = getSupabaseAdmin();
 
   try {
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error || !data?.user) {
-      console.error("exchangeCodeForSession error:", error);
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
+      code
+    );
+    if (exchangeError) {
+      console.error("exchangeCodeForSession error:", exchangeError);
       return NextResponse.json(
         { error: "Failed to authenticate" },
         { status: 400 }
       );
     }
 
-    const user = data.user;
-    const email = (user.email ?? "").toLowerCase();
-    const full_name = String(user.user_metadata?.full_name ?? "");
-
-    const locale = String(user.user_metadata?.locale ?? "ka");
-
-    // 1) Ensure profile
-    {
-      const { error: upsertErr } = await supabaseAdmin
-        .from("profiles")
-        .upsert(
-          { user_id: user.id, email, full_name, locale },
-          { onConflict: "user_id" }
-        );
-      if (upsertErr) console.error("profiles.upsert error:", upsertErr);
+    const { data: userRes, error: getUserErr } = await supabase.auth.getUser();
+    if (getUserErr || !userRes?.user?.id) {
+      console.error("auth.getUser error:", getUserErr);
+      return NextResponse.json(
+        { error: "Failed to get user" },
+        { status: 400 }
+      );
     }
 
-    // 2) Ensure active cart via RPC + fallback
-    {
+    const userId = userRes.user.id;
+
+    const { data: profile, error: profileSelErr } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (profileSelErr) {
+      console.warn("profiles select warning:", profileSelErr);
+    }
+
+    if (!profile) {
+      const { error: insertProfileError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            user_id: userId,
+            email: userRes.user.email,
+            first_name: "",
+            last_name: "",
+            avatar_url: null,
+          },
+        ]);
+      if (insertProfileError) {
+        console.error("Profile creation failed:", insertProfileError);
+      }
+    }
+
+    // 4) Ensure a cart exists (service role)
+    try {
       const { data: rpcCart, error: rpcErr } = await supabaseAdmin.rpc(
         "get_or_create_cart",
         {
-          p_user_id: user.id,
+          p_user_id: userId,
           p_cart_token: null,
           p_currency: "GEL",
         }
       );
-      if (rpcErr) console.error("get_or_create_cart RPC error:", rpcErr);
+
+      if (rpcErr) {
+        console.error("get_or_create_cart RPC error:", rpcErr);
+      }
 
       if (!rpcCart?.id) {
         const { data: existing, error: selErr } = await supabaseAdmin
           .from("carts")
           .select("id")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .eq("status", "active")
           .maybeSingle();
+
         if (selErr) console.error("carts select error:", selErr);
 
         if (!existing?.id) {
           const { error: insErr } = await supabaseAdmin
             .from("carts")
-            .insert({ user_id: user.id, status: "active", currency: "GEL" });
+            .insert({ user_id: userId, status: "active", currency: "GEL" });
           if (insErr) console.error("carts insert fallback error:", insErr);
         }
       }
+    } catch (cartErr) {
+      console.error("Cart creation block error:", cartErr);
     }
 
-    // 3) Safe redirect
-    const redirectUrl = (() => {
-      try {
-        const candidate = new URL(nextParam, url.origin);
-        return candidate.origin === url.origin
-          ? candidate
-          : new URL("/", url.origin);
-      } catch {
-        return new URL("/", url.origin);
-      }
-    })();
-
-    return NextResponse.redirect(redirectUrl);
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : String(e);
-    console.error("callback fatal error:", message);
-    return NextResponse.json(
-      { error: `Auth callback error: ${message}` },
-      { status: 500 }
-    );
+   
+    const origin = req.nextUrl.origin;
+    return NextResponse.redirect(new URL("/profile", origin));
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("OAuth callback error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
