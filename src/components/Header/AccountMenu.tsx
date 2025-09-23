@@ -1,41 +1,185 @@
 "use client";
-import React from "react";
-import { useState } from "react";
-import { UserIcon } from "@heroicons/react/24/outline";
-import { SafeUser } from "@/types/auth";
+import React, { useRef, useState, useEffect } from "react";
 
-import Link from "next/link";
+import type { SafeUser } from "@/types/auth";
+import {
+  UserIcon,
+  ChevronDownIcon,
+  ArrowRightIcon,
+  UserCircleIcon,
+  ShoppingBagIcon,
+} from "@heroicons/react/24/outline";
+import { Separator, MenuButton, MenuItem } from "../UI/primitives";
+
 export default function AccountMenu({ user }: { user: SafeUser }) {
   const [open, setOpen] = useState(false);
-  const fullName = user?.full_name || "";
-  const firstName = fullName ? fullName.split(" ")[0] : "";
+  const btnRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const fullName = (user?.full_name || "").trim();
+  const firstName = fullName ? fullName.split(/\s+/)[0] : "";
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent | TouchEvent) => {
+      const t = e.target as Node;
+      if (!menuRef.current?.contains(t) && !btnRef.current?.contains(t)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick, true);
+    document.addEventListener("touchstart", onDocClick, true);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick, true);
+      document.removeEventListener("touchstart", onDocClick, true);
+    };
+  }, [open]);
+
+  // Esc to close
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const handleLinkClick = () => setOpen(false);
 
   return (
-    <div>
+    <div className="relative">
       <button
-        aria-label={user ? `open account menu` : "Sign In"}
+      type="button"
+        ref={btnRef}
+        aria-label={user ? "Open account menu" : "Sign In"}
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen(!open)}
-        className="rounded-full p-2 hover:bg-slate-100"
+        onClick={() => setOpen((v) => !v)}
+        className={[
+          // button shell
+          "group inline-flex items-center gap-2 rounded-full pl-2 pr-3 py-1.5",
+          "bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70",
+          "ring-1 ring-slate-900/5 shadow-sm hover:shadow transition",
+          "hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400",
+          "dark:bg-slate-900/70 dark:text-slate-100 dark:ring-white/10 dark:hover:bg-slate-900",
+        ].join(" ")}
       >
-        <UserIcon className="h-6 w-6 text-slate-700" />
+        <span
+          className="relative grid place-items-center rounded-full h-8 w-8
+            bg-gradient-to-br from-rose-50 to-rose-100 text-rose-700
+            ring-1 ring-rose-200/60 group-hover:from-rose-100 group-hover:to-rose-200
+            dark:from-rose-900/30 dark:to-rose-800/30 dark:text-rose-200 dark:ring-rose-900/40"
+        >
+          <UserIcon className="h-5 w-5 text-rose-500" />
+        </span>
+        <span className="sr-only lg:not-sr-only text-sm font-medium text-slate-700 dark:text-slate-100">
+          {user ? firstName || user.email : "Sign In"}
+        </span>
+        <ChevronDownIcon
+          className={[
+            "h-4 w-4 transition-transform duration-200",
+            open ? "rotate-180 text-rose-600" : "rotate-0 text-slate-500",
+            "group-hover:text-rose-700 dark:text-slate-300",
+          ].join(" ")}
+        />
       </button>
-      {open && user && (
-        <div>
-          <div>Hello, {firstName || user.email}</div>
-          <div></div>
-          <Link href="/profile">Profile</Link>
-          <Link href="/orders">Orders</Link>
-          <button>Logout</button>
+
+      {/* Dropdown */}
+      <div
+        ref={menuRef}
+        className={[
+          "absolute right-0 mt-2 w-64 z-50 origin-top-right",
+          // animation
+          "transition transform ease-out duration-150",
+          open
+            ? "opacity-100 scale-100"
+            : "pointer-events-none opacity-0 scale-95",
+        ].join(" ")}
+      >
+        <div
+          className={[
+            "rounded-2xl overflow-hidden",
+            "bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80",
+            "ring-1 ring-slate-900/10 shadow-2xl",
+            "dark:bg-slate-900/80 dark:ring-white/10",
+          ].join(" ")}
+          role="menu"
+          aria-label="Account menu"
+        >
+          {/* Greeting / Header */}
+          <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-200/70 dark:border-white/10">
+            <div
+              className="grid place-items-center h-9 w-9 rounded-full
+                bg-gradient-to-br from-rose-50 to-rose-100 ring-1 ring-rose-200/60
+                dark:from-rose-900/30 dark:to-rose-800/30 dark:ring-rose-900/40"
+            >
+              <UserIcon className="h-5 w-5 text-rose-500 dark:text-rose-300" />
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-sm">
+                <span className="text-slate-500 dark:text-slate-300">
+                  {user ? "Hello," : "Welcome"}
+                </span>{" "}
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  {user ? firstName || user.email : "Sign in to continue"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Items */}
+          <div className="py-1">
+            {user ? (
+              <>
+                <MenuItem
+                  href="/profile"
+                  onClick={handleLinkClick}
+                  icon={UserCircleIcon}
+                >
+                  Profile
+                </MenuItem>
+                <MenuItem
+                  href="/orders"
+                  onClick={handleLinkClick}
+                  icon={ShoppingBagIcon}
+                >
+                  Orders
+                </MenuItem>
+
+                <Separator />
+
+                <MenuButton
+                  onClick={() => {
+                    /* add signOut here */
+                  }}
+                  danger
+                  icon={ArrowRightIcon}
+                >
+                  Logout
+                </MenuButton>
+              </>
+            ) : (
+              <>
+                <MenuItem
+                  href="/login"
+                  onClick={handleLinkClick}
+                  icon={ArrowRightIcon}
+                >
+                  Login
+                </MenuItem>
+                <MenuItem
+                  href="/signup"
+                  onClick={handleLinkClick}
+                  icon={ArrowRightIcon}
+                >
+                  Sign Up
+                </MenuItem>
+              </>
+            )}
+          </div>
         </div>
-      )}
-      {open && !user && (
-        <div>
-          <Link href="/login">Login</Link>
-          <Link href="/signup">Sign Up</Link>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
+

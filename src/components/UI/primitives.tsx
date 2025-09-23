@@ -1,5 +1,5 @@
 import React from "react";
-
+import Link from "next/link";
 export const Section = ({
   children,
   className = "",
@@ -70,3 +70,69 @@ export const headCls = [
 export const formHeading = [
   "relative mx-auto mb-6 max-w-2xl text-center text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900 [text-wrap:balance] selection:bg-[#fdd5a2]/30 before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6 before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10 after:content-[''] after:mt-4 after:block after:h-[3px] after:w-16 sm:after:w-24 after:rounded-full after:mx-auto after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]",
 ].join(" ");
+
+export function MenuButton({
+  onClick,
+  icon: Icon,
+  children,
+  danger,
+}: {
+  onClick?: () => void;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  children: React.ReactNode;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      role="menuitem"
+      className={[
+        "w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300",
+        danger
+          ? "text-red-600 hover:text-red-700 hover:bg-red-50 active:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10 dark:active:bg-red-500/20"
+          : "text-slate-700 hover:text-slate-900 hover:bg-slate-50 active:bg-slate-100 dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800/70 dark:active:bg-slate-800",
+      ].join(" ")}
+    >
+      {Icon && <Icon className="h-5 w-5 shrink-0" />}
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}
+
+export function Separator() {
+  return (
+    <div className="my-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-white/10" />
+  );
+}
+export function MenuItem({
+  href,
+  onClick,
+  icon: Icon,
+  children,
+}: {
+  href: string;
+  onClick?: () => void;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      role="menuitem"
+      className={[
+        "flex items-center gap-3 px-4 py-2.5 text-sm",
+        "text-slate-700 hover:text-slate-900",
+        "hover:bg-slate-50 active:bg-slate-100",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300",
+        "dark:text-slate-200 dark:hover:text-white dark:hover:bg-slate-800/70 dark:active:bg-slate-800",
+        "transition-colors",
+      ].join(" ")}
+    >
+      {Icon && <Icon className="h-5 w-5 shrink-0" />}
+      <span className="truncate">{children}</span>
+    </Link>
+  );
+}
