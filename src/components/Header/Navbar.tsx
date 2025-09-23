@@ -19,6 +19,7 @@ import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import SocialMedia from "../socialMedia/SocialMedia";
 import { useTranslations } from "use-intl";
 import type { SafeUser } from "@/types/auth";
+import AccountMenu from "./AccountMenu";
 const navItems = [
   { name: "Boxers", href: "/Boxeres" },
   { name: "Dress", href: "/Dress" },
@@ -66,12 +67,10 @@ export default function Navbar({ user }: { user: SafeUser }) {
             </div>
 
             {/* User + Cart visible on DESKTOP banner as requested */}
-            <button
-              aria-label="Account"
-              className="rounded-full p-2 hover:bg-slate-100"
-            >
-              <UserIcon className="h-6 w-6 text-slate-700" />
-            </button>
+    
+         
+              <AccountMenu user={user} />
+       
             <button
               aria-label="Cart"
               className="relative rounded-full p-2 hover:bg-slate-100"
@@ -115,12 +114,8 @@ export default function Navbar({ user }: { user: SafeUser }) {
             >
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
-            <button
-              aria-label="Account"
-              className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
-            >
-              <UserIcon className="h-6 w-6" />
-            </button>
+             
+              <AccountMenu user={user} />
             <button
               aria-label="Cart"
               className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
