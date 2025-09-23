@@ -19,29 +19,31 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
   const fullName = (user?.full_name || "").trim();
   const firstName = fullName ? fullName.split(/\s+/)[0] : "";
 
-  // Close on outside click
+  // Single effect: outside click + Escape
   useEffect(() => {
     if (!open) return;
+
     const onDocClick = (e: MouseEvent | TouchEvent) => {
       const t = e.target as Node;
       if (!menuRef.current?.contains(t) && !btnRef.current?.contains(t)) {
         setOpen(false);
       }
     };
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    // capture phase improves reliability
     document.addEventListener("mousedown", onDocClick, true);
     document.addEventListener("touchstart", onDocClick, true);
+    document.addEventListener("keydown", onKeyDown);
+
     return () => {
       document.removeEventListener("mousedown", onDocClick, true);
       document.removeEventListener("touchstart", onDocClick, true);
+      document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open]);
-
-  // Esc to close
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
   const handleLinkClick = () => setOpen(false);
@@ -49,14 +51,13 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
   return (
     <div className="relative">
       <button
-      type="button"
+        type="button"
         ref={btnRef}
         aria-label={user ? "Open account menu" : "Sign In"}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={[
-          // button shell
           "group inline-flex items-center gap-2 rounded-full pl-2 pr-3 py-1.5",
           "bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70",
           "ring-1 ring-slate-900/5 shadow-sm hover:shadow transition",
@@ -89,12 +90,11 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
         ref={menuRef}
         className={[
           "absolute right-0 mt-2 w-64 z-50 origin-top-right",
-          // animation
           "transition transform ease-out duration-150",
-          open
-            ? "opacity-100 scale-100"
-            : "pointer-events-none opacity-0 scale-95",
+          open ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-95",
         ].join(" ")}
+        role="menu"
+        aria-label="Account menu"
       >
         <div
           className={[
@@ -103,8 +103,6 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
             "ring-1 ring-slate-900/10 shadow-2xl",
             "dark:bg-slate-900/80 dark:ring-white/10",
           ].join(" ")}
-          role="menu"
-          aria-label="Account menu"
         >
           {/* Greeting / Header */}
           <div className="px-4 py-3 flex items-center gap-3 border-b border-slate-200/70 dark:border-white/10">
@@ -131,18 +129,10 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
           <div className="py-1">
             {user ? (
               <>
-                <MenuItem
-                  href="/profile"
-                  onClick={handleLinkClick}
-                  icon={UserCircleIcon}
-                >
+                <MenuItem href="/profile" onClick={handleLinkClick} icon={UserCircleIcon}>
                   Profile
                 </MenuItem>
-                <MenuItem
-                  href="/orders"
-                  onClick={handleLinkClick}
-                  icon={ShoppingBagIcon}
-                >
+                <MenuItem href="/orders" onClick={handleLinkClick} icon={ShoppingBagIcon}>
                   Orders
                 </MenuItem>
 
@@ -160,18 +150,10 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
               </>
             ) : (
               <>
-                <MenuItem
-                  href="/login"
-                  onClick={handleLinkClick}
-                  icon={ArrowRightIcon}
-                >
+                <MenuItem href="/login" onClick={handleLinkClick} icon={ArrowRightIcon}>
                   Login
                 </MenuItem>
-                <MenuItem
-                  href="/signup"
-                  onClick={handleLinkClick}
-                  icon={ArrowRightIcon}
-                >
+                <MenuItem href="/signup" onClick={handleLinkClick} icon={ArrowRightIcon}>
                   Sign Up
                 </MenuItem>
               </>
@@ -182,4 +164,3 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
     </div>
   );
 }
-
