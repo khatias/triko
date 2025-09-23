@@ -18,7 +18,7 @@ import FeaturedCircles from "../cards/FeatureCircle";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import SocialMedia from "../socialMedia/SocialMedia";
 import { useTranslations } from "use-intl";
-
+import type { SafeUser } from "@/types/auth";
 const navItems = [
   { name: "Boxers", href: "/Boxeres" },
   { name: "Dress", href: "/Dress" },
@@ -29,9 +29,13 @@ const navItems = [
   { name: "Kids", href: "/Kids" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ user }: { user: SafeUser }) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
+  const fullName = user?.full_name || "";
+  console.log("User's full name:", fullName);
+
+  // Common wrapper class for padding
   const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
 
   return (
