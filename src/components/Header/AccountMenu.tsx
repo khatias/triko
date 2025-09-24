@@ -10,7 +10,7 @@ import {
   ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { Separator, MenuButton, MenuItem } from "../UI/primitives";
-
+import { handleLogout } from "@/utils/auth/handleLogOut";
 export default function AccountMenu({ user }: { user: SafeUser }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
@@ -19,7 +19,6 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
   const fullName = (user?.full_name || "").trim();
   const firstName = fullName ? fullName.split(/\s+/)[0] : "";
 
-  // Single effect: outside click + Escape
   useEffect(() => {
     if (!open) return;
 
@@ -34,7 +33,6 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
       if (e.key === "Escape") setOpen(false);
     };
 
-    // capture phase improves reliability
     document.addEventListener("mousedown", onDocClick, true);
     document.addEventListener("touchstart", onDocClick, true);
     document.addEventListener("keydown", onKeyDown);
@@ -151,7 +149,8 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
 
                 <MenuButton
                   onClick={() => {
-                    /* add signOut here */
+              handleLogout();
+              setOpen(false);
                   }}
                   danger
                   icon={ArrowRightIcon}
