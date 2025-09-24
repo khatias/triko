@@ -11,6 +11,7 @@
       "ctaSecondary": "Size Guide",
       "imgAlt": "Triko loungewear on a model in a soft-lit studio"
     },
+
     "Categories": {
       "title": "Shop by popular category",
       "items": {
@@ -42,6 +43,7 @@
       "returns": "Free returns"
     }
   },
+
   "LanguageSwitcher": {
     "labelEn": "ENGLISH",
     "labelKa": "GEORGIAN"
@@ -51,12 +53,20 @@
   },
   "Header": {
     "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
     "featured": "Featured",
     "newArrivals": "New Arrivals",
     "kimano": "Kimono",
     "aboutUs": "About Us",
     "contact": "Contact",
-    "info": "Info"
+    "info": "Info",
+    "profile": "My Profile",
+    "orders": "My Orders",
+    "greeting": "Hello",
+    "welcome": "Welcome",
+   "joinUs": "Join Us"
+ 
   },
 
   "Footer": {
@@ -74,6 +84,8 @@
       "legal": "Legal"
     },
     "links": {
+      "profile": "My Profile",
+      "orders": "My Orders",
       "about": "About Us",
       "contact": "Contact Us",
       "shipping": "Shipping & Returns",

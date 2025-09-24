@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef, useState, useEffect } from "react";
-
+import { useTranslations } from "use-intl";
 import type { SafeUser } from "@/types/auth";
 import {
   UserIcon,
@@ -47,6 +47,7 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
   }, [open]);
 
   const handleLinkClick = () => setOpen(false);
+  const t = useTranslations("Header");
 
   return (
     <div className="relative">
@@ -74,7 +75,7 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
           <UserIcon className="h-5 w-5 text-rose-500" />
         </span>
         <span className="sr-only lg:not-sr-only text-sm font-medium text-slate-700 dark:text-slate-100">
-          {user ? firstName || user.email : "Sign In"}
+          {user ? firstName || user.email : t("login")}
         </span>
         <ChevronDownIcon
           className={[
@@ -91,7 +92,9 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
         className={[
           "absolute right-0 mt-2 w-64 z-50 origin-top-right",
           "transition transform ease-out duration-150",
-          open ? "opacity-100 scale-100" : "pointer-events-none opacity-0 scale-95",
+          open
+            ? "opacity-100 scale-100"
+            : "pointer-events-none opacity-0 scale-95",
         ].join(" ")}
         role="menu"
         aria-label="Account menu"
@@ -116,10 +119,10 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
             <div className="min-w-0">
               <div className="truncate text-sm">
                 <span className="text-slate-500 dark:text-slate-300">
-                  {user ? "Hello," : "Welcome"}
+                  {user ? t("greeting", { name: firstName || user.email }) : ""}
                 </span>{" "}
                 <span className="font-semibold text-slate-900 dark:text-white">
-                  {user ? firstName || user.email : "Sign in to continue"}
+                  {user ? firstName || user.email : t("joinUs")}
                 </span>
               </div>
             </div>
@@ -129,11 +132,19 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
           <div className="py-1">
             {user ? (
               <>
-                <MenuItem href="/profile" onClick={handleLinkClick} icon={UserCircleIcon}>
-                  Profile
+                <MenuItem
+                  href="/profile"
+                  onClick={handleLinkClick}
+                  icon={UserCircleIcon}
+                >
+                  {t("profile")}
                 </MenuItem>
-                <MenuItem href="/orders" onClick={handleLinkClick} icon={ShoppingBagIcon}>
-                  Orders
+                <MenuItem
+                  href="/orders"
+                  onClick={handleLinkClick}
+                  icon={ShoppingBagIcon}
+                >
+                  {t("orders")}
                 </MenuItem>
 
                 <Separator />
@@ -145,16 +156,24 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
                   danger
                   icon={ArrowRightIcon}
                 >
-                  Logout
+                  {t("logout")}
                 </MenuButton>
               </>
             ) : (
               <>
-                <MenuItem href="/login" onClick={handleLinkClick} icon={ArrowRightIcon}>
-                  Login
+                <MenuItem
+                  href="/login"
+                  onClick={handleLinkClick}
+                  icon={ArrowRightIcon}
+                >
+                  {t("login")}
                 </MenuItem>
-                <MenuItem href="/signup" onClick={handleLinkClick} icon={ArrowRightIcon}>
-                  Sign Up
+                <MenuItem
+                  href="/signup"
+                  onClick={handleLinkClick}
+                  icon={ArrowRightIcon}
+                >
+                  {t("signup")}
                 </MenuItem>
               </>
             )}
