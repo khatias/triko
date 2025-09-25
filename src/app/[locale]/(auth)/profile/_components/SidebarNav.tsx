@@ -2,13 +2,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-
-const links = [
-  { href: "orders", label: "Orders" },
-  { href: "account", label: "Account" },
-];
+import { useTranslations } from "next-intl";
 
 export default function SidebarNav() {
+  const t = useTranslations("Profile");
+  const links = [
+    { href: "orders", label: t("sidebar.orders") },
+    { href: "account", label: t("sidebar.account") },
+    { href: "addresses", label: t("sidebar.addresses") },
+  ];
+
   const pathname = usePathname();
   const base = pathname.split("/").slice(0, -1).join("/");
   const activeSeg = pathname.split("/").pop();

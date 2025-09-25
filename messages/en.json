@@ -325,12 +325,16 @@
       "title": "Profile — Triko",
       "description": "Manage your Triko account details, including your name, email, phone number, and preferences. Update your profile information securely."
     },
+    "sidebar": {
+      "orders": "Orders",
+      "account": "Account",
+      "addresses": "Addresses"
+    },
     "actions": {
       "save": "Save changes",
       "saving": "Saving…"
     },
     "account": {
-
       "title": "Account Details",
       "fullName": "Full Name",
       "phone": "Phone Number",
