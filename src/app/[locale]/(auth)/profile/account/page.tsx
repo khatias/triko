@@ -1,12 +1,15 @@
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { updateProfileAction } from "@/app/actions/updateProfileAction";
-
+import { getTranslations } from "next-intl/server";
 import AccountForm from "../_components/AccountForm";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function AccountPage() {
+  const t = await getTranslations("Profile");
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -15,7 +18,7 @@ export default async function AccountPage() {
   if (!user) {
     return (
       <div className="rounded-2xl border p-6">
-        Please log in to edit your account.
+        <p>{t("noUser")}</p>
       </div>
     );
   }
@@ -34,7 +37,7 @@ export default async function AccountPage() {
 
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-lg font-medium">Account details</h2>
+      <h2 className="mb-4 lg:mb-6 text-lg lg:text-xl font-medium"> {t("account.title")}</h2>
 
       <AccountForm
         updateProfileAction={updateProfileAction}

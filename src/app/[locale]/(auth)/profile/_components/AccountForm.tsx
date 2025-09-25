@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { useFormStatus } from "react-dom";
-
+import { useTranslations } from "next-intl";
 import CustomSelect from "@/components/form/CustomSelect";
 
 interface AccountFormProps {
@@ -12,18 +12,7 @@ interface AccountFormProps {
   birth_date: string;
   marketing: boolean;
 }
-function SaveButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
-      disabled={pending}
-    >
-      {pending ? "Saving…" : "Save changes"}
-    </button>
-  );
-}
+
 
 const AccountForm: React.FC<AccountFormProps> = ({
   updateProfileAction,
@@ -33,6 +22,19 @@ const AccountForm: React.FC<AccountFormProps> = ({
   birth_date,
   marketing,
 }) => {
+    const t = useTranslations("Profile");
+    function SaveButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
+      disabled={pending}
+    >
+      {pending ? t("actions.saving") : t("actions.save")}
+    </button>
+  );
+}
   return (
     <form action={updateProfileAction} className="grid gap-5">
       {/* Full name */}
@@ -41,7 +43,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           className="mb-1 block text-sm text-slate-600"
           htmlFor="full_name"
         >
-          Full name
+          {t("account.fullName")}
         </label>
         <input
           id="full_name"
@@ -57,7 +59,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
       {/* Phone */}
       <div>
         <label className="mb-1 block text-sm text-slate-600" htmlFor="phone">
-          Phone
+          {t("account.phone")}
         </label>
         <input
           id="phone"
@@ -93,7 +95,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           className="mb-1 block text-sm text-slate-600"
           htmlFor="birth_date"
         >
-          Birthday
+          {t("account.birthdate")}
         </label>
         <input
           id="birth_date"
@@ -116,7 +118,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           className="h-4 w-4 rounded border-slate-300"
         />
         <label htmlFor="marketing_opt_in" className="text-sm text-slate-700">
-          I agree to receive marketing emails
+          {t("account.marketingOptIn")}
         </label>
       </div>
 

@@ -65,8 +65,7 @@
     "orders": "My Orders",
     "greeting": "Hello",
     "welcome": "Welcome",
-   "joinUs": "Join Us"
- 
+    "joinUs": "Join Us"
   },
 
   "Footer": {
@@ -320,5 +319,20 @@
     "passwordResetFailed": "Could not send password reset email.",
     "network": "Network error. Please try again.",
     "timeout": "Request timed out. Please try again."
+  },
+  "Profile": {
+    "actions": {
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "account": {
+      "title": "Account Details",
+      "fullName": "Full Name",
+      "phone": "Phone Number",
+      "sex": "Sex",
+      "birthdate": "Birth Date",
+      "marketingOptIn": "I agree to receive marketing emails.",
+      "noUser":"please log in to edit your profile"
+    }
   }
 }
