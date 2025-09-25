@@ -1,6 +1,16 @@
 // app/[locale]/(auth)/profile/layout.tsx
 import React from "react";
 import SidebarNav from "../profile/_components/SidebarNav";
+import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
+
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
+  return generateLocalizedMetadata(ctx, {
+    namespace: "Profile",
+    path: "/profile",
+  });
+}
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

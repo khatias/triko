@@ -321,11 +321,16 @@
     "timeout": "Request timed out. Please try again."
   },
   "Profile": {
+    "meta": {
+      "title": "Profile — Triko",
+      "description": "Manage your Triko account details, including your name, email, phone number, and preferences. Update your profile information securely."
+    },
     "actions": {
       "save": "Save changes",
       "saving": "Saving…"
     },
     "account": {
+
       "title": "Account Details",
       "fullName": "Full Name",
       "phone": "Phone Number",
