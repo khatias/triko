@@ -330,9 +330,11 @@
       "fullName": "Full Name",
       "phone": "Phone Number",
       "sex": "Sex",
+      "female": "Female",
+      "male": "Male",
       "birthdate": "Birth Date",
       "marketingOptIn": "I agree to receive marketing emails.",
-      "noUser":"please log in to edit your profile"
+      "noUser": "please log in to edit your profile"
     }
   }
 }

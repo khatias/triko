@@ -13,7 +13,6 @@ interface AccountFormProps {
   marketing: boolean;
 }
 
-
 const AccountForm: React.FC<AccountFormProps> = ({
   updateProfileAction,
   fullName,
@@ -22,19 +21,19 @@ const AccountForm: React.FC<AccountFormProps> = ({
   birth_date,
   marketing,
 }) => {
-    const t = useTranslations("Profile");
-    function SaveButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
-      disabled={pending}
-    >
-      {pending ? t("actions.saving") : t("actions.save")}
-    </button>
-  );
-}
+  const t = useTranslations("Profile");
+  function SaveButton() {
+    const { pending } = useFormStatus();
+    return (
+      <button
+        type="submit"
+        className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
+        disabled={pending}
+      >
+        {pending ? t("actions.saving") : t("actions.save")}
+      </button>
+    );
+  }
   return (
     <form action={updateProfileAction} className="grid gap-5">
       {/* Full name */}
@@ -83,8 +82,8 @@ const AccountForm: React.FC<AccountFormProps> = ({
         label="Sex"
         options={[
           { value: "", label: "—" },
-          { value: "male", label: "Male" },
-          { value: "female", label: "Female" },
+          { value: "male", label: t("account.male") },
+          { value: "female", label: t("account.female") },
         ]}
         defaultValue={sex}
       />
