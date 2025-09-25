@@ -1,7 +1,7 @@
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { updateProfileAction } from "@/app/actions/updateProfileAction";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import CustomSelect from "@/components/form/CustomSelect"; 
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,9 +14,7 @@ export default async function AccountPage() {
 
   if (!user) {
     return (
-      <div className="rounded-2xl border p-6">
-        Please log in to edit your account.
-      </div>
+      <div className="rounded-2xl border p-6">Please log in to edit your account.</div>
     );
   }
 
@@ -36,27 +34,24 @@ export default async function AccountPage() {
     <div className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-lg font-medium">Account details</h2>
 
-      <form
-        action={updateProfileAction}
-        className="grid grid-cols-1 gap-4 md:grid-cols-2"
-      >
+      <form action={updateProfileAction} className="grid gap-5">
+        {/* Full name */}
         <div>
-          <label
-            className="mb-1 block text-sm text-slate-600"
-            htmlFor="full_name"
-          >
+          <label className="mb-1 block text-sm text-slate-600" htmlFor="full_name">
             Full name
           </label>
           <input
             id="full_name"
             name="full_name"
             defaultValue={fullName}
-            className="w-full rounded-xl border border-slate-300 px-3 py-3 focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-none"
-            placeholder=" Your full name"
+            className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
+                       focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
+            placeholder="Your full name"
             autoComplete="name"
           />
         </div>
 
+        {/* Phone */}
         <div>
           <label className="mb-1 block text-sm text-slate-600" htmlFor="phone">
             Phone
@@ -65,41 +60,29 @@ export default async function AccountPage() {
             id="phone"
             name="phone"
             defaultValue={phone}
-            className="w-full rounded-xl border border-slate-300 px-3 py-3 focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-none"
+            className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
+                       focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
             placeholder="+995 5XX XX XX XX"
             inputMode="tel"
             autoComplete="tel"
           />
         </div>
 
-        <div>
-          <label className="mb-1 block text-sm text-slate-600" htmlFor="sex">
-            Sex
-          </label>
-          <div className="relative">
-            <select
-              id="sex"
-              name="sex"
-              defaultValue={sex}
-              className="w-full appearance-none rounded-xl border border-slate-300 px-3 py-3 focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-none"
-            >
-              <option className="" value="">
-                —
-              </option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-            <div className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500">
-              <ChevronDownIcon aria-hidden="true" />
-            </div>
-          </div>
-        </div>
+        {/* Sex (custom, portal-based) */}
+        <CustomSelect
+          name="sex"
+          label="Sex"
+          options={[
+            { value: "", label: "—" },
+            { value: "male", label: "Male" },
+            { value: "female", label: "Female" },
+          ]}
+          defaultValue={sex}
+        />
 
+        {/* Birthday */}
         <div>
-          <label
-            className="mb-1 block text-sm text-slate-600"
-            htmlFor="birth_date"
-          >
+          <label className="mb-1 block text-sm text-slate-600" htmlFor="birth_date">
             Birthday
           </label>
           <input
@@ -107,11 +90,13 @@ export default async function AccountPage() {
             type="date"
             name="birth_date"
             defaultValue={birth_date}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
+                       focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
             inputMode="numeric"
           />
         </div>
 
+        {/* Marketing opt-in */}
         <div className="md:col-span-2 flex items-center gap-3">
           <input
             id="marketing_opt_in"
@@ -126,20 +111,14 @@ export default async function AccountPage() {
         </div>
 
         <div className="md:col-span-2">
-          <SaveButton />
+          <button
+            type="submit"
+            className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800"
+          >
+            Save changes
+          </button>
         </div>
       </form>
     </div>
-  );
-}
-
-function SaveButton() {
-  return (
-    <button
-      type="submit"
-      className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800"
-    >
-      Save changes
-    </button>
   );
 }
