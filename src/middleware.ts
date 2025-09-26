@@ -3,54 +3,58 @@ import { routing } from "./i18n/routing";
 import { updateSession } from "./utils/supabase/middleware";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createClient } from "./utils/supabase/server";
 
 const intl = createMiddleware(routing);
 
-export async function middleware(request: NextRequest) {
-  // Run i18n routing first (this may redirect or rewrite)
-  const intlResponse = intl(request) as NextResponse;
-  const supabase = createClient();
-
-  const { data } = await (await supabase).auth.getSession();
-
-  const session = data?.session;
-  const isLoginPage = request.nextUrl.pathname.includes("/login");
-  const isRestrictedPage = ["/profile"].some((path) =>
-    request.nextUrl.pathname.includes(path)
+// Detect any Supabase auth cookie on the *request*
+function hasReqAuth(req: NextRequest) {
+  const names = req.cookies.getAll().map((c) => c.name);
+  return names.some(
+    (n) =>
+      n === "sb-access-token" ||
+      n === "sb-refresh-token" ||
+      /^sb-[^-]+-(access|refresh)-token$/.test(n) ||       // sb-<projectRef>-access-token
+      /^sb-[^-]+-auth-token$/.test(n)                      // legacy variants
   );
-
-  if (!session && !isLoginPage && isRestrictedPage) {
-    const locale = request.nextUrl.pathname.startsWith("/ka") ? "ka" : "en";
-    const loginUrl = new URL(`/${locale}/login`, request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  if (
-    !request.nextUrl.pathname.startsWith("/en") &&
-    !request.nextUrl.pathname.startsWith("/ka")
-  ) {
-    const defaultLocale = "en";
-    const redirectUrl = new URL(
-      `/${defaultLocale}${request.nextUrl.pathname}`,
-      request.url
-    );
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // If we got a redirect or rewrite response, we don't need to continue
-  if (intlResponse?.status === 307 || intlResponse?.status === 308) {
-    return intlResponse;
-  }
-
-  // Now run Supabase Auth middleware to attach/refresh cookies
-  // Ensure we always return the intl response (to preserve its headers/redirects),
-  // but let Supabase attach/refresh cookies on the SAME response.
-  const finalResponse = await updateSession(request, intlResponse);
-  return finalResponse;
 }
 
-// Single, consolidated matcher (excludes API, Next internals, static assets, and dot-files)
+// Detect if updateSession just *set* tokens on the *response*
+function hasResAuth(res: NextResponse) {
+  const names = res.cookies.getAll().map((c) => c.name);
+  return names.some(
+    (n) =>
+      n === "sb-access-token" ||
+      n === "sb-refresh-token" ||
+      /^sb-[^-]+-(access|refresh)-token$/.test(n) ||
+      /^sb-[^-]+-auth-token$/.test(n)
+  );
+}
+
+export async function middleware(request: NextRequest) {
+  // 1) Locale rewrite (preserves ?search)
+  const intlResponse = intl(request) as NextResponse;
+
+  // 2) Refresh Supabase cookies on the SAME response
+  const response = await updateSession(request, intlResponse);
+
+  // 3) Protect /{locale}/profile... (allow auth pages)
+  const pathname = request.nextUrl.pathname;
+  const locale = pathname.split("/")[1] || "en";
+  const isProtected = /^\/(en|ka)\/profile(\/|$)/.test(pathname);
+  const isAuthRoute = /^\/(en|ka)\/(login|signup|confirm|auth\/confirm)(\/|$)/.test(pathname);
+
+  if (isProtected && !isAuthRoute) {
+    const loggedIn = hasReqAuth(request) || hasResAuth(response);
+    if (!loggedIn) {
+      const loginUrl = new URL(`/${locale}/login`, request.url);
+      loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  return response;
+}
+
 export const config = {
   matcher: [
     "/((?!api|trpc|_next|_vercel|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)|.*\\..*).*)",
