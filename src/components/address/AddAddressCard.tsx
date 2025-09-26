@@ -5,7 +5,7 @@ import React from "react";
 import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import Modal from "../Modal";
 import { Input, Button } from "../UI/primitives";
-
+import { useTranslations } from "next-intl";
 export default function AddAddressCard({
   action,
   wide = false,
@@ -13,6 +13,7 @@ export default function AddAddressCard({
   action: (fd: FormData) => Promise<void>;
   wide?: boolean;
 }) {
+  const t = useTranslations("Profile.addresses");
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -32,10 +33,7 @@ export default function AddAddressCard({
           </span>
           <div>
             <div className="text-sm font-semibold text-slate-900">
-              Add address
-            </div>
-            <div className="text-sm text-slate-500">
-              Quickly save a new shipping location
+              {t("add")}
             </div>
           </div>
         </div>
@@ -50,11 +48,15 @@ export default function AddAddressCard({
             }}
             className="grid grid-cols-1 gap-4"
           >
-            <Input id="line1" name="line1" label="Address line 1" required />
-            <Input id="line2" name="line2" label="Address line 2 (optional)" />
+            <Input id="line1" name="line1" label={t("address1")} required />
+            <Input id="line2" name="line2" label={t("address2")} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Input id="city" name="city" label="City" required />
-              <Input id="region" name="region" label="State / Region (optional)" />
+              <Input id="city" name="city" label={t("city")} required />
+              <Input
+                id="region"
+                name="region"
+                label={t("region")}
+              />
             </div>
 
             <label className="mt-1 inline-flex select-none items-center gap-2">
@@ -64,15 +66,19 @@ export default function AddAddressCard({
                 type="checkbox"
                 className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <span className="text-sm text-slate-700">Set as default</span>
+              <span className="text-sm text-slate-700">{t("setDefault")}</span>
             </label>
 
             <div className="mt-3 flex items-center justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                {t("cancel")}
               </Button>
               <Button type="submit" variant="primary">
-                Save address
+                {t("save")}
               </Button>
             </div>
           </form>

@@ -343,7 +343,23 @@
       "male": "Male",
       "birthdate": "Birth Date",
       "marketingOptIn": "I agree to receive marketing emails.",
-      "noUser": "please log in to edit your profile"
+      "noUser": "please log in to have access to your profile."
+    },
+    "addresses": {
+      "title": "Shipping Addresses",
+      "subtitle": "Save multiple addresses for a faster checkout experience.",
+      "add": "Add New Address",
+      "noAddresses": "You have no saved addresses.",
+      "default": "Default",
+      "setDefault": "Set as default",
+      "delete": "Delete",
+      "address1": "Address Line 1",
+      "address2": "Address Line 2 (optional)",
+      "city": "City",
+      "region": "Region",
+      "save": "Save Address",
+      "saving": "Saving…",
+      "cancel": "Cancel"
     }
   }
 }

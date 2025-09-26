@@ -12,6 +12,7 @@ export const revalidate = 0;
 import { AlertTriangleIcon, PlusIcon, MapPinIcon } from "lucide-react";
 import AddAddressCard from "@/components/address/AddAddressCard";
 import { Button, RegularCard } from "@/components/UI/primitives";
+import { getTranslations } from "next-intl/server";
 
 type Address = {
   id: string;
@@ -24,6 +25,8 @@ type Address = {
 };
 
 export default async function AddressesPage() {
+  const t = await getTranslations("Profile.addresses");
+  const tu = await getTranslations("Profile.account");
   const supabase = await createClient();
   const {
     data: { user },
@@ -36,10 +39,7 @@ export default async function AddressesPage() {
         <AlertTriangleIcon className="mt-0.5 h-5 w-5 text-amber-600" />
         <div>
           <p className="text-base font-semibold text-amber-900">
-            You must be logged in to manage your addresses.
-          </p>
-          <p className="text-sm text-amber-800/90">
-            Sign in to add, edit, or set a default shipping address.
+            {tu("noUser")}
           </p>
         </div>
       </RegularCard>
@@ -59,12 +59,8 @@ export default async function AddressesPage() {
     <div className="mx-auto max-w-5xl space-y-8">
       {/* Header */}
       <header className="rounded-xl bg-gray-50 px-4 py-5">
-        <h2 className="text-lg font-semibold text-slate-900">
-          Shipping Addresses
-        </h2>
-        <p className="mt-2 text-slate-600">
-          Save multiple addresses and pick a default for faster checkout.
-        </p>
+        <h2 className="text-lg font-semibold text-slate-900">{t("title")}</h2>
+        <p className="mt-2 text-slate-600">{t("subtitle")}</p>
       </header>
 
       {/* Empty State */}
@@ -75,11 +71,9 @@ export default async function AddressesPage() {
               <PlusIcon className="h-6 w-6" />
             </div>
             <p className="mt-4 text-lg font-semibold text-slate-900">
-              Your address book is empty
+              {t("noAddresses")}
             </p>
-            <p className="mt-1 text-slate-600">
-              Add your first shipping address to speed up checkout.
-            </p>
+
             <div className="mx-auto mt-8 max-w-sm">
               <AddAddressCard action={addAddressAction} wide />
             </div>
@@ -108,7 +102,7 @@ export default async function AddressesPage() {
                 {/* Default pill */}
                 {a.is_default_shipping && (
                   <span className="pointer-events-none absolute right-4 top-4 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-emerald-700 ring-1 ring-emerald-100">
-                    DEFAULT
+                    {t("default")}
                   </span>
                 )}
 
@@ -139,7 +133,7 @@ export default async function AddressesPage() {
                         className="border-slate-200 text-slate-700 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-300"
                         aria-label="Set this address as default"
                       >
-                        Set as default
+                        {t("setDefault")}
                       </Button>
                     </form>
                   )}
@@ -151,7 +145,7 @@ export default async function AddressesPage() {
                       className="border-rose-200 text-rose-700 hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-200"
                       aria-label="Delete this address"
                     >
-                      Delete address
+                      {t("delete")}
                     </Button>
                   </form>
                 </div>
