@@ -18,7 +18,7 @@ export default async function AccountPage() {
   if (!user) {
     return (
       <div className="rounded-2xl border p-6">
-        <p>{t("noUser")}</p>
+        <p>{t("account.noUser")}</p>
       </div>
     );
   }
