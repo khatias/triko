@@ -2,13 +2,12 @@
 "use client";
 
 import React from "react";
-import { PlusCircleIcon } from "@heroicons/react/24/outline";
 import Modal from "../Modal";
 import { Input, Button } from "../UI/primitives";
 import { useTranslations } from "next-intl";
+import { PlusIcon } from "lucide-react";
 export default function AddAddressCard({
   action,
-  wide = false,
 }: {
   action: (fd: FormData) => Promise<void>;
   wide?: boolean;
@@ -21,26 +20,22 @@ export default function AddAddressCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={[
-          "group w-full rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-left transition",
-          "hover:border-slate-400 hover:bg-slate-50",
-          wide ? "block" : "flex flex-col justify-center",
-        ].join(" ")}
+        className="group border border-orange-500 rounded-lg w-full max-w-[230px] mx-auto py-2.5 px-4 
+             text-center transition-colors duration-200 
+             hover:bg-orange-500 hover:text-white 
+             focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
       >
-        <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-200">
-            <PlusCircleIcon className="h-5 w-5" />
-          </span>
-          <div>
-            <div className="text-sm font-semibold text-slate-900">
-              {t("add")}
-            </div>
+        <div className="flex items-center justify-center gap-2 text-orange-500">
+          <PlusIcon className="h-4 w-4 text-current group-hover:text-white" />
+
+          <div className="text-sm font-semibold text-orange-500 group-hover:text-white">
+            {t("add")}
           </div>
         </div>
       </button>
 
       {open && (
-        <Modal title="Add new address" onClose={() => setOpen(false)}>
+        <Modal title={t("add")} onClose={() => setOpen(false)}>
           <form
             action={async (fd) => {
               await action(fd);
@@ -52,11 +47,7 @@ export default function AddAddressCard({
             <Input id="line2" name="line2" label={t("address2")} />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input id="city" name="city" label={t("city")} required />
-              <Input
-                id="region"
-                name="region"
-                label={t("region")}
-              />
+              <Input id="region" name="region" label={t("region")} />
             </div>
 
             <label className="mt-1 inline-flex select-none items-center gap-2">

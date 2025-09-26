@@ -9,7 +9,7 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import { AlertTriangleIcon, PlusIcon, MapPinIcon } from "lucide-react";
+import { AlertTriangleIcon, MapPinIcon } from "lucide-react";
 import AddAddressCard from "@/components/address/AddAddressCard";
 import { Button, RegularCard } from "@/components/UI/primitives";
 import { getTranslations } from "next-intl/server";
@@ -56,7 +56,7 @@ export default async function AddressesPage() {
   const hasAny = list.length > 0;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 ">
       {/* Header */}
       <header className="rounded-xl bg-gray-50 px-4 py-5">
         <h2 className="text-lg font-semibold text-slate-900">{t("title")}</h2>
@@ -67,9 +67,6 @@ export default async function AddressesPage() {
       {!hasAny ? (
         <section className="px-4 lg:px-0">
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center">
-            <div className="mx-auto grid h-12 w-12 place-items-center rounded-xl bg-slate-50 text-slate-500">
-              <PlusIcon className="h-6 w-6" />
-            </div>
             <p className="mt-4 text-lg font-semibold text-slate-900">
               {t("noAddresses")}
             </p>
@@ -81,12 +78,13 @@ export default async function AddressesPage() {
         </section>
       ) : (
         <section className="space-y-6 px-4 lg:px-0">
-          {/* Grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Add tile */}
             <div className="order-1 md:order-last">
               <AddAddressCard action={addAddressAction} />
             </div>
+          {/* Grid */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Add tile */}
+          
 
             {/* Address cards */}
             {list.map((a) => (
@@ -101,13 +99,13 @@ export default async function AddressesPage() {
               >
                 {/* Default pill */}
                 {a.is_default_shipping && (
-                  <span className="pointer-events-none absolute right-4 top-4 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold tracking-wide text-emerald-700 ring-1 ring-emerald-100">
+                  <span className="pointer-events-none absolute  right-4 top-4 inline-flex items-center rounded-full bg-[#fdd5a2] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-slate-700 ring-1 ring-[#fdd5a2]">
                     {t("default")}
                   </span>
                 )}
 
                 {/* Card body */}
-                <div className="min-w-0 space-y-1">
+                <div className="min-w-0 space-y-1 mt-3">
                   <p className="break-words text-base font-semibold text-slate-900">
                     {a.line1}
                   </p>
