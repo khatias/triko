@@ -118,7 +118,7 @@ export default function CustomSelect({
         ref={btnRef}
         type="button"
         className={`flex w-full items-center justify-between rounded-xl border border-slate-300 bg-white px-3 py-3 text-left
-                    focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400 ${className}`}
+                    focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2] ${className}`}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}

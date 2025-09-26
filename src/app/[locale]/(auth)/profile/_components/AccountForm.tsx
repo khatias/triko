@@ -27,7 +27,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
     return (
       <button
         type="submit"
-        className="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
+        className="inline-flex items-center rounded-xl bg-orange-600 px-4 py-2 text-white shadow-sm hover:bg-orange-700 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
         disabled={pending}
       >
         {pending ? t("actions.saving") : t("actions.save")}
@@ -49,7 +49,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           name="full_name"
           defaultValue={fullName}
           className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
-                                         focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
+                                         focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
           placeholder="Your full name"
           autoComplete="name"
         />
@@ -65,7 +65,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           name="phone"
           defaultValue={phone}
           className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
-                     focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
+                     focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
           placeholder="+995 5XX XX XX XX"
           inputMode="tel"
           autoComplete="tel"
@@ -102,7 +102,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           name="birth_date"
           defaultValue={birth_date}
           className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
-                                         focus:outline-none focus:ring-1 focus:ring-orange-400 focus:border-orange-400"
+                                         focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
           inputMode="numeric"
         />
       </div>

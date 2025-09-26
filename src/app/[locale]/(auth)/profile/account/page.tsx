@@ -36,7 +36,7 @@ export default async function AccountPage() {
   const marketing = !!profile?.marketing_opt_in;
 
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/70 bg-white p-6 ">
       <h2 className="mb-4 lg:mb-6 text-lg lg:text-xl font-medium"> {t("account.title")}</h2>
 
       <AccountForm
