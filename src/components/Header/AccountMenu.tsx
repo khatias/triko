@@ -131,26 +131,32 @@ export default function AccountMenu({ user }: { user: SafeUser }) {
             {user ? (
               <>
                 <MenuItem
-                  href="/profile"
+                  href="/profile/account"
                   onClick={handleLinkClick}
                   icon={UserCircleIcon}
                 >
-                  {t("profile")}
+                  {t("account")}
                 </MenuItem>
                 <MenuItem
-                  href="/orders"
+                  href="/profile/orders"
                   onClick={handleLinkClick}
                   icon={ShoppingBagIcon}
                 >
                   {t("orders")}
                 </MenuItem>
-
+                <MenuItem
+                  href="/profile/addresses"
+                  onClick={handleLinkClick}
+                  icon={UserCircleIcon}
+                >
+                  {t("addresses")}
+                </MenuItem>
                 <Separator />
 
                 <MenuButton
                   onClick={() => {
-              handleLogout();
-              setOpen(false);
+                    handleLogout();
+                    setOpen(false);
                   }}
                   danger
                   icon={ArrowRightIcon}
