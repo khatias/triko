@@ -33,8 +33,6 @@ const navItems = [
 export default function Navbar({ user }: { user: SafeUser }) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
-  const fullName = user?.full_name || "";
-  console.log("User's full name:", fullName);
 
   // Common wrapper class for padding
   const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
@@ -67,10 +65,9 @@ export default function Navbar({ user }: { user: SafeUser }) {
             </div>
 
             {/* User + Cart visible on DESKTOP banner as requested */}
-    
-         
-              <AccountMenu user={user} />
-       
+
+            <AccountMenu user={user} />
+
             <button
               aria-label="Cart"
               className="relative rounded-full p-2 hover:bg-slate-100"
@@ -114,8 +111,8 @@ export default function Navbar({ user }: { user: SafeUser }) {
             >
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
-             
-              <AccountMenu user={user} />
+
+            <AccountMenu user={user} />
             <button
               aria-label="Cart"
               className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
