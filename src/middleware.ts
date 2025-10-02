@@ -1,26 +1,15 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { updateSession } from "./utils/supabase/middleware";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const intl = createMiddleware(routing);
 
-// Detect any Supabase auth cookie on the *request*
+// ---- Helpers ---------------------------------------------------------------
+
+/** Detects presence of Supabase auth cookies on the incoming request */
 function hasReqAuth(req: NextRequest) {
   const names = req.cookies.getAll().map((c) => c.name);
-  return names.some(
-    (n) =>
-      n === "sb-access-token" ||
-      n === "sb-refresh-token" ||
-      /^sb-[^-]+-(access|refresh)-token$/.test(n) ||       // sb-<projectRef>-access-token
-      /^sb-[^-]+-auth-token$/.test(n)                      // legacy variants
-  );
-}
-
-// Detect if updateSession just *set* tokens on the *response*
-function hasResAuth(res: NextResponse) {
-  const names = res.cookies.getAll().map((c) => c.name);
   return names.some(
     (n) =>
       n === "sb-access-token" ||
@@ -30,33 +19,70 @@ function hasResAuth(res: NextResponse) {
   );
 }
 
+/** Detects if the response (after updateSession) just set Supabase auth cookies */
+function hasResAuth(res: NextResponse) {
+  // Works in Edge: NextResponse.cookies.getAll() mirrors cookies scheduled to be set
+  const names = res.cookies.getAll().map((c) => c.name);
+  if (
+    names.some(
+      (n) =>
+        n === "sb-access-token" ||
+        n === "sb-refresh-token" ||
+        /^sb-[^-]+-(access|refresh)-token$/.test(n) ||
+        /^sb-[^-]+-auth-token$/.test(n)
+    )
+  ) {
+    return true;
+  }
+  // Fallback in case a framework version only exposes headers:
+  const setCookieHeader = res.headers.get("set-cookie") || "";
+  return /sb-(?:[^-]+)-(?:access|refresh)-token|sb-access-token|sb-refresh-token/.test(
+    setCookieHeader
+  );
+}
+
+// ---- Middleware ------------------------------------------------------------
+
 export async function middleware(request: NextRequest) {
-  // 1) Locale rewrite (preserves ?search)
-  const intlResponse = intl(request) as NextResponse;
+  const { pathname, search } = request.nextUrl;
 
-  // 2) Refresh Supabase cookies on the SAME response
-  const response = await updateSession(request, intlResponse);
+  // 1) Locale handling first (preserves query string by default)
+  //    We keep the returned response and continue composing on it.
+  let response = intl(request) as NextResponse;
 
-  // 3) Protect /{locale}/profile... (allow auth pages)
-  const pathname = request.nextUrl.pathname;
-  const locale = pathname.split("/")[1] || "en";
-  const isProtected = /^\/(en|ka)\/profile(\/|$)/.test(pathname);
-  const isAuthRoute = /^\/(en|ka)\/(login|signup|confirm|auth\/confirm)(\/|$)/.test(pathname);
+  // 2) Refresh Supabase session/cookies on the SAME response
+  response = await updateSession(request, response);
+
+  // 3) Route protection: only for profile pages under supported locales
+  //    Example protected area: /en/profile, /ka/profile, /en/profile/orders, etc.
+  const isProtected = /^\/(en|ka)\/profile(?:\/|$)/.test(pathname);
+
+  // Allow auth routes to pass without redirects
+  const isAuthRoute = /^\/(en|ka)\/(login|signup|confirm|auth\/confirm)(?:\/|$)/.test(
+    pathname
+  );
 
   if (isProtected && !isAuthRoute) {
     const loggedIn = hasReqAuth(request) || hasResAuth(response);
     if (!loggedIn) {
+      // Infer locale from path (fallback to "en")
+      const locale = pathname.split("/")[1] || "en";
       const loginUrl = new URL(`/${locale}/login`, request.url);
-      loginUrl.searchParams.set("next", pathname + request.nextUrl.search);
+      // Preserve intended destination:
+      loginUrl.searchParams.set("next", pathname + search);
       return NextResponse.redirect(loginUrl);
     }
   }
 
+  // Optional: add a small header for diagnostics (visible in Network panel)
+  response.headers.set("x-middleware", "ok");
   return response;
 }
 
+// Only run middleware on app paths, not static files, images, _next, or API
 export const config = {
   matcher: [
-    "/((?!api|trpc|_next|_vercel|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)|.*\\..*).*)",
+    // Run on everything except Next internals, static assets, and API routes
+    "/((?!api|trpc|_next|_vercel|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map)).*)",
   ],
 };
