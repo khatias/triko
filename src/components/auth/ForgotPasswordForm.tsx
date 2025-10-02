@@ -1,69 +1,81 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { makeAuthSchemas } from "@/lib/validation/auth";
-
+import { handleForgotPasswordSubmit } from "@/utils/auth/handleForgotPassword";
 import { InputField } from "../form/Field";
 import { UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-
+import { formHeading } from "../UI/primitives";
 export default function ForgotPasswordForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
   const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
-
+  const locale = useLocale();
   type ForgotPasswordInput = z.input<typeof schemas.forgotPasswordSchema>;
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
   const {
     register,
-    handleSubmit,
     formState: { errors, isSubmitting, isValid },
+    reset,
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(schemas.forgotPasswordSchema),
-    defaultValues: { website: "" },
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: { website: "" } as Partial<ForgotPasswordInput>,
   });
 
-  async function onSubmit(raw: ForgotPasswordInput) {
-    const data = schemas.forgotPasswordSchema.parse(raw);
-    console.log("Forgot password submit:", data);
-
-    // TODO: Call your API endpoint for password reset
-  }
-
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
-      <h2
-        id="forgot-title"
-        className="
-          relative mb-3 text-center text-3xl sm:text-4xl font-semibold
-          tracking-tight text-zinc-900 [text-wrap:balance] selection:bg-[#fdd5a2]/30
-          after:content-[''] after:mt-3 after:block after:h-[3px]
-          after:w-20 sm:after:w-28 after:mx-auto after:rounded-full
-          after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]
-        "
-      >
+    <form
+      onSubmit={async (e) => {
+        setErrorMessage(null);
+        setNoticeMessage(null);
+
+        const result = await handleForgotPasswordSubmit(e, locale);
+
+        if (!result.ok) {
+          setErrorMessage(result.message ?? "");
+          reset({ email: "", website: "" });
+          return;
+        }
+
+        setNoticeMessage(result.message ?? "");
+        reset({ email: "", website: "" });
+      }}
+    >
+      {errorMessage && (
+        <p className="mb-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">
+          {errorMessage}
+        </p>
+      )}
+      {noticeMessage && (
+        <p className="mb-4 rounded-md bg-emerald-50 p-3 text-sm text-center text-emerald-700">
+          {noticeMessage}
+        </p>
+      )}
+      <h2 id="forgot-title" className={formHeading}>
         <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("forgotPasswordTitle")}
         </span>
       </h2>
 
-      <p className="text-center text-sm text-zinc-600 sm:text-base pt-6">
+      <p className="text-center text-sm text-zinc-600 sm:text-base pt-2">
         {tForm("forgotPasswordSubtitle")}
       </p>
 
-      <div className="mt-6 grid">
+      <div className="mt-4 grid">
         <InputField
           id="reset-email"
           type="email"
           label={tForm("fields.email")}
-          icon={UserIcon }
+          icon={UserIcon}
           error={errors.email?.message}
           required
           {...register("email")}

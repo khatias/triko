@@ -18,7 +18,8 @@ import FeaturedCircles from "../cards/FeatureCircle";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import SocialMedia from "../socialMedia/SocialMedia";
 import { useTranslations } from "use-intl";
-
+import type { SafeUser } from "@/types/auth";
+import AccountMenu from "./AccountMenu";
 const navItems = [
   { name: "Boxers", href: "/Boxeres" },
   { name: "Dress", href: "/Dress" },
@@ -29,9 +30,11 @@ const navItems = [
   { name: "Kids", href: "/Kids" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ user }: { user: SafeUser }) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
+
+  // Common wrapper class for padding
   const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
 
   return (
@@ -62,12 +65,9 @@ export default function Navbar() {
             </div>
 
             {/* User + Cart visible on DESKTOP banner as requested */}
-            <button
-              aria-label="Account"
-              className="rounded-full p-2 hover:bg-slate-100"
-            >
-              <UserIcon className="h-6 w-6 text-slate-700" />
-            </button>
+
+            <AccountMenu user={user} />
+
             <button
               aria-label="Cart"
               className="relative rounded-full p-2 hover:bg-slate-100"
@@ -111,12 +111,8 @@ export default function Navbar() {
             >
               <MagnifyingGlassIcon className="h-6 w-6" />
             </button>
-            <button
-              aria-label="Account"
-              className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
-            >
-              <UserIcon className="h-6 w-6" />
-            </button>
+
+            <AccountMenu user={user} />
             <button
               aria-label="Cart"
               className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
