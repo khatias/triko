@@ -62,7 +62,7 @@ export async function handleAuthSubmit(
 
     const data = await safeJson(res);
     if (res.ok && data.code === "SIGNIN_OK") {
-      window.location.assign(`/${locale}/profile`);
+      window.location.assign(`/${locale}/profile/account`);
     }
     return {
       ok: res.ok,
