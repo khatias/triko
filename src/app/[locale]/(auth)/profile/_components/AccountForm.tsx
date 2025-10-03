@@ -5,7 +5,10 @@ import { useTranslations } from "next-intl";
 import CustomSelect from "@/components/form/CustomSelect";
 
 interface AccountFormProps {
-  updateProfileAction: (formData: FormData) => void;
+  updateProfileAction: (
+    prevState: { error?: string } | undefined,
+    formData: FormData
+  ) => Promise<{ error?: string }>;
   fullName: string;
   phone: string;
   sex: "" | "male" | "female";
@@ -22,6 +25,13 @@ const AccountForm: React.FC<AccountFormProps> = ({
   marketing,
 }) => {
   const t = useTranslations("Profile");
+
+  const [state, formAction] = React.useActionState(updateProfileAction, {
+    error: undefined,
+  });
+  if (state.error?.includes("birth_date_must_be_valid")) {
+    state.error = t("account.birthDateInvalid");
+  }
   function SaveButton() {
     const { pending } = useFormStatus();
     return (
@@ -34,8 +44,11 @@ const AccountForm: React.FC<AccountFormProps> = ({
       </button>
     );
   }
+
   return (
-    <form action={updateProfileAction} className="grid gap-5">
+    <form action={formAction} className="grid gap-5">
+      {/* Error banner */}
+
       {/* Full name */}
       <div>
         <label
@@ -49,7 +62,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
           name="full_name"
           defaultValue={fullName}
           className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
-                                         focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
+                     focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
           placeholder="Your full name"
           autoComplete="name"
         />
@@ -76,7 +89,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
         />
       </div>
 
-      {/* Sex (custom, portal-based) */}
+      {/* Sex */}
       <CustomSelect
         name="sex"
         label="Sex"
@@ -102,12 +115,12 @@ const AccountForm: React.FC<AccountFormProps> = ({
           name="birth_date"
           defaultValue={birth_date}
           className="w-full rounded-xl border border-slate-300 px-3 py-3 bg-white
-                                         focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
+                     focus:outline-none focus:ring-1 focus:ring-[#fdd5a2] focus:border-[#fdd5a2]"
           inputMode="numeric"
         />
       </div>
 
-      {/* Marketing opt-in */}
+      {/* Marketing */}
       <div className="md:col-span-2 flex items-center gap-3">
         <input
           id="marketing_opt_in"
@@ -124,6 +137,11 @@ const AccountForm: React.FC<AccountFormProps> = ({
       <div className="md:col-span-2">
         <SaveButton />
       </div>
+           {state.error && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            {state.error}
+          </p>
+        )}
     </form>
   );
 };

@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
 import { Profile } from "@/types/db";
-export async function updateProfileAction(formData: FormData) {
+
+export async function updateProfileAction(
+  prevState: { error?: string } | undefined,
+  formData: FormData
+) {
   const supabase = await createClient();
 
   const {
@@ -23,9 +27,12 @@ export async function updateProfileAction(formData: FormData) {
     .from("profiles")
     .update(payload)
     .eq("user_id", user.id);
+
   if (error) {
     console.error("updateProfileAction error", error);
+    return { error: error.message }; // 👈 return message
   }
 
   revalidatePath("/profile");
+  return { error: undefined };
 }

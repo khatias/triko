@@ -346,7 +346,8 @@
       "male": "Male",
       "birthdate": "Birth Date",
       "marketingOptIn": "I agree to receive marketing emails.",
-      "noUser": "please log in to have access to your profile."
+      "noUser": "please log in to have access to your profile.",
+      "birthDateInvalid": "Birth date must be a valid date in the past."
     },
     "addresses": {
       "title": "Shipping Addresses",
