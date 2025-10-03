@@ -90,7 +90,7 @@ export default function ResetPasswordForm() {
 
     if (res.ok) {
       showResultMessage(res.code, res.message);
-
+      router.refresh();
       router.replace(`/${locale}/profile`);
 
       return;
