@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 
 type SpinnerProps = {
@@ -13,35 +14,20 @@ export default function Spinner({
   label = "Loading",
 }: SpinnerProps) {
   return (
-    <span
-      className="inline-flex items-center"
+    <div
       role={announce ? "status" : undefined}
       aria-label={announce ? label : undefined}
-      aria-live={announce ? "polite" : undefined}
-      aria-busy={announce ? true : undefined}
-      aria-hidden={announce ? undefined : true}
+      className="fixed top-0 left-0 w-full h-full bg-gray-800/50 flex items-center justify-center z-50"
     >
-      <svg
-        viewBox="0 0 24 24"
-        className={`animate-spin text-orange-500 ${className}`}
-        fill="none"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeOpacity={0.2}
-          strokeWidth={4}
-        />
-        <path
-          d="M22 12a10 10 0 0 1-10 10"
-          stroke="currentColor"
-          strokeWidth={4}
-          strokeLinecap="round"
-        />
-      </svg>
-    </span>
+      <div className={`lds-ring ${className}`}>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      {announce && (
+        <span className="sr-only">{label}</span>
+      )}
+    </div>
   );
 }

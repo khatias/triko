@@ -4,11 +4,10 @@ import { usePathname } from "next/navigation";
 import React from "react";
 import { useTranslations } from "next-intl";
 import { ShoppingBag, UserRound, MapPin, ChevronRight } from "lucide-react";
+
 const getLinkClasses = (active: boolean) => {
-  const base = [
-    "group flex items-center justify-between rounded-xl p-3 relative transition-all duration-200 outline-none",
-    "focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]",
-  ].join(" ");
+  const base =
+    "group flex items-center justify-between rounded-xl p-3 relative transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-accent)]";
 
   const state = active
     ? "text-[var(--color-ink)] font-semibold"
@@ -19,15 +18,13 @@ const getLinkClasses = (active: boolean) => {
 
 export default function SidebarNav({ fullName }: { fullName: string }) {
   const t = useTranslations("Profile");
-  const links = [
-    { href: "orders", label: t("sidebar.orders"), icon: ShoppingBag },
-    { href: "account", label: t("sidebar.account"), icon: UserRound },
-    { href: "addresses", label: t("sidebar.addresses"), icon: MapPin },
-  ];
-
   const pathname = usePathname();
-  const base = pathname.split("/").slice(0, -1).join("/");
-  const activeSeg = pathname.split("/").pop();
+
+  const links = [
+    { href: "/profile/orders", label: t("sidebar.orders"), icon: ShoppingBag },
+    { href: "/profile/account", label: t("sidebar.account"), icon: UserRound },
+    { href: "/profile/addresses", label: t("sidebar.addresses"), icon: MapPin },
+  ];
 
   return (
     <div
@@ -52,11 +49,13 @@ export default function SidebarNav({ fullName }: { fullName: string }) {
 
       <nav className="space-y-2">
         {links.map(({ href, label, icon: Icon }) => {
-          const active = activeSeg === href;
+          // mark as active if pathname starts with href
+          const active = pathname?.startsWith(href) ?? false;
+
           return (
             <Link
               key={href}
-              href={`${base}/${href}`}
+              href={href}
               aria-current={active ? "page" : undefined}
               className={getLinkClasses(active)}
             >
