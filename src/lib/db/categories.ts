@@ -1,6 +1,6 @@
-import { createClient } from "@/utils/supabase/server"
+import { createClient } from "@/utils/supabase/server";
 
-type Locale = "en" | "ka"
+type Locale = "en" | "ka";
 
 type DbCategory = {
   id: string;
@@ -10,25 +10,24 @@ type DbCategory = {
   name_ka: string;
   slug_en: string;
   slug_ka: string;
-  status: "draft" | "published";
+  image_url?: string | null;
+  status: "draft" | "published" | "archived";
+};
 
-}
-export async function  fetchTopCategories(locale: Locale) {
-  const supabase = await createClient()
-  const {data,error} = await supabase
-  .from("categories")
-  .select(`id, parent_id, position, status, name_${locale}, slug_${locale}`)
-  .is("parent_id", null)
-  .eq("status", "published")
-  .order("position", { ascending: true })
+export async function fetchTopCategories(locale: Locale) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("categories")
+    .select(
+      "id,parent_id,position,name_en,name_ka,slug_en,slug_ka,status ,image_url"
+    )
+    .is("parent_id", null)
+    .eq("status", "published")
+    .order("position", { ascending: true });
 
   if (error) {
-    console.log("Error fetching categories:", error)
-    return []
-  }
-
-  if (!data) {
-    return []
+    throw new Error(`Failed to fetch categories: ${error.message}`);
   }
 
   return (data as DbCategory[]).map((c) => ({
@@ -37,5 +36,6 @@ export async function  fetchTopCategories(locale: Locale) {
     position: c.position,
     name: locale === "ka" ? c.name_ka : c.name_en,
     slug: locale === "ka" ? c.slug_ka : c.slug_en,
+    image_url: c.image_url,
   }));
 }

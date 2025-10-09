@@ -6,4 +6,5 @@ export type Category = {
   slug_en: string;
   slug_ka: string;
   position: number;
+  image_url?: string | null;
 };
