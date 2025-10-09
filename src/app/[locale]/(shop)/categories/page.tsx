@@ -20,6 +20,7 @@ export default async function CategoriesPage({
           id: c.id,
           name: c.name,
           href: `/${locale}/categories/${c.slug}`,
+          imageUrl: c.image_url,
         }))}
       />
     </section>
