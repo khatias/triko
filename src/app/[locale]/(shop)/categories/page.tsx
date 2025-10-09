@@ -19,7 +19,7 @@ export default async function CategoriesPage({
         items={categories.map((c) => ({
           id: c.id,
           name: c.name,
-          href: `/${locale}/categories/${c.slug}`,
+          href: `/${locale}/categories/${encodeURIComponent(c.route_slug)}`, // 👈 EN slug
           imageUrl: c.image_url,
         }))}
       />
