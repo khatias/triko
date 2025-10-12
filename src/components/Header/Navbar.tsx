@@ -20,28 +20,22 @@ import SocialMedia from "../socialMedia/SocialMedia";
 import { useTranslations } from "use-intl";
 import type { SafeUser } from "@/types/auth";
 import AccountMenu from "./AccountMenu";
-const navItems = [
-  { name: "Boxers", href: "/Boxeres" },
-  { name: "Dress", href: "/Dress" },
-  { name: "Pants", href: "/Pants" },
-  { name: "Kimano", href: "/kimano" },
-  { name: "Shorts", href: "/shorts" },
-  { name: "Tops", href: "/Tops" },
-  { name: "Kids", href: "/Kids" },
-];
-
-export default function Navbar({ user }: { user: SafeUser }) {
+import { wrap } from "../UI/primitives";
+import type { NavItem } from "@/types/Category";
+import { MobileItem } from "./MobileItem";
+export default function Navbar({
+  user,
+  categories,
+}: {
+  user: SafeUser;
+  categories: NavItem[];
+}) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
 
-  // Common wrapper class for padding
-  const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
-
   return (
     <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur- supports-[backdrop-filter]:bg-white">
-      {/* DESKTOP BANNER (kept + improved) */}
       <div className={`hidden lg:block ${wrap}`}>
-        {/* Banner Row: Language • Logo • Search + User/Cart */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center  py-3">
           <Link href="/" aria-label="Home" className="justify-self-center">
             <Image
@@ -64,21 +58,12 @@ export default function Navbar({ user }: { user: SafeUser }) {
               />
             </div>
 
-            {/* User + Cart visible on DESKTOP banner as requested */}
-
             <AccountMenu user={user} />
-
-            <button
-              aria-label="Cart"
-              className="relative rounded-full p-2 hover:bg-slate-100"
-            >
-              <ShoppingCartIcon className="h-6 w-6 text-slate-700" />
-            </button>
+            <ShoppingCartIcon className="h-6 w-6 text-slate-800 cursor-pointer" />
           </div>
         </div>
       </div>
 
-      {/* MOBILE TOPBAR (restored) */}
       <div className={`lg:hidden ${wrap}`}>
         <div className="flex items-center justify-between py-3">
           <button
@@ -123,7 +108,6 @@ export default function Navbar({ user }: { user: SafeUser }) {
         </div>
       </div>
 
-      {/* Backdrop */}
       <button
         aria-hidden={!isOpen}
         onClick={() => setOpen(false)}
@@ -132,7 +116,6 @@ export default function Navbar({ user }: { user: SafeUser }) {
         }`}
       />
 
-      {/* MOBILE DRAWER (restored SocialMedia, Info, Featured) */}
       <aside
         className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%]  transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -170,7 +153,7 @@ export default function Navbar({ user }: { user: SafeUser }) {
                   alt: "New Arrivals",
                 },
                 {
-                  href: "/kimano",
+                  href: "/categories/kimono",
                   label: t("kimano"),
                   image: pajama,
                   alt: "Kimono Collection",
@@ -179,21 +162,25 @@ export default function Navbar({ user }: { user: SafeUser }) {
             />
           </div>
 
-          <ul className={`${wrap} mt-2 flex flex-col gap-1 px-4`}>
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Link
-                  onClick={() => setOpen(false)}
-                  href={item.href}
-                  className="group flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-                >
-                  <span>{item.name}</span>
-                  <span className="h-3 w-3 rounded-full bg-slate-200 transition group-hover:bg-rose-300" />
-                </Link>
-              </li>
-            ))}
-            <li className="my-2 h-px w-full bg-slate-200" />
-          </ul>
+          <div className="h-[calc(100dvh-52px)] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+            <nav className="px-2 py-3">
+              <ul className="flex flex-col">
+                {categories.map((item) => (
+                  <li key={item.id}>
+                    <MobileItem item={item} onNavigate={() => setOpen(false)} />
+                  </li>
+                ))}
+                <li className="my-3 h-px w-full bg-slate-200" />
+                <li className="px-2 py-1">
+                  <LanguageSwitcher />
+                </li>
+              </ul>
+            </nav>
+
+            <div className={`${wrap} mt-6 mb-10 px-4`}>
+              <SocialMedia />
+            </div>
+          </div>
 
           <section className={`${wrap} border-b border-slate-100 py-3 px-4`}>
             <h3 className="px-1 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
