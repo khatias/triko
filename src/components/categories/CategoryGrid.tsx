@@ -13,8 +13,8 @@ export default function CategoryGrid({ items }: { items: Item[] }) {
   }
 
   return (
-    // Standard responsive grid setup
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+
+    <div className="grid grid-cols-2 gap-4  lg:grid-cols-4 lg:gap-8">
       {items.map((item) => (
         <CategoryCard
           key={item.id}

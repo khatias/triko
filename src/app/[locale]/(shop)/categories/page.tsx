@@ -1,6 +1,6 @@
 import { fetchTopCategories } from "@/lib/db/categories";
 import CategoryGrid from "@/components/categories/CategoryGrid";
-
+import { wrap } from "@/components/UI/primitives";
 export default async function CategoriesPage({
   params,
 }: {
@@ -11,7 +11,7 @@ export default async function CategoriesPage({
   const categories = await fetchTopCategories(locale);
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10">
+    <section className={`${wrap} py-8`}>
       <h1 className="text-2xl font-semibold mb-6">
         {locale === "ka" ? "კატეგორიები" : "Categories"}
       </h1>
@@ -19,7 +19,7 @@ export default async function CategoriesPage({
         items={categories.map((c) => ({
           id: c.id,
           name: c.name,
-          href: `/${locale}/categories/${encodeURIComponent(c.route_slug)}`, // 👈 EN slug
+          href: `/${locale}/categories/${encodeURIComponent(c.route_slug)}`,
           imageUrl: c.image_url,
         }))}
       />
