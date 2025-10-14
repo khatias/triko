@@ -70,7 +70,10 @@ export const headCls = [
 export const formHeading = [
   "relative mx-auto mb-6 max-w-2xl text-center text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900 [text-wrap:balance] selection:bg-[#fdd5a2]/30 before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6 before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10 after:content-[''] after:mt-4 after:block after:h-[3px] after:w-16 sm:after:w-24 after:rounded-full after:mx-auto after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]",
 ].join(" ");
+export const linkBase =
+"px-1.5 py-1 text-[14px] font-medium tracking-[0.08em] text-slate-700 rounded-md hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200";
 
+export  const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
 export function MenuButton({
   onClick,
   icon: Icon,

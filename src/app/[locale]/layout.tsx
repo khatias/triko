@@ -7,7 +7,7 @@ import Header from "@/components/Header/Header";
 import "../globals.css";
 import { Toaster } from "sonner";
 import Footer from "@/components/footer/Footer";
-
+import Banner from "@/components/Header/Banner";
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -41,10 +41,11 @@ export default async function LocaleLayout({
       <div
         className={`${notoSansGeorgian.variable} ${montserrat.variable} antialiased bg-white dark:bg-black text-black dark:text-white transition-colors duration-200 ease-in`}
       >
-  <Header />
+        <Banner />
+        <Header locale={locale as "ka" | "en"} />
         {children}
-                <Toaster richColors position="top-right" />
-<Footer/>
+        <Toaster richColors position="top-right" />
+        <Footer />
       </div>
     </NextIntlClientProvider>
   );
