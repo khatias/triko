@@ -365,5 +365,17 @@
       "saving": "Saving…",
       "cancel": "Cancel"
     }
+  },
+  "admin": {
+    "products": {
+      "products": "Products",
+      "noProducts": "No products found.",
+      "title": "Title",
+      "newProduct": "New Product",
+      "productName": "Product Name",
+      "status": "Status",
+      "updated": "Last Updated",
+      "position": "Position"
+    }
   }
 }
