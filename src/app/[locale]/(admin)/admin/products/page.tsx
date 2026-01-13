@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { getTranslations } from "next-intl/server";
 
@@ -12,15 +11,12 @@ export default async function AdminProductsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("admin.products");
+
   const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth?.user) redirect(`/${locale}/login`);
 
   const { data: products, error } = await supabase
     .from("products")
-    .select(
-      "id,status,position,name_en,name_ka,slug_en,slug_ka,primary_image_url,updated_at"
-    )
+    .select("id,status,position,name_en,name_ka,slug_en,slug_ka,updated_at")
     .order("position", { ascending: true })
     .order("updated_at", { ascending: false })
     .limit(200);
@@ -62,7 +58,12 @@ export default async function AdminProductsPage({
             {(products ?? []).map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-3">
-                  <div className="font-medium">{p.name_ka ?? p.name_en}</div>
+                  <Link
+                    href={`/${locale}/admin/products/${p.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {p.name_ka ?? p.name_en}
+                  </Link>
                   <div className="text-xs text-gray-500">{p.slug_en}</div>
                 </td>
                 <td className="p-3">{p.status}</td>
