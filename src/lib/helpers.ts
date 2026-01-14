@@ -17,3 +17,14 @@ export function readNumber(r: Rec, key: string): number | null {
   const v = r[key];
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
+
+// Parse a label like "— — Category Name" into depth and text.
+export function parseIndentedLabel(raw: string): { depth: number; text: string } {
+  let depth = 0;
+  let s = raw;
+  while (s.startsWith("— ")) {
+    depth += 1;
+    s = s.slice(2);
+  }
+  return { depth, text: s.trimStart() };
+}
