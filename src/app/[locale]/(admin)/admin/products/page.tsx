@@ -16,7 +16,7 @@ export default async function AdminProductsPage({
 
   const { data: products, error } = await supabase
     .from("products")
-    .select("id,status,position,name_en,name_ka,slug_en,slug_ka,updated_at")
+    .select("id,status,position,name_en,name_ka,slug,updated_at")
     .order("position", { ascending: true })
     .order("updated_at", { ascending: false })
     .limit(200);
@@ -62,9 +62,9 @@ export default async function AdminProductsPage({
                     href={`/${locale}/admin/products/${p.id}`}
                     className="font-medium hover:underline"
                   >
-                    {p.name_ka ?? p.name_en}
+                    {locale === "ka" ? p.name_ka || p.name_en : p.name_en}
                   </Link>
-                  <div className="text-xs text-gray-500">{p.slug_en}</div>
+                  <div className="text-xs text-gray-500">{p.slug}</div>
                 </td>
                 <td className="p-3">{p.status}</td>
                 <td className="p-3">{p.position}</td>
