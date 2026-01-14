@@ -1,0 +1,19 @@
+type Rec = Record<string, unknown>;
+
+// Narrow unknown value into a plain object so we can safely read fields like r["id"].
+// Returns null if the value is not an object (or is null).
+export function asRec(v: unknown): Rec | null {
+  return v && typeof v === "object" ? (v as Rec) : null;
+}
+
+// Safely read a string field from a Record. If the value is not a string, return null.
+export function readString(r: Rec, key: string): string | null {
+  const v = r[key];
+  return typeof v === "string" ? v : null;
+}
+
+// Safely read a finite number field from a Record. Returns null if missing, not a number, or NaN/Infinity.
+export function readNumber(r: Rec, key: string): number | null {
+  const v = r[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
