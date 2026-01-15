@@ -521,9 +521,13 @@ export default async function AdminProductDetailPage({
                   Actions
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="flex items-center justify-center px-4 py-2 bg-white border border-zinc-300 shadow-sm rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors">
+                  <Link
+                    href={`/${locale}/admin/products/${product.id}/edit`}
+                    className="flex items-center justify-center px-4 py-2 bg-white border border-zinc-300 shadow-sm rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                  >
                     Edit
-                  </button>
+                  </Link>
+
                   <button className="flex items-center justify-center px-4 py-2 bg-white border border-red-200 shadow-sm rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                     Delete
                   </button>
