@@ -199,7 +199,6 @@ const selectedColorSet = React.useMemo(() => {
   return (
     <form
       action={formAction}
-      encType="multipart/form-data"
       noValidate
       onChange={() => setShowBanner(false)}
       onSubmit={async (e) => {
