@@ -5,6 +5,11 @@ const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   images: {
+        domains: [
+      "avatars.githubusercontent.com",
+      "unfdxueausqwhlaohxcp.supabase.co",
+      "lh3.googleusercontent.com",
+    ],
     remotePatterns: [
       {
         protocol: "https",
