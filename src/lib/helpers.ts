@@ -28,3 +28,10 @@ export function parseIndentedLabel(raw: string): { depth: number; text: string }
   }
   return { depth, text: s.trimStart() };
 }
+
+export function moneyFromCents(cents: number | null): string {
+  if (typeof cents !== "number") return "N/A";
+  const v = cents / 100;
+  return v.toLocaleString("ka-GE", { style: "currency", currency: "GEL" });
+}
+

@@ -192,3 +192,20 @@ export function Input({
     </div>
   );
 }
+export const StatusBadge = ({ status }: { status: string | null }) => {
+  const s = status?.toLowerCase() || "unknown";
+  let styles = "bg-gray-100 text-gray-700 border-gray-200";
+
+  if (s === "active" || s === "published")
+    styles = "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s === "draft") styles = "bg-amber-50 text-amber-700 border-amber-200";
+  if (s === "archived") styles = "bg-zinc-100 text-zinc-600 border-zinc-200";
+
+  return (
+    <span
+      className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles} capitalize`}
+    >
+      {status || "No Status"}
+    </span>
+  );
+};
