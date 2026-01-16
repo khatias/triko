@@ -5,11 +5,7 @@ type Rec = Record<string, unknown>;
 export function asRec(v: unknown): Rec | null {
   return v && typeof v === "object" ? (v as Rec) : null;
 }
-// Safely read a string field from FormData. If the value is not a string, return an empty string.
-export function fdString(fd: FormData, key: string): string {
-  const v = fd.get(key);
-  return typeof v === "string" ? v : "";
-}
+
 
 // Safely read a string field from a Record. If the value is not a string, return null.
 export function readString(r: Rec, key: string): string | null {

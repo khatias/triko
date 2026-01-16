@@ -4,7 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/utils/auth/requireAdmin";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { fdString } from "@/lib/helpers";
+import { fdString } from "@/lib/forms/formData";
 export type ProductCategoriesState = {
   ok: boolean;
   message?: string;
