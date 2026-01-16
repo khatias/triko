@@ -155,8 +155,6 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   );
 }
 
-// --- Main Component ---
-
 export default function ImageManager({
   locale,
   productId,
@@ -164,6 +162,7 @@ export default function ImageManager({
   gallery,
   colorImages,
   colors,
+  allColors,
 }: {
   locale: string;
   productId: string;
@@ -171,6 +170,7 @@ export default function ImageManager({
   gallery: ProductImageRow[];
   colorImages: ProductColorImageRow[];
   colors: ColorRow[];
+  allColors?: ColorRow[];
 }) {
   const router = useRouter();
   const action = productImagesAction.bind(null, locale, productId);
@@ -242,9 +242,23 @@ export default function ImageManager({
     setColorOrder(next);
   }, [colorIds, colorImgsById]);
 
+  // Add color UI support (optional)
+  const availableColors = React.useMemo(() => {
+    if (!allColors) return [];
+    const used = new Set(colorIds);
+    return allColors.filter((c) => !used.has(c.id));
+  }, [allColors, colorIds]);
+
+  const [addColorId, setAddColorId] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (!addColorId) {
+      setAddColorId(availableColors[0]?.id ?? "");
+    }
+  }, [availableColors, addColorId]);
+
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-20">
-      {/* Alert Banner */}
+    <div className="space-y-8  mx-auto pb-20">
       {state.message && (
         <div
           className={cx(
@@ -264,13 +278,10 @@ export default function ImageManager({
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- Primary Image --- */}
+        {/* Primary */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden sticky top-6">
-            <SectionHeader
-              title="Primary Image"
-              sub="Used on cards and listings"
-            />
+            <SectionHeader title="Primary Image" sub="Used on cards and listings" />
             <div className="p-6 space-y-6">
               <div className="relative w-full aspect-[3/4] overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50 group">
                 {primaryImageUrl ? (
@@ -284,11 +295,7 @@ export default function ImageManager({
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                       <form action={formAction}>
-                        <input
-                          type="hidden"
-                          name="_intent"
-                          value="primary_delete"
-                        />
+                        <input type="hidden" name="_intent" value="primary_delete" />
                         <SubmitButton className="px-4 py-2 bg-white text-red-600 rounded-lg text-xs font-bold shadow-sm hover:bg-red-50">
                           Remove Image
                         </SubmitButton>
@@ -305,9 +312,7 @@ export default function ImageManager({
 
               <form action={formAction} className="space-y-3">
                 <input type="hidden" name="_intent" value="primary_upload" />
-
                 <UploadZone name="primary_image" key={`primary-${resetKey}`} />
-
                 <SubmitButton className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 transition-colors shadow-sm">
                   <Plus className="w-4 h-4" />
                   Set Primary
@@ -317,23 +322,16 @@ export default function ImageManager({
           </div>
         </div>
 
-        {/* --- Gallery & Colors --- */}
+        {/* Gallery and Colors */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Gallery */}
+          {/* Gallery (unchanged) */}
           <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between pr-4">
-              <SectionHeader
-                title="General Gallery"
-                sub="Additional product angles"
-              />
+              <SectionHeader title="General Gallery" sub="Additional product angles" />
               {galleryOrder.length > 0 && (
                 <form action={formAction}>
                   <input type="hidden" name="_intent" value="gallery_reorder" />
-                  <input
-                    type="hidden"
-                    name="order_json"
-                    value={JSON.stringify(galleryOrder)}
-                  />
+                  <input type="hidden" name="order_json" value={JSON.stringify(galleryOrder)} />
                   <SubmitButton className="flex items-center gap-1.5 text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-md transition-colors">
                     <Save className="w-3.5 h-3.5" />
                     Save Order
@@ -372,9 +370,7 @@ export default function ImageManager({
                             <button
                               type="button"
                               onClick={() =>
-                                setGalleryOrder((prev) =>
-                                  moveInArray(prev, path, -1)
-                                )
+                                setGalleryOrder((prev) => moveInArray(prev, path, -1))
                               }
                               disabled={idx === 0}
                               className="p-1.5 rounded-md bg-white/10 text-white hover:bg-white/30 disabled:opacity-20 transition-colors"
@@ -384,9 +380,7 @@ export default function ImageManager({
                             <button
                               type="button"
                               onClick={() =>
-                                setGalleryOrder((prev) =>
-                                  moveInArray(prev, path, 1)
-                                )
+                                setGalleryOrder((prev) => moveInArray(prev, path, 1))
                               }
                               disabled={idx === galleryOrder.length - 1}
                               className="p-1.5 rounded-md bg-white/10 text-white hover:bg-white/30 disabled:opacity-20 transition-colors"
@@ -395,16 +389,8 @@ export default function ImageManager({
                             </button>
                           </div>
                           <form action={formAction} className="mt-1">
-                            <input
-                              type="hidden"
-                              name="_intent"
-                              value="gallery_delete"
-                            />
-                            <input
-                              type="hidden"
-                              name="storage_path"
-                              value={path}
-                            />
+                            <input type="hidden" name="_intent" value="gallery_delete" />
+                            <input type="hidden" name="storage_path" value={path} />
                             <SubmitButton className="p-1.5 rounded-md bg-red-500/20 text-red-200 hover:bg-red-500 hover:text-white transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </SubmitButton>
@@ -416,19 +402,11 @@ export default function ImageManager({
                 </div>
               )}
 
-              <form
-                action={formAction}
-                className="space-y-3 pt-4 border-t border-zinc-100"
-              >
+              <form action={formAction} className="space-y-3 pt-4 border-t border-zinc-100">
                 <input type="hidden" name="_intent" value="gallery_upload" />
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    {/* Key Prop Reset Pattern */}
-                    <UploadZone
-                      name="gallery_images"
-                      multiple
-                      key={`gallery-${resetKey}`}
-                    />
+                    <UploadZone name="gallery_images" multiple key={`gallery-${resetKey}`} />
                   </div>
                   <SubmitButton className="h-32 px-6 rounded-xl bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 shadow-sm flex flex-col items-center justify-center gap-2">
                     <Plus className="w-6 h-6" />
@@ -441,11 +419,40 @@ export default function ImageManager({
 
           {/* Colors */}
           <div className="bg-white rounded-xl border border-zinc-200 shadow-sm overflow-hidden">
-            <SectionHeader
-              title="Color Variations"
-              sub="Images specific to a selected color variant"
-            />
+            <SectionHeader title="Color Variations" sub="Images specific to a selected color variant" />
             <div className="p-6 space-y-8">
+              {/* Add color box, only if you pass allColors */}
+              {allColors && (
+                <div className="rounded-xl border border-zinc-200 bg-white p-4">
+                  <div className="text-sm font-semibold text-zinc-900">Add color</div>
+                  {availableColors.length === 0 ? (
+                    <div className="text-xs text-zinc-500 mt-2">
+                      No more colors available.
+                    </div>
+                  ) : (
+                    <form action={formAction} className="mt-3 flex gap-3 items-center">
+                      <input type="hidden" name="_intent" value="variant_add_color" />
+                      <select
+                        name="color_id"
+                        value={addColorId}
+                        onChange={(e) => setAddColorId(e.target.value)}
+                        className="flex-1 h-10 rounded-lg border border-zinc-300 bg-white px-3 text-sm"
+                      >
+                        {availableColors.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {labelForLocale(locale, { name_en: c.name_en, name_ka: c.name_ka })}
+                          </option>
+                        ))}
+                      </select>
+
+                      <SubmitButton className="h-10 px-4 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800">
+                        Add
+                      </SubmitButton>
+                    </form>
+                  )}
+                </div>
+              )}
+
               {colorIds.length === 0 ? (
                 <div className="text-sm text-zinc-500 text-center">
                   No color variants found for this product.
@@ -485,28 +492,34 @@ export default function ImageManager({
                               {title}
                             </span>
                           </div>
-                          {order.length > 0 && (
-                            <form action={formAction}>
-                              <input
-                                type="hidden"
-                                name="_intent"
-                                value="color_reorder"
-                              />
-                              <input
-                                type="hidden"
-                                name="color_id"
-                                value={colorId}
-                              />
-                              <input
-                                type="hidden"
-                                name="order_json"
-                                value={JSON.stringify(order)}
-                              />
-                              <SubmitButton className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline">
-                                Save Order
+
+                          <div className="flex items-center gap-3">
+                            {order.length > 0 && (
+                              <form action={formAction}>
+                                <input type="hidden" name="_intent" value="color_reorder" />
+                                <input type="hidden" name="color_id" value={colorId} />
+                                <input type="hidden" name="order_json" value={JSON.stringify(order)} />
+                                <SubmitButton className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline">
+                                  Save Order
+                                </SubmitButton>
+                              </form>
+                            )}
+
+                            <form
+                              action={formAction}
+                              onSubmit={(e) => {
+                                if (!confirm(`Remove color ${title}? This deletes variants and color images.`)) {
+                                  e.preventDefault();
+                                }
+                              }}
+                            >
+                              <input type="hidden" name="_intent" value="variant_remove_color" />
+                              <input type="hidden" name="color_id" value={colorId} />
+                              <SubmitButton className="text-xs text-red-600 hover:text-red-700 font-medium hover:underline">
+                                Remove
                               </SubmitButton>
                             </form>
-                          )}
+                          </div>
                         </div>
 
                         <div className="p-4 space-y-4">
@@ -569,21 +582,9 @@ export default function ImageManager({
                                         </button>
                                       </div>
                                       <form action={formAction}>
-                                        <input
-                                          type="hidden"
-                                          name="_intent"
-                                          value="color_delete"
-                                        />
-                                        <input
-                                          type="hidden"
-                                          name="color_id"
-                                          value={colorId}
-                                        />
-                                        <input
-                                          type="hidden"
-                                          name="storage_path"
-                                          value={path}
-                                        />
+                                        <input type="hidden" name="_intent" value="color_delete" />
+                                        <input type="hidden" name="color_id" value={colorId} />
+                                        <input type="hidden" name="storage_path" value={path} />
                                         <SubmitButton className="text-red-400 hover:text-red-200">
                                           <Trash2 className="w-4 h-4" />
                                         </SubmitButton>
@@ -595,20 +596,9 @@ export default function ImageManager({
                             </div>
                           )}
 
-                          <form
-                            action={formAction}
-                            className="flex gap-3 items-center"
-                          >
-                            <input
-                              type="hidden"
-                              name="_intent"
-                              value="color_upload"
-                            />
-                            <input
-                              type="hidden"
-                              name="color_id"
-                              value={colorId}
-                            />
+                          <form action={formAction} className="flex gap-3 items-center">
+                            <input type="hidden" name="_intent" value="color_upload" />
+                            <input type="hidden" name="color_id" value={colorId} />
                             <div className="flex-1">
                               <CompactFileUploader
                                 name="color_images"

@@ -4,7 +4,11 @@ import { requireAdmin } from "@/utils/auth/requireAdmin";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { ChevronLeft, AlertCircle } from "lucide-react";
 
-import type { ProductRow, ProductImageRow, ProductColorImageRow } from "@/types/product";
+import type {
+  ProductRow,
+  ProductImageRow,
+  ProductColorImageRow,
+} from "@/types/product";
 import type { CategoryRow, ColorRow } from "@/types/catalog";
 
 import EditProductForm from "./EditProductForm";
@@ -16,7 +20,11 @@ export const dynamic = "force-dynamic";
 
 type CategoryJoinRow = {
   position: number | null;
-  categories: { id: string; name_en: string | null; name_ka: string | null } | null;
+  categories: {
+    id: string;
+    name_en: string | null;
+    name_ka: string | null;
+  } | null;
 };
 
 type VariantColorRow = { color_id: string };
@@ -45,8 +53,12 @@ export default async function AdminProductEditPage({
           <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-red-600" />
           </div>
-          <h1 className="text-lg font-semibold text-zinc-900">Product Not Found</h1>
-          <p className="text-sm text-zinc-500">{pErr?.message ?? "This product does not exist."}</p>
+          <h1 className="text-lg font-semibold text-zinc-900">
+            Product Not Found
+          </h1>
+          <p className="text-sm text-zinc-500">
+            {pErr?.message ?? "This product does not exist."}
+          </p>
           <Link
             href={`/${locale}/admin/products`}
             className="inline-block px-4 py-2 bg-zinc-900 text-white rounded-md text-sm font-medium hover:bg-zinc-800 transition-colors"
@@ -64,6 +76,7 @@ export default async function AdminProductEditPage({
     { data: gallery, error: gErr },
     { data: colorImgs, error: ciErr },
     { data: variantColors, error: vcErr },
+    { data: allColors, error: allColErr },
   ] = await Promise.all([
     db
       .from("product_categories")
@@ -92,21 +105,33 @@ export default async function AdminProductEditPage({
       .select("color_id")
       .eq("product_id", id)
       .overrideTypes<VariantColorRow[], { merge: false }>(),
+    db
+      .from("colors")
+      .select("id,code,name_en,name_ka,hex")
+      .order("name_en", { ascending: true })
+      .overrideTypes<ColorRow[], { merge: false }>(),
   ]);
 
   const assigned = (catLinks ?? [])
     .map((r) => (r.categories ? { ...r.categories, position: r.position } : null))
-    .filter(Boolean) as Array<{ id: string; name_en: string | null; name_ka: string | null; position: number | null }>;
+    .filter(Boolean) as Array<{
+    id: string;
+    name_en: string | null;
+    name_ka: string | null;
+    position: number | null;
+  }>;
 
   const categoriesFlat = buildCategoryTreeFlat(rawCats ?? []);
 
   const colorIds = Array.from(
-    new Set([...(variantColors ?? []).map((v) => v.color_id), ...(colorImgs ?? []).map((c) => c.color_id)])
+    new Set([
+      ...(variantColors ?? []).map((v) => v.color_id),
+      ...(colorImgs ?? []).map((c) => c.color_id),
+    ])
   );
 
-  const { data: colors, error: colErr } = colorIds.length
-    ? await db.from("colors").select("id,code,name_en,name_ka,hex").in("id", colorIds).overrideTypes<ColorRow[], { merge: false }>()
-    : { data: [], error: null };
+  const colorSet = new Set(colorIds);
+  const colors = (allColors ?? []).filter((c) => colorSet.has(c.id));
 
   return (
     <main className="min-h-screen bg-zinc-50/50 pb-20">
@@ -128,10 +153,15 @@ export default async function AdminProductEditPage({
               </p>
             </div>
 
-            {catErr || rawErr || gErr || ciErr || vcErr || colErr ? (
+            {catErr || rawErr || gErr || ciErr || vcErr || allColErr ? (
               <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                 Some data failed to load:{" "}
-                {catErr?.message ?? rawErr?.message ?? gErr?.message ?? ciErr?.message ?? vcErr?.message ?? colErr?.message}
+                {catErr?.message ??
+                  rawErr?.message ??
+                  gErr?.message ??
+                  ciErr?.message ??
+                  vcErr?.message ??
+                  allColErr?.message}
               </div>
             ) : null}
           </div>
@@ -143,7 +173,7 @@ export default async function AdminProductEditPage({
               <EditProductCategories
                 locale={locale}
                 productId={product.id}
-                assigned={assigned as Array<{ id: string; name_en: string | null; name_ka: string | null; position: number | null }>}
+                assigned={assigned}
                 allCategories={categoriesFlat}
               />
             </div>
@@ -156,6 +186,7 @@ export default async function AdminProductEditPage({
                 gallery={gallery ?? []}
                 colorImages={colorImgs ?? []}
                 colors={colors ?? []}
+                allColors={allColors ?? []}
               />
             </div>
           </div>

@@ -21,6 +21,10 @@ function hasDuplicates(list: string[]): boolean {
   return new Set(list).size !== list.length;
 }
 
+function uniq(list: string[]): string[] {
+  return Array.from(new Set(list));
+}
+
 function revalidateProductPages(locale: string, productId: string) {
   revalidatePath(`/${locale}/admin/products/${productId}`);
   revalidatePath(`/${locale}/admin/products/${productId}/edit`);
@@ -36,6 +40,160 @@ export async function productImagesAction(
   const db = createAdminClient();
 
   const intent = fdString(formData, "_intent");
+
+  // ------------------------------------------------------------
+  // NEW: Add color to product (creates variants for all sizes)
+  // ------------------------------------------------------------
+  if (intent === "variant_add_color") {
+    const colorId = fdString(formData, "color_id");
+    if (!colorId) return { ok: false, message: "Missing color_id." };
+
+    // Load color code (stored in product_variants.color)
+    const { data: colorRow, error: cErr } = await db
+      .from("colors")
+      .select("id,code")
+      .eq("id", colorId)
+      .maybeSingle();
+
+    if (cErr) return { ok: false, message: cErr.message };
+    if (!colorRow) return { ok: false, message: "Color not found." };
+
+    // Existing sizes on this product
+    const { data: sizeRows, error: sErr } = await db
+      .from("product_variants")
+      .select("size_id")
+      .eq("product_id", productId);
+
+    if (sErr) return { ok: false, message: sErr.message };
+
+    const allSizeIds = uniq((sizeRows ?? []).map((r) => String(r.size_id)));
+    if (allSizeIds.length === 0) {
+      return { ok: false, message: "No sizes found for this product." };
+    }
+
+    // Avoid duplicates if color already partially exists
+    const { data: existingForColor, error: exErr } = await db
+      .from("product_variants")
+      .select("size_id")
+      .eq("product_id", productId)
+      .eq("color_id", colorId);
+
+    if (exErr) return { ok: false, message: exErr.message };
+
+    const existingSizeIds = new Set(
+      (existingForColor ?? []).map((r) => String(r.size_id))
+    );
+    const missingSizeIds = allSizeIds.filter((id) => !existingSizeIds.has(id));
+
+    if (missingSizeIds.length === 0) {
+      revalidateProductPages(locale, productId);
+      return { ok: true, message: "Color already exists." };
+    }
+
+    // Load size codes (stored in product_variants.size)
+    const { data: sizeCodeRows, error: scErr } = await db
+      .from("sizes")
+      .select("id,code")
+      .in("id", missingSizeIds);
+
+    if (scErr) return { ok: false, message: scErr.message };
+
+    const sizeCodeById = new Map<string, string>();
+    for (const r of sizeCodeRows ?? []) {
+      sizeCodeById.set(String(r.id), String(r.code));
+    }
+
+    const rowsToInsert: Array<{
+      product_id: string;
+      color_id: string;
+      size_id: string;
+      color: string;
+      size: string;
+      is_active: boolean;
+    }> = missingSizeIds.map((size_id) => ({
+      product_id: productId,
+      color_id: colorId,
+      size_id,
+      color: String(colorRow.code),
+      size: sizeCodeById.get(size_id) ?? "",
+      is_active: true,
+    }));
+
+    // Insert in chunks to be safe
+    for (let i = 0; i < rowsToInsert.length; i += 500) {
+      const chunk = rowsToInsert.slice(i, i + 500);
+      const { error } = await db.from("product_variants").insert(chunk);
+      if (error) {
+        // If unique constraint, someone double clicked, treat as ok
+        if ((error as { code?: string }).code === "23505") break;
+        return { ok: false, message: error.message };
+      }
+    }
+
+    revalidateProductPages(locale, productId);
+    return { ok: true, message: "Color added." };
+  }
+
+  // ------------------------------------------------------------
+  // NEW: Remove color from product (deletes variants + color images)
+  // ------------------------------------------------------------
+  if (intent === "variant_remove_color") {
+    const colorId = fdString(formData, "color_id");
+    if (!colorId) return { ok: false, message: "Missing color_id." };
+
+    // Prevent deleting last color
+    const { data: allVarColors, error: vcErr } = await db
+      .from("product_variants")
+      .select("color_id")
+      .eq("product_id", productId);
+
+    if (vcErr) return { ok: false, message: vcErr.message };
+
+    const colorSet = uniq((allVarColors ?? []).map((r) => String(r.color_id)));
+    if (colorSet.length <= 1 && colorSet[0] === colorId) {
+      return { ok: false, message: "Product must have at least 1 color." };
+    }
+
+    // Collect storage paths for this color images (for storage cleanup)
+    const { data: imgRows, error: imgErr } = await db
+      .from("product_color_images")
+      .select("storage_path")
+      .eq("product_id", productId)
+      .eq("color_id", colorId);
+
+    if (imgErr) return { ok: false, message: imgErr.message };
+
+    const paths = (imgRows ?? [])
+      .map((r) => String(r.storage_path))
+      .filter(Boolean);
+
+    // Delete DB rows first
+    const { error: delImgsErr } = await db
+      .from("product_color_images")
+      .delete()
+      .eq("product_id", productId)
+      .eq("color_id", colorId);
+
+    if (delImgsErr) return { ok: false, message: delImgsErr.message };
+
+    const { error: delVarErr } = await db
+      .from("product_variants")
+      .delete()
+      .eq("product_id", productId)
+      .eq("color_id", colorId);
+
+    if (delVarErr) return { ok: false, message: delVarErr.message };
+
+    // Best effort storage cleanup
+    if (paths.length > 0) {
+      await removeUploadedPaths(db, paths);
+    }
+
+    revalidateProductPages(locale, productId);
+    return { ok: true, message: "Color removed." };
+  }
+
+  // ---------------- your existing intents below ----------------
 
   if (intent === "primary_upload") {
     const file = readFile(formData, "primary_image");
@@ -203,7 +361,6 @@ export async function productImagesAction(
     return { ok: true, message: "Gallery image removed." };
   }
 
-  // ✅ BEST OPTION: reorder = UPDATE ONLY (no upsert)
   if (intent === "gallery_reorder") {
     const order = fdJsonArray(formData, "order_json");
     if (!order || order.length === 0)
@@ -342,7 +499,6 @@ export async function productImagesAction(
     return { ok: true, message: "Color image removed." };
   }
 
-  // ✅ BEST OPTION: reorder = UPDATE ONLY (no upsert)
   if (intent === "color_reorder") {
     const colorId = fdString(formData, "color_id");
     if (!colorId) return { ok: false, message: "Missing color_id." };
