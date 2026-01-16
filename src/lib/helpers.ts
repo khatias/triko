@@ -36,3 +36,24 @@ export function moneyFromCents(cents: number | null): string {
   return v.toLocaleString("ka-GE", { style: "currency", currency: "GEL" });
 }
 
+export function labelForLocale(
+  locale: string,
+  c: { name_en: string | null; name_ka: string | null }
+) {
+  const primary = locale === "ka" ? c.name_ka : c.name_en;
+  const secondary = locale === "ka" ? c.name_en : c.name_ka;
+  return primary || secondary || "Untitled";
+}
+export function cx(...parts: Array<string | false | null | undefined>) {
+  return parts.filter(Boolean).join(" ");
+}
+
+export function moveInArray(list: string[], id: string, dir: -1 | 1): string[] {
+  const idx = list.indexOf(id);
+  if (idx < 0) return list;
+  const nextIdx = idx + dir;
+  if (nextIdx < 0 || nextIdx >= list.length) return list;
+  const copy = list.slice();
+  [copy[idx], copy[nextIdx]] = [copy[nextIdx], copy[idx]];
+  return copy;
+}

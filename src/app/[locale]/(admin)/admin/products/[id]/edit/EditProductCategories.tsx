@@ -14,7 +14,7 @@ import {
 import type { CategoryRow } from "@/types/catalog";
 import type { ProductCategoriesState } from "./categoryActions";
 import { productCategoriesAction } from "./categoryActions";
-
+import { labelForLocale } from "@/lib/helpers";
 type AssignedCategory = {
   id: string;
   name_en: string | null;
@@ -24,14 +24,7 @@ type AssignedCategory = {
 
 const initialState: ProductCategoriesState = { ok: false };
 
-function labelForLocale(
-  locale: string,
-  c: { name_en: string | null; name_ka: string | null }
-) {
-  const primary = locale === "ka" ? c.name_ka : c.name_en;
-  const secondary = locale === "ka" ? c.name_en : c.name_ka;
-  return primary || secondary || "Untitled";
-}
+
 
 export default function EditProductCategories({
   locale,

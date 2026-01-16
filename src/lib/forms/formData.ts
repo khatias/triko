@@ -40,3 +40,14 @@ export function fdIdsUnique(fd: FormData, key: string): string[] {
 
   return out;
 }
+export function fdJsonArray(fd: FormData, key: string): string[] | null {
+  const raw = fdString(fd, key);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.filter((x): x is string => typeof x === "string");
+  } catch {
+    return null;
+  }
+}
