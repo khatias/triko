@@ -9,8 +9,9 @@ import type {
   ProductImageRow,
   ProductColorImageRow,
 } from "@/types/product";
-import type { CategoryRow, ColorRow } from "@/types/catalog";
+import type { CategoryRow, ColorRow, SizeRow } from "@/types/catalog";
 
+import EditProductSizes from "./EditProductSizes";
 import EditProductForm from "./EditProductForm";
 import EditProductCategories from "./EditProductCategories";
 import ImageManager from "./ImageManager";
@@ -28,6 +29,7 @@ type CategoryJoinRow = {
 };
 
 type VariantColorRow = { color_id: string };
+type VariantSizeRow = { size_id: string };
 
 export default async function AdminProductEditPage({
   params,
@@ -76,7 +78,9 @@ export default async function AdminProductEditPage({
     { data: gallery, error: gErr },
     { data: colorImgs, error: ciErr },
     { data: variantColors, error: vcErr },
+    { data: variantSizes, error: vsErr },
     { data: allColors, error: allColErr },
+    { data: allSizes, error: allSizesErr },
   ] = await Promise.all([
     db
       .from("product_categories")
@@ -100,16 +104,35 @@ export default async function AdminProductEditPage({
       .eq("product_id", id)
       .order("position", { ascending: true })
       .overrideTypes<ProductColorImageRow[], { merge: false }>(),
+
+    // only active variants should define assigned colors
     db
       .from("product_variants")
       .select("color_id")
       .eq("product_id", id)
+      .eq("is_active", true)
       .overrideTypes<VariantColorRow[], { merge: false }>(),
+
+    // only active variants should define assigned sizes
+    db
+      .from("product_variants")
+      .select("size_id")
+      .eq("product_id", id)
+      .eq("is_active", true)
+      .overrideTypes<VariantSizeRow[], { merge: false }>(),
+
     db
       .from("colors")
       .select("id,code,name_en,name_ka,hex")
       .order("name_en", { ascending: true })
       .overrideTypes<ColorRow[], { merge: false }>(),
+
+    db
+      .from("sizes")
+      .select("id,code,name,position")
+      .order("position", { ascending: true })
+      .order("code", { ascending: true })
+      .overrideTypes<SizeRow[], { merge: false }>(),
   ]);
 
   const assigned = (catLinks ?? [])
@@ -133,6 +156,10 @@ export default async function AdminProductEditPage({
   const colorSet = new Set(colorIds);
   const colors = (allColors ?? []).filter((c) => colorSet.has(c.id));
 
+  const assignedSizeIds = Array.from(
+    new Set((variantSizes ?? []).map((v) => v.size_id))
+  );
+
   return (
     <main className="min-h-screen bg-zinc-50/50 pb-20">
       <Section className="py-8">
@@ -149,11 +176,18 @@ export default async function AdminProductEditPage({
             <div>
               <h1 className="text-2xl font-bold text-zinc-900">Edit product</h1>
               <p className="text-sm text-zinc-500">
-                Update core fields, categories, and images.
+                Update core fields, categories, sizes, and images.
               </p>
             </div>
 
-            {catErr || rawErr || gErr || ciErr || vcErr || allColErr ? (
+            {catErr ||
+            rawErr ||
+            gErr ||
+            ciErr ||
+            vcErr ||
+            vsErr ||
+            allColErr ||
+            allSizesErr ? (
               <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
                 Some data failed to load:{" "}
                 {catErr?.message ??
@@ -161,7 +195,9 @@ export default async function AdminProductEditPage({
                   gErr?.message ??
                   ciErr?.message ??
                   vcErr?.message ??
-                  allColErr?.message}
+                  vsErr?.message ??
+                  allColErr?.message ??
+                  allSizesErr?.message}
               </div>
             ) : null}
           </div>
@@ -175,6 +211,15 @@ export default async function AdminProductEditPage({
                 productId={product.id}
                 assigned={assigned}
                 allCategories={categoriesFlat}
+              />
+            </div>
+
+            <div className="max-w-6xl mx-auto">
+              <EditProductSizes
+                locale={locale}
+                productId={product.id}
+                assignedSizeIds={assignedSizeIds}
+                allSizes={allSizes ?? []}
               />
             </div>
 
