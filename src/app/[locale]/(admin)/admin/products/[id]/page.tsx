@@ -22,6 +22,7 @@ import {
   CategoryJoinRow,
 } from "@/types/product";
 import { moneyFromCents } from "@/lib/helpers";
+import DeleteProductButton from "./edit/DeleteProductButton";
 
 export const dynamic = "force-dynamic";
 
@@ -528,9 +529,7 @@ export default async function AdminProductDetailPage({
                     Edit
                   </Link>
 
-                  <button className="flex items-center justify-center px-4 py-2 bg-white border border-red-200 shadow-sm rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                    Delete
-                  </button>
+                  <DeleteProductButton locale={locale} productId={product.id} />
                 </div>
               </div>
             </div>
