@@ -44,7 +44,7 @@ export default function ProductCard({
   const { addItem } = useCart();
   const h = useTranslations("Helpers");
   const p = useTranslations("Products");
-  const title = displayTitle(product);
+  const title = displayTitle(product, locale as "en" | "ka");
   const photo = getFirstPhotoUrl(
     product.photos as
       | string

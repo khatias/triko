@@ -1,7 +1,32 @@
 import { CatalogGroupedProductCard, Variant } from "./db/products";
 export type Locale = "en" | "ka";
 
-export function displayTitle(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+export const RESERVED_TOP_LEVEL_SLUGS = new Set([
+  "api",
+  "auth",
+  "confirm",
+  "forgot-password",
+  "reset-password",
+  "login",
+  "profile",
+  "account",
+  "address",
+  "orders",
+  "signup",
+  "admin",
+  "shop",
+  "products",
+  "product",
+  "cart",
+  "checkout",
+  "aboutUs",
+  "contact",
+]);
+
+export function displayTitle(
+  p: Partial<CatalogGroupedProductCard>,
+  locale: Locale,
+) {
   const en = (p.title_en ?? "").trim();
   const ka = (p.title_ka ?? "").trim();
   const name = (p.name ?? "").trim();
@@ -10,15 +35,21 @@ export function displayTitle(p: Partial<CatalogGroupedProductCard>, locale: Loca
   return en || ka || name || "Untitled Piece";
 }
 
-export function displayDescription(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+export function displayDescription(
+  p: Partial<CatalogGroupedProductCard>,
+  locale: Locale,
+) {
   const en = (p.description_en ?? "").trim();
   const ka = (p.description_ka ?? "").trim();
 
   if (locale === "ka") return ka || en || "No description available";
   return en || ka || "No description available";
 }
-
-export function displayGroupName(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+//from product
+export function displayGroupName(
+  p: Partial<CatalogGroupedProductCard>,
+  locale: Locale,
+) {
   const en = (p.group_name_en ?? "").trim();
   const ka = (p.group_name_ka ?? "").trim();
 
@@ -26,9 +57,25 @@ export function displayGroupName(p: Partial<CatalogGroupedProductCard>, locale: 
   return en || ka || "Collection";
 }
 
+//from group
+export function pickGroupName(
+  g: {
+    name_en?: string | null;
+    name_ka?: string | null;
+    fina_name?: string | null;
+  },
+  locale: Locale,
+) {
+  const en = (g.name_en ?? "").trim();
+  const ka = (g.name_ka ?? "").trim();
+  const fina = (g.fina_name ?? "").trim();
+
+  if (locale === "ka") return ka || en || fina || "Collection";
+  return en || ka || fina || "Collection";
+}
 export function formatPrice(val: number | null, currency: string | null) {
   if (val == null) return null;
-  const symbol = currency === "GEL" ? "₾" : currency ?? "$";
+  const symbol = currency === "GEL" ? "₾" : (currency ?? "$");
   return `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 }
 
@@ -116,7 +163,6 @@ export function isRecord(v: unknown): v is Record<string, unknown> {
 type PhotoObject = { url?: unknown; sort?: unknown; is_primary?: unknown };
 type PhotoUrlsObject = { urls?: unknown };
 
-
 export function isPhotoObject(v: unknown): v is PhotoObject {
   return isRecord(v) && ("url" in v || "sort" in v || "is_primary" in v);
 }
@@ -129,8 +175,7 @@ export function normalizeUrl(u: unknown): string | null {
   const s = typeof u === "string" ? u.trim() : "";
   return s ? s : null;
 }
-export 
-function getPhotoUrls(photos: unknown): string[] {
+export function getPhotoUrls(photos: unknown): string[] {
   if (!photos) return [];
 
   // single string

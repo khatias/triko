@@ -379,7 +379,8 @@
     "loadMore": "Load more",
     "noProducts": "No products found.",
     "explorePiece": "Explore Piece",
-    "rollToZoom": "Roll over to zoom"
+    "rollToZoom": "Roll over to zoom",
+    "noProductsFound": "No products found matching your criteria."
   },
   "Products": {
     "meta": {
