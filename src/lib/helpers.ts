@@ -1,11 +1,34 @@
 import { CatalogGroupedProductCard, Variant } from "./db/products";
+export type Locale = "en" | "ka";
 
-export const displayTitle = (p: Partial<CatalogGroupedProductCard>) =>
-  p.title_en || p.title_ka || p.name || "Untitled Piece";
+export function displayTitle(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+  const en = (p.title_en ?? "").trim();
+  const ka = (p.title_ka ?? "").trim();
+  const name = (p.name ?? "").trim();
+
+  if (locale === "ka") return ka || en || name || "Untitled Piece";
+  return en || ka || name || "Untitled Piece";
+}
+
+export function displayDescription(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+  const en = (p.description_en ?? "").trim();
+  const ka = (p.description_ka ?? "").trim();
+
+  if (locale === "ka") return ka || en || "No description available";
+  return en || ka || "No description available";
+}
+
+export function displayGroupName(p: Partial<CatalogGroupedProductCard>, locale: Locale) {
+  const en = (p.group_name_en ?? "").trim();
+  const ka = (p.group_name_ka ?? "").trim();
+
+  if (locale === "ka") return ka || en || "Collection";
+  return en || ka || "Collection";
+}
 
 export function formatPrice(val: number | null, currency: string | null) {
   if (val == null) return null;
-  const symbol = currency === "GEL" ? "₾" : (currency ?? "$");
+  const symbol = currency === "GEL" ? "₾" : currency ?? "$";
   return `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 }
 
@@ -86,4 +109,74 @@ export function buildSizes(variants: Variant[] | null | undefined): SizeRow[] {
 
     return { label: k, inStock, variant: chosen };
   });
+}
+export function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null;
+}
+type PhotoObject = { url?: unknown; sort?: unknown; is_primary?: unknown };
+type PhotoUrlsObject = { urls?: unknown };
+
+
+export function isPhotoObject(v: unknown): v is PhotoObject {
+  return isRecord(v) && ("url" in v || "sort" in v || "is_primary" in v);
+}
+
+export function isPhotoUrlsObject(v: unknown): v is PhotoUrlsObject {
+  return isRecord(v) && "urls" in v;
+}
+
+export function normalizeUrl(u: unknown): string | null {
+  const s = typeof u === "string" ? u.trim() : "";
+  return s ? s : null;
+}
+export 
+function getPhotoUrls(photos: unknown): string[] {
+  if (!photos) return [];
+
+  // single string
+  const single = normalizeUrl(photos);
+  if (single) return [single];
+
+  if (!Array.isArray(photos)) return [];
+
+  const collected: { url: string; sort: number; isPrimary: boolean }[] = [];
+
+  for (const item of photos) {
+    // "https://..."
+    const direct = normalizeUrl(item);
+    if (direct) {
+      collected.push({ url: direct, sort: 9999, isPrimary: false });
+      continue;
+    }
+
+    // { urls: ["...", "..."] }
+    if (isPhotoUrlsObject(item)) {
+      const urls = item.urls;
+      if (Array.isArray(urls)) {
+        for (const u of urls) {
+          const nu = normalizeUrl(u);
+          if (nu) collected.push({ url: nu, sort: 9999, isPrimary: false });
+        }
+      }
+      continue;
+    }
+
+    // { url, sort, is_primary }
+    if (isPhotoObject(item)) {
+      const url = normalizeUrl(item.url);
+      if (!url) continue;
+
+      const sort = typeof item.sort === "number" ? item.sort : 9999;
+      const isPrimary = item.is_primary === true;
+
+      collected.push({ url, sort, isPrimary });
+    }
+  }
+
+  collected.sort((a, b) => {
+    if (a.isPrimary !== b.isPrimary) return a.isPrimary ? -1 : 1;
+    return a.sort - b.sort;
+  });
+
+  return Array.from(new Set(collected.map((x) => x.url)));
 }
