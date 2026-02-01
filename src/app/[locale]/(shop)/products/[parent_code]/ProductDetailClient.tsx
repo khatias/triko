@@ -92,7 +92,7 @@ export default function ProductDetailClient({
             </div>
           ) : (
             <div className="absolute inset-0 grid place-items-center text-stone-400 text-sm">
-              {h("noImage")}
+              {h("noImages")}
             </div>
           )}
 
