@@ -21,23 +21,44 @@ import { useTranslations } from "use-intl";
 import type { SafeUser } from "@/types/auth";
 import AccountMenu from "./AccountMenu";
 import { wrap } from "../UI/primitives";
-import type { NavItem } from "@/types/Category";
-import { MobileItem } from "./MobileItem";
+
+// import your type
+import type { ShopGroup } from "@/lib/db/groups";
+
+function groupLabel(locale: "en" | "ka", g: ShopGroup) {
+  const ka = String(g.name_ka ?? "").trim();
+  const en = String(g.name_en ?? "").trim();
+  const fallback = String(g.fina_name ?? "").trim();
+  return locale === "ka" ? ka || en || fallback : en || ka || fallback;
+}
+
+function groupHref(locale: "en" | "ka", g: ShopGroup) {
+  const slug = String(g.slug_en ?? "").trim();
+  return `/${locale}/${slug}`;
+}
+
 export default function Navbar({
   user,
-  categories,
+  locale,
+  groups,
 }: {
   user: SafeUser;
-  categories: NavItem[];
+  locale: "en" | "ka";
+  groups: ShopGroup[];
 }) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
 
+  const visibleGroups = (groups ?? []).filter((g) => {
+    const slug = String(g.slug_en ?? "").trim();
+    return slug.length > 0;
+  });
+
   return (
     <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur- supports-[backdrop-filter]:bg-white">
       <div className={`hidden lg:block ${wrap}`}>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center  py-3">
-          <Link href="/" aria-label="Home" className="justify-self-center">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center py-3">
+          <Link href={`/${locale}`} aria-label="Home" className="justify-self-center">
             <Image
               src={logo}
               alt="Logo"
@@ -71,14 +92,10 @@ export default function Navbar({
             className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
             aria-label="Toggle mobile menu"
           >
-            {isOpen ? (
-              <XMarkIcon className="h-6 w-6" />
-            ) : (
-              <Bars3Icon className="h-6 w-6" />
-            )}
+            {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
           </button>
 
-          <Link className="" href="/" aria-label="Home">
+          <Link href={`/${locale}`} aria-label="Home">
             <Image
               src={logo}
               alt="Logo"
@@ -117,7 +134,7 @@ export default function Navbar({
       />
 
       <aside
-        className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%]  transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         role="dialog"
@@ -147,13 +164,13 @@ export default function Navbar({
               title={t("featured")}
               items={[
                 {
-                  href: "/new-arrivals",
+                  href: `/${locale}/new-arrivals`,
                   label: t("newArrivals"),
                   image: newarrivals,
                   alt: "New Arrivals",
                 },
                 {
-                  href: "/categories/kimono",
+                  href: `/${locale}/kimono`,
                   label: t("kimano"),
                   image: pajama,
                   alt: "Kimono Collection",
@@ -162,38 +179,42 @@ export default function Navbar({
             />
           </div>
 
-          <div className="h-[calc(100dvh-52px)] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
-            <nav className="px-2 py-3">
-              <ul className="flex flex-col">
-                {categories.map((item) => (
-                  <li key={item.id}>
-                    <MobileItem item={item} onNavigate={() => setOpen(false)} />
-                  </li>
-                ))}
-                <li className="my-3 h-px w-full bg-slate-200" />
-                <li className="px-2 py-1">
-                  <LanguageSwitcher />
-                </li>
-              </ul>
-            </nav>
+          {/* GROUPS LIST */}
+          <nav className="px-2 py-3">
+            <h3 className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              {/* {t("categories")} */}
+            </h3>
 
-            <div className={`${wrap} mt-6 mb-10 px-4`}>
-              <SocialMedia />
-            </div>
-          </div>
+            <ul className="flex flex-col">
+              {visibleGroups.map((g) => (
+                <li key={g.group_id}>
+                  <Link
+                    href={groupHref(locale, g)}
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium text-slate-700 hover:bg-slate-100 hover:text-rose-600"
+                  >
+                    {groupLabel(locale, g)}
+                  </Link>
+                </li>
+              ))}
+
+              <li className="my-3 h-px w-full bg-slate-200" />
+
+              <li className="px-2 py-1">
+                <LanguageSwitcher />
+              </li>
+            </ul>
+          </nav>
 
           <section className={`${wrap} border-b border-slate-100 py-3 px-4`}>
             <h3 className="px-1 pb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
               {t("info")}
             </h3>
             <ul className="flex flex-col gap-1">
-              <li className="pl-1 pb-1">
-                <LanguageSwitcher />
-              </li>
               <li>
                 <Link
                   onClick={() => setOpen(false)}
-                  href="/aboutUs"
+                  href={`/${locale}/aboutUs`}
                   className="flex items-center justify-between rounded-xl px-3 py-3 text-[15px] text-slate-700 hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                 >
                   <span className="inline-flex items-center gap-3">
@@ -205,7 +226,7 @@ export default function Navbar({
               <li>
                 <Link
                   onClick={() => setOpen(false)}
-                  href="/contact"
+                  href={`/${locale}/contact`}
                   className="flex items-center justify-between rounded-xl px-3 py-3 text-[15px] text-slate-700 hover:bg-slate-100 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                 >
                   <span className="inline-flex items-center gap-3">
@@ -217,7 +238,7 @@ export default function Navbar({
             </ul>
           </section>
 
-          <div className={`${wrap} mt-8 mb-10 px-4`}>
+          <div className={`${wrap} mt-6 mb-10 px-4`}>
             <SocialMedia />
           </div>
         </div>
