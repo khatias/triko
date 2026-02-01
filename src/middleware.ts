@@ -29,7 +29,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Define protected routes
-  const isRestrictedPage = ["/profile", "orders", "products"].some((path) =>
+  const isRestrictedPage = ["/profile", "orders", ].some((path) =>
     req.nextUrl.pathname.includes(path)
   );
 
