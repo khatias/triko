@@ -17,6 +17,9 @@ const CART_COOKIE = "cart_token";
 /* =========================
    Types
 ========================= */
+type ActionOk = { ok: true };
+type ActionErr = { ok: false; message: string; kind: "stock" | "unknown" };
+export type ActionResult = ActionOk | ActionErr;
 
 export type CartRow = {
   id: string;
@@ -59,6 +62,17 @@ export type CartState = {
 /* =========================
    Parsers (no any)
 ========================= */
+function classifyError(message: string): ActionErr {
+  const m = message.toLowerCase();
+
+  // your SQL raises: "not enough stock. requested X, available Y"
+  if (m.includes("not enough stock")) {
+    return { ok: false, message, kind: "stock" };
+  }
+
+  return { ok: false, message, kind: "unknown" };
+}
+
 
 function parseCartRow(v: unknown): CartRow {
   if (!isObject(v)) throw new Error("cart_read_v2: cart is not an object");
@@ -189,6 +203,38 @@ export async function addToCart(
   if (error) throw new Error(error.message);
 
   revalidatePath(`/${locale}/cart`);
+}
+
+export async function updateCartQty(
+  locale: string,
+  finaId: number,
+  qty: number,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const token = await getCartToken();
+
+  const safeQty = Number.isFinite(qty) ? Math.max(0, Math.floor(qty)) : 0;
+
+  const { error } = await supabase.rpc("cart_set_qty_by_fina", {
+    p_cart_token: token,
+    p_fina_id: finaId,
+    p_qty: safeQty,
+  });
+
+  if (error) {
+    return classifyError(error.message);
+  }
+
+  revalidatePath(`/${locale}/cart`);
+  return { ok: true };
+}
+
+export async function removeCartItem(
+  locale: string,
+  finaId: number,
+): Promise<ActionResult> {
+  // assuming your SQL deletes when qty <= 0
+  return updateCartQty(locale, finaId, 0);
 }
 
 // export async function setCartQty(
