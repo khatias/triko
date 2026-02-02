@@ -62,7 +62,7 @@ export default function ProductDetailClient({
   const { onAdd, isPending, err, toast } = useAddToCart({
     locale,
     qty: 1,
-    successMessage: "Added to cart",
+    successMessage: t("addedToCart"),
   });
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -83,7 +83,7 @@ export default function ProductDetailClient({
   return (
     <div className="relative grid gap-16 lg:grid-cols-12 items-start pt-4">
       {toast ? (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-8 py-4 rounded-full text-[10px] tracking-[0.4em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-100 bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-8 py-4 rounded-full text-[10px] tracking-[0.4em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
           {toast}
         </div>
       ) : null}
@@ -94,7 +94,7 @@ export default function ProductDetailClient({
           onMouseEnter={() => setIsZooming(true)}
           onMouseLeave={() => setIsZooming(false)}
           onMouseMove={handleMouseMove}
-          className="relative aspect-[4/5] overflow-hidden rounded-[40px] bg-[#F5F5F0] cursor-crosshair group shadow-sm border border-stone-100"
+          className="relative aspect-4/5 overflow-hidden rounded-[40px] bg-[#F5F5F0] cursor-crosshair group shadow-sm border border-stone-100"
         >
           {activePhoto ? (
             <div className="relative w-full h-full overflow-hidden">
@@ -139,7 +139,7 @@ export default function ProductDetailClient({
                 type="button"
                 aria-label={`View photo ${i + 1}`}
                 onClick={() => setActive(i)}
-                className={`relative h-28 w-20 flex-shrink-0 rounded-2xl overflow-hidden transition-all duration-500 ${
+                className={`relative h-28 w-20 shrink-0 rounded-2xl overflow-hidden transition-all duration-500 ${
                   isActive
                     ? "ring-1 ring-stone-900 ring-offset-4 scale-105"
                     : "opacity-40 hover:opacity-100"
@@ -162,7 +162,7 @@ export default function ProductDetailClient({
       <aside className="lg:col-span-5 lg:sticky lg:top-16 space-y-12">
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <span className="h-[1px] w-8 bg-[#D4AF37]" />
+            <span className="h-px w-8 bg-[#D4AF37]" />
             <span className="text-[10px] tracking-[0.5em] text-stone-400 uppercase font-black">
               {groupName}
             </span>

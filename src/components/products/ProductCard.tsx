@@ -10,7 +10,7 @@ import {
   getFirstPhotoUrl,
   buildSizes,
 } from "@/lib/helpers";
-import { useTranslations } from "use-intl/react";
+import { useTranslations } from "next-intl";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
 import { getFinaIdFromVariant } from "@/utils/fina/ids";
 
@@ -52,17 +52,16 @@ export default function ProductCard({
         ? "reveal-delay-1"
         : "reveal-delay-2";
 
-
   const { onAdd, isPending, pendingFinaId, err, toast } = useAddToCart({
     locale,
-    successMessage: "Added to bag",
+    successMessage: p("addedToCart"),
   });
 
   return (
     <div className={`group animate-reveal ${delayClass}`}>
       <div className="relative">
         {toast ? (
-          <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-6 py-3 rounded-full text-[10px] tracking-[0.35em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
+          <div className="fixed top-10 left-1/2 -translate-x-1/2 z-100 bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-6 py-3 rounded-full text-[10px] tracking-[0.35em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
             {toast}
           </div>
         ) : null}
@@ -71,7 +70,7 @@ export default function ProductCard({
           className="block"
         >
           {/* IMAGE BOX */}
-          <div className="relative aspect-[4/5] overflow-hidden bg-[#F7F7F7] ring-1 ring-stone-100 transition-all duration-700 group-hover:ring-stone-200">
+          <div className="relative aspect-4/5 overflow-hidden bg-[#F7F7F7] ring-1 ring-stone-100 transition-all duration-700 group-hover:ring-stone-200">
             {photo ? (
               <>
                 <Image
@@ -80,7 +79,7 @@ export default function ProductCard({
                   fill
                   className={[
                     "object-cover",
-                    "transition-transform duration-[1600ms] ease-out will-change-transform",
+                    "transition-transform duration-1600 ease-out will-change-transform",
                     "group-hover:scale-[1.10] group-hover:rotate-[0.35deg] group-hover:translate-y-[-1.5%]",
                   ].join(" ")}
                   sizes="(max-width: 768px) 100vw, 33vw"
@@ -93,7 +92,7 @@ export default function ProductCard({
                 </div>
 
                 {/* vignette */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-black/0 to-black/0 opacity-70" />
+                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-black/0 to-black/0 opacity-70" />
               </>
             ) : (
               <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-widest text-stone-400">
@@ -188,7 +187,7 @@ export default function ProductCard({
                 <p className="font-serif-display italic text-lg text-stone-900">
                   {priceLabel || "—"}
                 </p>
-                <div className="mt-1 h-[1px] w-0 bg-stone-900 transition-all duration-500 group-hover:w-full ml-auto" />
+                <div className="mt-1 h-px w-0 bg-stone-900 transition-all duration-500 group-hover:w-full ml-auto" />
               </div>
             </div>
 
