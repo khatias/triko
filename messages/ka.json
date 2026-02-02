@@ -407,6 +407,15 @@
   },
 
   "Cart": {
+    "cart": "კალათა",
+    "size": "ზომა",
+    "orderSummary": "შეკვეთის შეჯამება",
+    "subtotal": "შეკვეთის ჯამი",
+    "shipping": "მიწოდება",
+    "total": "ჯამი",
+    "checkout": "გადახდა",
+    "empty": "თქვენი კალათა ამჟამად ცარიელია.",
+    "continueShopping": "გაგრძელეთ შოპინგი",
     "errors": {
       "onlyLeft": "მარაგში დარჩენილია მხოლოდ {available} ცალი.",
       "notEnoughStock": "არ არის საკმარისი მარაგი."

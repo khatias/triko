@@ -5,6 +5,7 @@ import type { CartItemRow, ActionResult } from "@/lib/cart/actions";
 import { removeCartItem, updateCartQty } from "@/lib/cart/actions";
 import { CartError } from "@/lib/cart/errors";
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {
   locale: "en" | "ka";
@@ -16,16 +17,26 @@ export default function CartItemRowClient({ locale, item }: Props) {
   const [qty, setQty] = useState<number>(item.qty);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const cartT = useTranslations("Cart");
+
   function run(fn: () => Promise<ActionResult>) {
     setMsg(null);
+
     startTransition(() => {
       (async () => {
-        const res = await fn();
-        if (!res.ok) {
-          setMsg(CartError(res));
-          setQty(item.qty);
-        } else {
+        try {
+          const res = await fn();
+
+          if (!res.ok) {
+            setMsg(CartError(res, cartT));
+            setQty(item.qty);
+            return;
+          }
+
           setMsg(null);
+        } catch {
+          setMsg(cartT("errors.generic"));
+          setQty(item.qty);
         }
       })();
     });
@@ -44,7 +55,6 @@ export default function CartItemRowClient({ locale, item }: Props) {
   return (
     <div className="mt-auto pt-2">
       <div className="flex items-center justify-between">
-        {/* Sleek Quantity Pill (h-9) */}
         <div className="flex h-9 items-center rounded-lg border border-zinc-200 bg-white shadow-sm">
           <button
             type="button"
@@ -69,7 +79,6 @@ export default function CartItemRowClient({ locale, item }: Props) {
           </button>
         </div>
 
-        {/* Clean Delete Icon */}
         <button
           type="button"
           onClick={onRemove}
@@ -85,12 +94,11 @@ export default function CartItemRowClient({ locale, item }: Props) {
         </button>
       </div>
 
-      {/* Error Toast */}
-      {msg && (
+      {msg ? (
         <div className="mt-1 text-[10px] font-medium text-red-600 text-right">
           {msg}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
