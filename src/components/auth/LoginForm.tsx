@@ -1,63 +1,92 @@
 "use client";
-import React, { useCallback, useState } from "react";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+
 import { handleGoogleLogin } from "@/utils/auth/handleGoogleLogin";
 import { makeAuthSchemas } from "@/lib/validation/auth";
+import { loginRequest } from "../../utils/auth/requests";
+
 import { InputField, PasswordField } from "../form/Field";
 import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
-import { handleLoginSubmit } from "@/utils/auth/submit";
 import { LegalNotice } from "./LegalNotice";
 import { formHeading } from "../UI/primitives";
+
 export default function LoginForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
   const locale = useLocale();
+  const router = useRouter();
 
   const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
   type LoginInput = z.infer<typeof schemas.loginSchema>;
 
   const {
     register,
+    handleSubmit,
     reset,
     formState: { errors, isValid },
   } = useForm<LoginInput>({
     resolver: zodResolver(schemas.loginSchema),
     mode: "onChange",
     criteriaMode: "all",
+    defaultValues: {
+      email: "",
+      password: "",
+      website: "",
+    },
   });
 
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const onSubmit = useCallback(
-    async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (pending) return;
+  const onSubmit = handleSubmit(async (data) => {
+    setErrorMessage(null);
+    setPending(true);
 
-      setErrorMessage(null);
+    try {
+      const result = await loginRequest(
+        locale,
+        data.email,
+        data.password,
+        data.website,
+      );
 
-      setPending(true);
+      if (!result.ok) {
+        setErrorMessage(result.message ?? tForm("errors.unknown"));
 
-      try {
-        const result = await handleLoginSubmit(e, locale);
-
-        if (!result.ok) {
-          setErrorMessage(result.message ?? tForm("errors.unknown"));
-          reset({ email: "", password: "", website: "" });
-          return;
-        }
-        reset({ email: "", password: "", website: "" });
-      } finally {
-        setPending(false);
+        // ✅ keep email, clear only sensitive fields
+        reset(
+          { email: data.email, password: "", website: "" },
+          { keepErrors: true, keepTouched: true },
+        );
+        return;
       }
-    },
-    [locale, pending, reset, tForm]
-  );
+
+      // success: clear everything
+      reset({ email: "", password: "", website: "" });
+
+      // ✅ better UX than push: back button won't go back to login
+      router.replace(`/${locale}/profile`);
+      router.refresh();
+    } catch {
+      setErrorMessage(tForm("errors.unknown"));
+
+      // ✅ keep email on unexpected error too
+      reset(
+        { email: data.email, password: "", website: "" },
+        { keepErrors: true, keepTouched: true },
+      );
+    } finally {
+      setPending(false);
+    }
+  });
 
   return (
     <form noValidate aria-busy={pending} onSubmit={onSubmit}>
@@ -73,7 +102,7 @@ export default function LoginForm() {
       )}
 
       <h2 className={formHeading}>
-        <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
+        <span className="inline-block bg-linear-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("loginTitle")}
         </span>
       </h2>
@@ -87,7 +116,7 @@ export default function LoginForm() {
           onClick={handleGoogleLogin}
         >
           <GoogleMark />
-          <span className="translate-x-0 transition group-hover:translate-x-[1px]">
+          <span className="translate-x-0 transition group-hover:translate-x-px">
             {tForm("actions.google")}
           </span>
         </button>
@@ -103,7 +132,7 @@ export default function LoginForm() {
       </div>
 
       {/* Email + Password */}
-      <div className="grid ">
+      <div className="grid">
         <InputField
           id="email"
           type="email"
@@ -129,7 +158,7 @@ export default function LoginForm() {
             error={errors.password?.message}
           />
 
-          <div className=" flex  justify-end">
+          <div className="flex justify-end">
             <Link
               href="/forgot-password"
               className="text-sm text-rose-600 underline-offset-4 hover:underline"
@@ -159,7 +188,7 @@ export default function LoginForm() {
         <LegalNotice />
       </div>
 
-      {/* 🔗 Sign up CTA */}
+      {/* Sign up CTA */}
       <p className="mt-4 text-center text-sm text-zinc-700">
         {tForm("links.dontHaveAccount")}{" "}
         <Link

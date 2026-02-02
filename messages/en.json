@@ -111,7 +111,17 @@
       "madeWith": "Made with love."
     }
   },
-
+  "Auth": {
+    "unsupported": "Unsupported content type.",
+    "loginSuccess": "Signed in successfully.",
+    "invalidEmail": "Please enter a valid email address.",
+    "passwordRequired": "Password is required.",
+    "passwordTooLong": "Password is too long.",
+    "rateLimit": "Too many attempts. Please try again later.",
+    "invalidCredentials": "Incorrect email or password.",
+    "supabase": "We couldn't sign you in right now. Please try again later.",
+    "unknown": "Something went wrong. Please try again."
+  },
   "Form": {
     "loginTitle": "Welcome back",
     "loginSubTitle": "Sign in to your account to continue.",
@@ -171,6 +181,7 @@
   },
   "Errors": {
     "required": "This field is required",
+    "ivanlidCredentials": "Email or password is incorrect",
     "emailRequired": "Email is required",
     "emailTooLong": "Email is too long",
     "invalidEmail": "Email format is incorrect",
@@ -193,7 +204,7 @@
     "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
     "rate_limited": "Too many attempts. Please wait a moment and try again.",
     "server_error": "Server error. Please try again later.",
-    "unknown": "We couldn't update the password. Please try again.",
+    "unknown": "Somthing Went Wron. Please try again.",
     "network": "Network error. Please try again.",
     "timeout": "Request timed out. Please try again."
   },
@@ -402,7 +413,7 @@
     "Assistance": "Assistance",
     "Assistancedesc": "Our customer support team is here to help with any questions or concerns you may have."
   },
-  
+
   "Cart": {
     "cart": "Cart",
     "size": "Size",
@@ -418,6 +429,4 @@
       "notEnoughStock": "Not enough stock available."
     }
   }
-
-
 }
