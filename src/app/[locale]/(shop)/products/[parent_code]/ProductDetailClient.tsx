@@ -58,12 +58,20 @@ export default function ProductDetailClient({
 
   const h = useTranslations("Helpers");
   const t = useTranslations("Products");
+  const cartT = useTranslations("Cart");
 
   const { onAdd, isPending, err, toast } = useAddToCart({
     locale,
     qty: 1,
     successMessage: t("addedToCart"),
   });
+
+  function parseAvailable(msg: string): string | null {
+    const m = /available\s+([0-9]+(?:\.[0-9]+)?)/i.exec(msg);
+    return m?.[1] ?? null;
+  }
+
+  const available = err ? parseAvailable(err) : null;
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!imgRef.current) return;
@@ -252,7 +260,9 @@ export default function ProductDetailClient({
           {/* error from hook */}
           {err ? (
             <p className="text-[10px] uppercase tracking-wide text-red-700">
-              {err}
+              {available
+                ? cartT("errors.onlyLeft", { available })
+                : cartT("errors.notEnoughStock")}
             </p>
           ) : null}
         </div>

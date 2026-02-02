@@ -401,5 +401,14 @@
     "Shippingdesc": "We offer fast and reliable shipping across Georgia, shipping times may vary.",
     "Assistance": "Assistance",
     "Assistancedesc": "Our customer support team is here to help with any questions or concerns you may have."
+  },
+  
+  "Cart": {
+    "errors": {
+      "onlyLeft": "Only {available} left in stock.",
+      "notEnoughStock": "Not enough stock available."
+    }
   }
+
+
 }
