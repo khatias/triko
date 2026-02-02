@@ -67,7 +67,9 @@
     "orders": "My Orders",
     "greeting": "Hello",
     "welcome": "Welcome",
-    "joinUs": "Join Us"
+    "joinUs": "Join Us",
+    "seeMore": "See More",
+    "viewAll": "View All"
   },
 
   "Footer": {
