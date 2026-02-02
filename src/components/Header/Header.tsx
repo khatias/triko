@@ -3,7 +3,7 @@
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import Navbar from "./Navbar";
-
+import { getCartState } from "@/lib/cart/actions";
 import type { SafeUser } from "@/types/auth";
 import DesktopNavBar from "./BottomNavBar";
 
@@ -27,10 +27,10 @@ export default async function Header({ locale }: { locale: "en" | "ka" }) {
 
   // new groups for the desktop bottom bar
   const groups = await getVisibleGroups();
-
+const state = await getCartState();
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 shadow-lg">
-      <Navbar user={safeUser} locale={locale} groups={groups ?? []} />
+      <Navbar user={safeUser} locale={locale} groups={groups ?? []} cartCount={state.cart.items_count} />
 
       <DesktopNavBar
         locale={locale}

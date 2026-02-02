@@ -11,19 +11,22 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { Search, Info, Mail } from "lucide-react";
+
 import logo from "../../assets/logo.png";
 import newarrivals from "../../assets/new-arrivals.jpg";
 import pajama from "../../assets/pajama.jpg";
+
 import FeaturedCircles from "../cards/FeatureCircle";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import SocialMedia from "../socialMedia/SocialMedia";
-import { useTranslations } from "use-intl";
-import type { SafeUser } from "@/types/auth";
 import AccountMenu from "./AccountMenu";
 import { wrap } from "../UI/primitives";
 
-// import your type
+import { useTranslations } from "use-intl";
+import type { SafeUser } from "@/types/auth";
 import type { ShopGroup } from "@/lib/db/groups";
+
+const CART_BADGE_MAX = 99;
 
 function groupLabel(locale: "en" | "ka", g: ShopGroup) {
   const ka = String(g.name_ka ?? "").trim();
@@ -37,17 +40,55 @@ function groupHref(locale: "en" | "ka", g: ShopGroup) {
   return `/${locale}/${slug}`;
 }
 
+function formatBadgeCount(n: number) {
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n > CART_BADGE_MAX) return `${CART_BADGE_MAX}+`;
+  return String(n);
+}
+
+function CartIconWithBadge({
+  href,
+  count,
+  onClick,
+}: {
+  href: string;
+  count: number;
+  onClick?: () => void;
+}) {
+  const badge = formatBadgeCount(count);
+
+  return (
+    <Link
+      href={href}
+      aria-label="Cart"
+      onClick={onClick}
+      className="relative inline-flex"
+    >
+      <ShoppingCartIcon className="h-6 w-6 text-slate-800 cursor-pointer" />
+      {badge ? (
+        <span className="absolute -right-2 -top-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center shadow-sm">
+          {badge}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
 export default function Navbar({
   user,
   locale,
   groups,
+  cartCount,
 }: {
   user: SafeUser;
   locale: "en" | "ka";
   groups: ShopGroup[];
+  cartCount: number;
 }) {
   const t = useTranslations("Header");
   const [isOpen, setOpen] = useState(false);
+
+  const safeCartCount = Number.isFinite(cartCount) ? Math.max(0, cartCount) : 0;
 
   const visibleGroups = (groups ?? []).filter((g) => {
     const slug = String(g.slug_en ?? "").trim();
@@ -55,10 +96,15 @@ export default function Navbar({
   });
 
   return (
-    <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur- supports-[backdrop-filter]:bg-white">
+    <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white">
+      {/* DESKTOP */}
       <div className={`hidden lg:block ${wrap}`}>
         <div className="grid grid-cols-[auto_1fr_auto] items-center py-3">
-          <Link href={`/${locale}`} aria-label="Home" className="justify-self-center">
+          <Link
+            href={`/${locale}`}
+            aria-label="Home"
+            className="justify-self-center"
+          >
             <Image
               src={logo}
               alt="Logo"
@@ -80,11 +126,13 @@ export default function Navbar({
             </div>
 
             <AccountMenu user={user} />
-            <ShoppingCartIcon className="h-6 w-6 text-slate-800 cursor-pointer" />
+
+            <CartIconWithBadge href={`/${locale}/cart`} count={safeCartCount} />
           </div>
         </div>
       </div>
 
+      {/* MOBILE TOP BAR */}
       <div className={`lg:hidden ${wrap}`}>
         <div className="flex items-center justify-between py-3">
           <button
@@ -92,7 +140,11 @@ export default function Navbar({
             className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
             aria-label="Toggle mobile menu"
           >
-            {isOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+            {isOpen ? (
+              <XMarkIcon className="h-6 w-6" />
+            ) : (
+              <Bars3Icon className="h-6 w-6" />
+            )}
           </button>
 
           <Link href={`/${locale}`} aria-label="Home">
@@ -115,16 +167,13 @@ export default function Navbar({
             </button>
 
             <AccountMenu user={user} />
-            <button
-              aria-label="Cart"
-              className="rounded-md p-1.5 text-slate-800 hover:bg-slate-100"
-            >
-              <ShoppingCartIcon className="h-6 w-6" />
-            </button>
+
+            <CartIconWithBadge href={`/${locale}/cart`} count={safeCartCount} />
           </div>
         </div>
       </div>
 
+      {/* BACKDROP */}
       <button
         aria-hidden={!isOpen}
         onClick={() => setOpen(false)}
@@ -133,6 +182,7 @@ export default function Navbar({
         }`}
       />
 
+      {/* MOBILE DRAWER */}
       <aside
         className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"

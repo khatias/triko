@@ -6,9 +6,32 @@ import { routing } from "./i18n/routing";
 
 const intl = createMiddleware(routing);
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
+const CART_COOKIE = "cart_token";
 
+function getLocalePrefix(pathname: string) {
+  for (const loc of routing.locales) {
+    if (pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)) return `/${loc}`;
+  }
+  return "";
+}
+
+export async function middleware(req: NextRequest) {
+  // Base response must be intl(req)
+  const res = intl(req);
+
+  // Ensure cart_token exists (NO redirect needed)
+  const hasCart = req.cookies.get(CART_COOKIE)?.value;
+  if (!hasCart) {
+    res.cookies.set(CART_COOKIE, crypto.randomUUID(), {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
+
+  // Setup Supabase SSR client with THIS response
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -28,20 +51,35 @@ export async function middleware(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define protected routes
-  const isRestrictedPage = ["/profile", "orders", "products"].some((path) =>
-    req.nextUrl.pathname.includes(path)
-  );
+  const pathname = req.nextUrl.pathname;
 
-  // If route is restricted and no user, redirect to login
+  // Protected routes (make sure to include locale prefix)
+  const isRestrictedPage = ["/profile", "/orders"].some((p) => pathname.includes(p));
+
   if (isRestrictedPage && !user) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("redirectedFrom", req.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
+    const localePrefix = getLocalePrefix(pathname);
+    const loginUrl = new URL(`${localePrefix}/login`, req.url);
+    loginUrl.searchParams.set("redirectedFrom", pathname);
+
+    const redirectRes = NextResponse.redirect(loginUrl);
+
+    // Preserve any cookies already set on res (supabase + cart)
+    for (const c of res.cookies.getAll()) {
+      redirectRes.cookies.set(c.name, c.value, {
+        path: c.path,
+        httpOnly: c.httpOnly,
+        sameSite: c.sameSite,
+        secure: c.secure,
+        expires: c.expires,
+        maxAge: c.maxAge,
+        domain: c.domain,
+      });
+    }
+
+    return redirectRes;
   }
 
-  // Otherwise, pass through intl middleware (locale handling etc.)
-  return intl(req);
+  return res;
 }
 
 export const config = {
