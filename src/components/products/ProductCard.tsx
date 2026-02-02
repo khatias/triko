@@ -3,34 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from "react";
-import type { CatalogGroupedProductCard, Variant } from "@/lib/db/products";
+import type { CatalogGroupedProductCard } from "@/lib/db/products";
 import {
   displayTitle,
   formatPrice,
   getFirstPhotoUrl,
-  normalizeSize,
   buildSizes,
 } from "@/lib/helpers";
-
 import { useTranslations } from "use-intl/react";
-type AddToCartItem = {
-  parent_code: string;
-  variant_code: string;
-  title: string;
-  price: number | null;
-  currency: string | null;
-  photo: string | null;
-  size: string | null;
-  qty: number;
-};
-
-function useCart() {
-  return {
-    addItem: (item: AddToCartItem) => {
-      console.log("Adding item to cart:", item);
-    },
-  };
-}
+import { useAddToCart } from "@/lib/cart/useAddToCart";
+import { getFinaIdFromVariant } from "@/utils/fina/ids";
 
 export default function ProductCard({
   product,
@@ -41,10 +23,11 @@ export default function ProductCard({
   locale: string;
   revealDelay: number;
 }) {
-  const { addItem } = useCart();
   const h = useTranslations("Helpers");
   const p = useTranslations("Products");
+
   const title = displayTitle(product, locale as "en" | "ka");
+
   const photo = getFirstPhotoUrl(
     product.photos as
       | string
@@ -54,6 +37,7 @@ export default function ProductCard({
       | null
       | undefined,
   );
+
   const priceLabel = formatPrice(product.min_price, product.currency);
 
   const sizeRows = useMemo(
@@ -68,22 +52,20 @@ export default function ProductCard({
         ? "reveal-delay-1"
         : "reveal-delay-2";
 
-  function onAdd(variant: Variant) {
-    addItem({
-      parent_code: product.parent_code,
-      variant_code: variant.code ?? product.parent_code,
-      title,
-      price: variant.price ?? product.min_price ?? null,
-      currency: variant.currency ?? product.currency ?? null,
-      photo: photo ?? null,
-      size: normalizeSize(variant.size),
-      qty: 1,
-    });
-  }
+
+  const { onAdd, isPending, pendingFinaId, err, toast } = useAddToCart({
+    locale,
+    successMessage: "Added to bag",
+  });
 
   return (
     <div className={`group animate-reveal ${delayClass}`}>
       <div className="relative">
+        {toast ? (
+          <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-6 py-3 rounded-full text-[10px] tracking-[0.35em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
+            {toast}
+          </div>
+        ) : null}
         <Link
           href={`/${locale}/products/${product.parent_code}`}
           className="block"
@@ -135,7 +117,17 @@ export default function ProductCard({
                   {sizeRows.length > 0 ? (
                     sizeRows.slice(0, 8).map((row) => {
                       const v = row.variant;
-                      const disabled = !row.inStock || !v;
+
+                      // keep your existing stock rule
+                      const disabledBase = !row.inStock || !v || isPending;
+
+                      // only for showing pending per button
+                      const finaId = v ? getFinaIdFromVariant(v) : null;
+                      const disabled = disabledBase || finaId == null;
+
+                      const isThisPending =
+                        finaId != null && pendingFinaId === finaId && isPending;
+
                       return (
                         <button
                           key={row.label}
@@ -144,7 +136,7 @@ export default function ProductCard({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!disabled && v) onAdd(v);
+                            if (!disabled && v) onAdd(v); // ✅ use hook
                           }}
                           className={[
                             "px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-tight ring-1",
@@ -158,7 +150,7 @@ export default function ProductCard({
                             disabled ? "Not available" : `Add ${row.label}`
                           }
                         >
-                          {row.label}
+                          {isThisPending ? "…" : row.label}
                         </button>
                       );
                     })
@@ -168,6 +160,14 @@ export default function ProductCard({
                     </span>
                   )}
                 </div>
+
+                {err ? (
+                  <div className="px-4 pb-4">
+                    <p className="text-[10px] uppercase tracking-wide text-red-700">
+                      {err}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
