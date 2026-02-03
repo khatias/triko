@@ -34,6 +34,11 @@ export function asMoneyString(v: unknown, field: string): string {
   }
   throw new Error(`Invalid money for ${field}`);
 }
+export function asNullableMoneyString(v: unknown, field: string): string | null {
+  if (v === null) return null;
+  return asMoneyString(v, field);
+}
+
 
 export function isValidHttpUrl(v: string): boolean {
   try {
