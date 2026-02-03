@@ -50,7 +50,7 @@ export default async function CartPage(props: {
         </h1>
 
         {state.items.length === 0 ? (
-          <EmptyState locale={locale} />
+          await (<EmptyState locale={locale} />)
         ) : (
           <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
             {/* --- Cart Items List (Compact) --- */}
@@ -191,18 +191,19 @@ export default async function CartPage(props: {
   );
 }
 
-function EmptyState({ locale }: { locale: "en" | "ka" }) {
+async function EmptyState({ locale }: { locale: "en" | "ka" }) {
+  const t = await getTranslations("Cart");
   return (
     <div className="flex min-h-100 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-zinc-900/5">
         <ShoppingBag className="h-8 w-8 text-zinc-300" />
       </div>
-      <h3 className="text-lg font-medium text-zinc-900">Your cart is empty</h3>
+      <h3 className="text-lg font-medium text-zinc-900"> {t("empty")} </h3>
       <Link
-        href={`/${locale}`}
+        href={`/${locale}/products`}
         className="mt-6 rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-zinc-800"
       >
-        Continue Shopping
+        {t("continueShopping")}
       </Link>
     </div>
   );
