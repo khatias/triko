@@ -129,7 +129,10 @@
     "signupSuccess": "We sent a verification link to {email}. Please check your inbox.",
     "signupSuccessGeneric": "We sent a verification link. Please check your inbox.",
 
-    "emailInUse": "This email is already registered. Try signing in instead."
+    "emailInUse": "This email is already registered. Try signing in instead.",
+    "resetSent": "If an account exists for this email, we’ve sent a password reset link.",
+    "resetSentGeneric": "If an account exists, we’ve sent a password reset link.",
+    "resetFailed": "We couldn’t send the reset email. Please try again later."
   },
   "Form": {
     "loginTitle": "Welcome back",

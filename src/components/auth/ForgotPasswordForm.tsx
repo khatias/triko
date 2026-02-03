@@ -1,67 +1,97 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLocale } from "next-intl";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+
 import { makeAuthSchemas } from "@/lib/validation/auth";
-import { handleForgotPasswordSubmit } from "@/utils/auth/handleForgotPassword";
+import { forgotPasswordRequest } from "@/utils/auth/requests";
 import { InputField } from "../form/Field";
 import { UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
 import { formHeading } from "../UI/primitives";
+
 export default function ForgotPasswordForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
-  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
   const locale = useLocale();
-  type ForgotPasswordInput = z.input<typeof schemas.forgotPasswordSchema>;
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+
+  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
+  type ForgotPasswordInput = z.infer<typeof schemas.forgotPasswordSchema>;
+
   const {
     register,
-    formState: { errors, isSubmitting, isValid },
+    handleSubmit,
     reset,
+    getValues,
+    formState: { errors, isSubmitting, isValid },
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(schemas.forgotPasswordSchema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: { website: "" } as Partial<ForgotPasswordInput>,
+    defaultValues: {
+      email: "",
+      website: "",
+    },
+  });
+
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
+
+  const onSubmit = handleSubmit(async (data) => {
+    setErrorMessage(null);
+    setNoticeMessage(null);
+
+    const result = await forgotPasswordRequest({
+      locale,
+      email: data.email,
+      website: data.website,
+    });
+
+    if (!result.ok) {
+      setErrorMessage(result.message ?? tForm("errors.unknown"));
+
+      // ✅ keep email, clear honeypot
+      reset(
+        { email: getValues("email"), website: "" },
+        { keepErrors: true, keepTouched: true },
+      );
+      return;
+    }
+
+    setNoticeMessage(result.message ?? tForm("notices.resetLinkSent"));
+
+    // ✅ keep email (optional). If you want empty email on success, set email: ""
+    reset({ email: getValues("email"), website: "" });
   });
 
   return (
-    <form
-      onSubmit={async (e) => {
-        setErrorMessage(null);
-        setNoticeMessage(null);
-
-        const result = await handleForgotPasswordSubmit(e, locale);
-
-        if (!result.ok) {
-          setErrorMessage(result.message ?? "");
-          reset({ email: "", website: "" });
-          return;
-        }
-
-        setNoticeMessage(result.message ?? "");
-        reset({ email: "", website: "" });
-      }}
-    >
+    <form noValidate aria-busy={isSubmitting} onSubmit={onSubmit}>
       {errorMessage && (
-        <p className="mb-4 rounded-md bg-rose-50 p-3 text-sm text-rose-700">
-          {errorMessage}
-        </p>
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mb-4 rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"
+        >
+          <strong>{errorMessage}</strong>
+        </div>
       )}
+
       {noticeMessage && (
-        <p className="mb-4 rounded-md bg-emerald-50 p-3 text-sm text-center text-emerald-700">
-          {noticeMessage}
-        </p>
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-center text-emerald-700"
+        >
+          <strong>{noticeMessage}</strong>
+        </div>
       )}
+
       <h2 id="forgot-title" className={formHeading}>
-        <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
+        <span className="inline-block bg-linear-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("forgotPasswordTitle")}
         </span>
       </h2>
@@ -72,20 +102,30 @@ export default function ForgotPasswordForm() {
 
       <div className="mt-4 grid">
         <InputField
-          id="reset-email"
+          id="email"
           type="email"
+          autoComplete="email"
+          inputMode="email"
           label={tForm("fields.email")}
           icon={UserIcon}
           error={errors.email?.message}
           required
+          maxLength={254}
           {...register("email")}
         />
 
-        {/* Honeypot hidden field */}
-        <input type="hidden" {...register("website")} />
+        {/* Honeypot */}
+        <input
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden"
+          {...register("website")}
+        />
 
         <div className="mt-1 text-center">
-          <SubmitButton disabled={!isValid} loading={isSubmitting}>
+          <SubmitButton disabled={!isValid || isSubmitting} loading={isSubmitting}>
             {tForm("actions.sendResetLink")}
           </SubmitButton>
 
