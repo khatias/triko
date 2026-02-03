@@ -1,10 +1,20 @@
+// src/utils/auth/handleGoogleLogin.ts
+"use client";
+
+import type React from "react";
 import { supabase } from "../supabase/clients";
 
 export const handleGoogleLogin = async (e: React.MouseEvent) => {
   e.preventDefault();
-  const origin = window.location.origin; // e.g., http://localhost:3000 or https://preview.vercel.app
-  const next = window.location.pathname + window.location.search; // where to go back after auth
-  // if you want locale specifically: const locale = window.location.pathname.split("/")[1];
+
+  const origin = window.location.origin;
+
+  // infer locale from URL: /en/... or /ka/...
+  const firstSeg = window.location.pathname.split("/")[1];
+  const locale = firstSeg === "en" ? "en" : "ka";
+
+  // ✅ Always go to profile after Google auth
+  const next = `/${locale}/profile`;
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -15,7 +25,6 @@ export const handleGoogleLogin = async (e: React.MouseEvent) => {
       },
       // MUST be allowlisted in Supabase → Auth → URL Configuration → Redirect URLs
       redirectTo: `${origin}/api/callback?next=${encodeURIComponent(next)}`,
-      // or if you prefer locale: `${origin}/api/callback?locale=${locale}`
     },
   });
 
@@ -23,3 +32,7 @@ export const handleGoogleLogin = async (e: React.MouseEvent) => {
     console.error("Google login error:", error);
   }
 };
+
+
+
+
