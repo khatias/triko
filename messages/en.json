@@ -112,15 +112,24 @@
     }
   },
   "Auth": {
-    "unsupported": "Unsupported content type.",
-    "loginSuccess": "Signed in successfully.",
-    "invalidEmail": "Please enter a valid email address.",
-    "passwordRequired": "Password is required.",
-    "passwordTooLong": "Password is too long.",
+    "unsupported": "Unsupported media type.",
+    "unknown": "Something went wrong. Please try again.",
+    "supabase": "We couldn't complete the request. Please try again later.",
     "rateLimit": "Too many attempts. Please try again later.",
-    "invalidCredentials": "Incorrect email or password.",
-    "supabase": "We couldn't sign you in right now. Please try again later.",
-    "unknown": "Something went wrong. Please try again."
+
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidPassword": "Your password doesn't meet the requirements.",
+    "passwordRequired": "Password is required.",
+    "passwordTooLong": "Password must be 72 characters or fewer.",
+    "invalidFullName": "Please enter your full name.",
+
+    "invalidCredentials": "Invalid email or password.",
+
+    "loginSuccess": "Signed in successfully.",
+    "signupSuccess": "We sent a verification link to {email}. Please check your inbox.",
+    "signupSuccessGeneric": "We sent a verification link. Please check your inbox.",
+
+    "emailInUse": "This email is already registered. Try signing in instead."
   },
   "Form": {
     "loginTitle": "Welcome back",

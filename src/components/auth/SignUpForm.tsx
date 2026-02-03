@@ -1,36 +1,53 @@
+// src/components/auth/SignUpForm.tsx
 "use client";
-import { useLocale } from "next-intl";
-import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+
 import { makeAuthSchemas } from "@/lib/validation/auth";
-import { handleSignupSubmit } from "@/utils/auth/submit";
+import { signupRequest } from "@/utils/auth/requests";
+
 import { InputField, PasswordField } from "../form/Field";
 import { formHeading } from "../UI/primitives";
 import { LockIcon, UserIcon } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
 import { LegalNotice } from "./LegalNotice";
+
 export default function SignUpForm() {
   const tForm = useTranslations("Form");
   const tErrors = useTranslations("Errors");
-  const schemas = makeAuthSchemas((k) => tErrors?.(k) ?? k);
+  const tAuth = useTranslations("Auth");
+  const locale = useLocale();
+
+  const schemas = useMemo(
+    () => makeAuthSchemas((k) => tErrors?.(k) ?? k),
+    [tErrors],
+  );
 
   type SignUpInput = z.input<typeof schemas.signupSchema>;
-  const locale = useLocale();
 
   const {
     register,
+    handleSubmit,
     formState: { errors, isSubmitting, isValid },
     reset,
     trigger,
+    getValues,
   } = useForm<SignUpInput>({
     resolver: zodResolver(schemas.signupSchema),
     mode: "onChange",
     reValidateMode: "onChange",
-    defaultValues: { website: "" } as Partial<SignUpInput>,
+    defaultValues: {
+      email: "",
+      full_name: "",
+      password: "",
+      confirmPassword: "",
+      website: "",
+    } as Partial<SignUpInput>,
   });
 
   const emailReg = register("email");
@@ -40,45 +57,82 @@ export default function SignUpForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [noticeMessage, setNoticeMessage] = useState<string | null>(null);
 
+  const onSubmit = handleSubmit(async (data) => {
+    setErrorMessage(null);
+    setNoticeMessage(null);
+
+    const result = await signupRequest({
+      locale,
+      email: data.email,
+      password: data.password,
+      full_name: data.full_name,
+      website: data.website ?? "",
+    });
+
+    if (!result.ok) {
+      setErrorMessage(result.message ?? tForm("errors.unknown"));
+
+      // keep email + name, clear sensitive fields
+      reset(
+        {
+          email: getValues("email"),
+          full_name: getValues("full_name"),
+          password: "",
+          confirmPassword: "",
+          website: "",
+        } as Partial<SignUpInput>,
+        { keepErrors: true, keepTouched: true },
+      );
+
+      return;
+    }
+
+    setNoticeMessage(result.message ?? tAuth("signupSuccessGeneric"));
+
+    // clear passwords; keep email/name so user can re-check
+    reset(
+      {
+        email: getValues("email"),
+        full_name: getValues("full_name"),
+        password: "",
+        confirmPassword: "",
+        website: "",
+      } as Partial<SignUpInput>,
+      { keepErrors: true, keepTouched: true },
+    );
+  });
+
   return (
-    <form
-      onSubmit={async (e) => {
-        setErrorMessage(null);
-        setNoticeMessage(null);
-
-        const result = await handleSignupSubmit(e, locale);
-
-        if (!result.ok) {
-          setErrorMessage(result.message ?? "");
-          reset({ email: "", password: "", confirmPassword: "", website: "" });
-          return;
-        }
-
-        setNoticeMessage(result.message ?? "");
-        reset({ email: "", password: "", confirmPassword: "", website: "" });
-      }}
-    >
+    <form noValidate aria-busy={isSubmitting} onSubmit={onSubmit}>
       {/* Error */}
       {errorMessage && (
-        <div className="my-8 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-700">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="my-8 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-700"
+        >
           <strong>{errorMessage}</strong>
         </div>
       )}
 
       {/* Success / Next step */}
       {noticeMessage && (
-        <div className="my-8 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700">
+        <div
+          role="status"
+          aria-live="polite"
+          className="my-8 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-center text-sm text-emerald-700"
+        >
           <strong>{noticeMessage}</strong>
         </div>
       )}
 
       <h2 className={formHeading}>
-        <span className="inline-block bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
+        <span className="inline-block bg-linear-to-b from-zinc-900 via-zinc-800 to-zinc-700 bg-clip-text text-transparent">
           {tForm("signUpTitle")}
         </span>
       </h2>
 
-      <p className="text-center text-sm text-zinc-600 sm:text-base pb-6">
+      <p className="pb-6 text-center text-sm text-zinc-600 sm:text-base">
         {tForm("signUpSubtitle")}
       </p>
 
@@ -150,20 +204,17 @@ export default function SignUpForm() {
         />
 
         <div className="mt-2 text-center">
-          <SubmitButton
-            loading={isSubmitting}
-            disabled={!isValid || isSubmitting}
-          >
+          <SubmitButton loading={isSubmitting} disabled={!isValid || isSubmitting}>
             {isSubmitting ? tForm("actions.sending") : tForm("actions.signUp")}
           </SubmitButton>
         </div>
+
         <LegalNotice />
 
-        {/* 🔗 Sign In CTA */}
         <p className="mt-4 text-center text-sm text-zinc-700">
           {tForm("links.haveAccount")}{" "}
           <Link
-            href="/login"
+            href={`/${locale}/login`}
             className="font-semibold text-rose-600 underline-offset-4 hover:underline"
           >
             {tForm("actions.signIn")}

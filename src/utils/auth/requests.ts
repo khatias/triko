@@ -22,38 +22,33 @@ async function readApi(res: Response): Promise<ApiResponse> {
 }
 
 export async function signupRequest(p: SignupPayload): Promise<AuthResult> {
-  const res = await fetch("/api/auth/signup", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-next-intl-locale": p.locale,
-    },
-    body: JSON.stringify({
-      email: p.email,
-      password: p.password,
-      full_name: p.full_name,
-      website: p.website ?? "",
-    }),
-    credentials: "same-origin",
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-next-intl-locale": p.locale,
+      },
+      body: JSON.stringify({
+        email: p.email,
+        password: p.password,
+        full_name: p.full_name,
+        website: p.website ?? "",
+      }),
+      credentials: "same-origin",
+      cache: "no-store",
+    });
 
-  const data = await readApi(res);
+    const data = await readApi(res);
 
-  if (!res.ok) {
-    return {
-      ok: false,
-      message:
-        typeof data.message === "string" ? data.message : "Signup failed",
-      code: typeof data.code === "string" ? data.code : undefined,
-    };
+    if (!res.ok) {
+      return { ok: false, message: data.message, code: data.code };
+    }
+
+    return { ok: true, message: data.message, email: data.email };
+  } catch {
+    return { ok: false, code: "UNEXPECTED_ERROR" };
   }
-
-  return {
-    ok: true,
-    message: typeof data.message === "string" ? data.message : undefined,
-    email: typeof data.email === "string" ? data.email : undefined,
-  };
 }
 
 export async function loginRequest(
@@ -90,6 +85,6 @@ export async function loginRequest(
       email: typeof data?.email === "string" ? data.email : undefined,
     };
   } catch {
-    return { ok: false, code: "UNEXPECTED" };
+    return { ok: false, code: "UNEXPECTED_ERROR" };
   }
 }
