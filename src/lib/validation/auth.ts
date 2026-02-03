@@ -1,3 +1,4 @@
+// src/lib/validation/auth.ts
 import { z, zEmail, requiredString } from "../validation/z";
 
 export const makeAuthSchemas = (t: (k: string) => string) => {
@@ -14,13 +15,9 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
     .transform((v) => v.toLowerCase());
 
   /**
-   * Password validation schema
-   * - Required string
+   * Password validation schema (SIGNUP/RESET)
    * - 8–72 characters
-   * - At least one uppercase letter
-   * - At least one lowercase letter
-   * - At least one number
-   * - At least one symbol
+   * - Upper + lower + number + symbol
    */
   const passwordSchema = requiredString(t("passwordRequired"))
     .min(8, { message: t("passwordTooShort") })
@@ -32,13 +29,11 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 
   /**
    * Honeypot anti-bot field
-   * - Optional hidden field
-   * - Trimmed string
-   * - If user/bot fills this in, validation fails (bot detected)
+   * - Always string (prevents resolver type mismatch)
+   * - If filled -> validation fails
    */
   const honeypot = z
     .string()
-    .default("") // makes input optional; ensures string output
     .transform((v) => v.trim())
     .superRefine((v, ctx) => {
       if (v.length > 0) {
@@ -51,27 +46,26 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 
   /**
    * Login schema
-   * - Email (validated with emailSchema)
-   * - Password (required, no complex rules here)
-   * - Website (hidden honeypot field, must be empty if present)
+   * - IMPORTANT: login should NOT enforce strong password rules
+   * - Only required string + max length (handled in route too)
    */
   const loginSchema = z.object({
     email: emailSchema,
-    password: requiredString(t("passwordRequired")),
-    website: z.string().max(0).optional(),
+    password: requiredString(t("passwordRequired")).max(72, {
+      message: t("passwordTooLong"),
+    }),
+    website: honeypot,
   });
 
   /**
    * Signup schema
-   * - Email (validated with emailSchema)
-   * - Password (validated with passwordSchema)
-   * - ConfirmPassword (must match password)
-   * - Honeypot field
    */
   const signupSchema = z
     .object({
       email: emailSchema,
-      full_name: requiredString(t("required")).min(3, { message: t("tooShortName") }).max(100 , { message: t("tooLongName") }),
+      full_name: requiredString(t("required"))
+        .min(3, { message: t("tooShortName") })
+        .max(100, { message: t("tooLongName") }),
       password: passwordSchema,
       confirmPassword: requiredString(t("confirmPasswordRequired")),
       website: honeypot,
@@ -88,8 +82,6 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 
   /**
    * Reset password schema
-   * - Same rules as signup (password + confirmPassword must match)
-   * - Honeypot field included
    */
   const resetPasswordSchema = z
     .object({
@@ -109,8 +101,6 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 
   /**
    * Forgot password schema
-   * - Email (validated with emailSchema)
-   * - Honeypot field
    */
   const forgotPasswordSchema = z.object({
     email: emailSchema,
@@ -120,6 +110,7 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
   return {
     emailSchema,
     passwordSchema,
+    honeypot,
     loginSchema,
     signupSchema,
     forgotPasswordSchema,
@@ -129,8 +120,14 @@ export const makeAuthSchemas = (t: (k: string) => string) => {
 
 export type AuthSchemas = ReturnType<typeof makeAuthSchemas>;
 
+/**
+ * Helpers used by API routes
+ */
 export const sanitizeEmail = (v: unknown) =>
-  String(v ?? "").normalize("NFKC").trim().toLowerCase();
+  String(v ?? "")
+    .normalize("NFKC")
+    .trim()
+    .toLowerCase();
 
 export const isNonEmptyString = (v: unknown): v is string =>
   typeof v === "string" && v.trim().length > 0;
@@ -138,5 +135,10 @@ export const isNonEmptyString = (v: unknown): v is string =>
 export const isValidEmail = (v: string) =>
   !!v && v.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+/**
+ * NOTE: This is only length validation.
+ * Strong password rules are handled by Zod schema (signup/reset),
+ * and should not be enforced on login.
+ */
 export const isValidPassword = (v: string) =>
   typeof v === "string" && v.length >= 8 && v.length <= 72;

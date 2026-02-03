@@ -111,7 +111,32 @@
       "madeWith": "Made with love."
     }
   },
+  "Auth": {
+    "unsupported": "Unsupported media type.",
+    "unknown": "Something went wrong. Please try again.",
+    "supabase": "We couldn't complete the request. Please try again later.",
+    "rateLimit": "Too many attempts. Please try again later.",
 
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidPassword": "Your password doesn't meet the requirements.",
+    "passwordRequired": "Password is required.",
+    "passwordTooLong": "Password must be 72 characters or fewer.",
+    "invalidFullName": "Please enter your full name.",
+
+    "invalidCredentials": "Invalid email or password.",
+
+    "loginSuccess": "Signed in successfully.",
+    "signupSuccess": "We sent a verification link to {email}. Please check your inbox.",
+    "signupSuccessGeneric": "We sent a verification link. Please check your inbox.",
+
+    "emailInUse": "This email is already registered. Try signing in instead.",
+    "resetSent": "If an account exists for this email, we’ve sent a password reset link.",
+    "resetSentGeneric": "If an account exists, we’ve sent a password reset link.",
+    "resetFailed": "We couldn’t send the reset email. Please try again later.",
+    "passwordUpdated": "Your password has been updated.",
+    "resetLinkInvalidOrExpired": "This reset link is invalid or has expired. Please request a new one.",
+    "passwordMustBeDifferent": "Your new password must be different from your current password."
+  },
   "Form": {
     "loginTitle": "Welcome back",
     "loginSubTitle": "Sign in to your account to continue.",
@@ -171,6 +196,7 @@
   },
   "Errors": {
     "required": "This field is required",
+    "ivanlidCredentials": "Email or password is incorrect",
     "emailRequired": "Email is required",
     "emailTooLong": "Email is too long",
     "invalidEmail": "Email format is incorrect",
@@ -193,7 +219,7 @@
     "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
     "rate_limited": "Too many attempts. Please wait a moment and try again.",
     "server_error": "Server error. Please try again later.",
-    "unknown": "We couldn't update the password. Please try again.",
+    "unknown": "Somthing Went Wron. Please try again.",
     "network": "Network error. Please try again.",
     "timeout": "Request timed out. Please try again."
   },
@@ -390,6 +416,11 @@
       "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
     },
     "sizes": "Sizes",
+    "sale": "SALE",
+    "selectedSize": "Selected size:",
+    "adding": "ADDING",
+    "viewPhoto": "View photo {n}",
+    "outOfStock": "This size is out of stock",
     "chooseSize": "Choose Size",
     "sizeGuide": "Size Guide",
     "addToCart": "Add to Cart",
@@ -402,22 +433,24 @@
     "Assistance": "Assistance",
     "Assistancedesc": "Our customer support team is here to help with any questions or concerns you may have."
   },
-  
+
   "Cart": {
     "cart": "Cart",
     "size": "Size",
     "orderSummary": "Order Summary",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
-    "total": "Total",
+    "total": "Total Price",
     "checkout": "Proceed to Checkout",
-    "empty": "Your cart is currently empty.",
+    "empty": "Your cart is  empty.",
     "continueShopping": "Continue Shopping",
+    "secure": "Secure Payment Process",
+    "products": "Products",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
     "errors": {
       "onlyLeft": "Only {available} left in stock.",
       "notEnoughStock": "Not enough stock available."
     }
   }
-
-
 }

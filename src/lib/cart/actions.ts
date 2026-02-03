@@ -7,6 +7,7 @@ import {
   isObject,
   isString,
   asNullableString,
+  asNullableMoneyString,
   asNullableInt,
   asMoneyString,
   asInt,
@@ -32,6 +33,8 @@ export type CartRow = {
   total: string;
   store_id: number;
   price_id: number | null;
+  discount_total?: string;
+  shipping_total?: string;
 };
 
 export type CartItemRow = {
@@ -40,7 +43,12 @@ export type CartItemRow = {
 
   fina_id: number;
   qty: number;
+
+  // effective price
   price_at_add: string;
+
+  // ✅ NEW: original/list price
+  list_price_at_add: string | null;
 
   parent_code: string | null;
 
@@ -73,7 +81,6 @@ function classifyError(message: string): ActionErr {
   return { ok: false, message, kind: "unknown" };
 }
 
-
 function parseCartRow(v: unknown): CartRow {
   if (!isObject(v)) throw new Error("cart_read_v2: cart is not an object");
 
@@ -103,6 +110,8 @@ function parseCartRow(v: unknown): CartRow {
     total: asMoneyString(v.total, "cart.total"),
     store_id: asInt(v.store_id, "cart.store_id"),
     price_id: asNullableInt(v.price_id, "cart.price_id"),
+    discount_total: asMoneyString(v.discount_total, "cart.discount_total"),
+    shipping_total: asMoneyString(v.shipping_total, "cart.shipping_total"),
   };
 }
 
@@ -121,7 +130,14 @@ function parseCartItemRow(v: unknown): CartItemRow {
 
     fina_id: asInt(v.fina_id, "item.fina_id"),
     qty: asInt(v.qty, "item.qty"),
+
     price_at_add: asMoneyString(v.price_at_add, "item.price_at_add"),
+
+   list_price_at_add: asNullableMoneyString(
+  v.list_price_at_add,
+  "item.list_price_at_add",
+),
+
 
     parent_code: asNullableString(v.parent_code),
 
@@ -134,6 +150,7 @@ function parseCartItemRow(v: unknown): CartItemRow {
     image_url: asNullableString(v.image_url),
   };
 }
+
 
 function parseCartReadResponse(payload: unknown): CartState {
   if (!isObject(payload))
