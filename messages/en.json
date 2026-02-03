@@ -132,7 +132,12 @@
     "emailInUse": "This email is already registered. Try signing in instead.",
     "resetSent": "If an account exists for this email, we’ve sent a password reset link.",
     "resetSentGeneric": "If an account exists, we’ve sent a password reset link.",
-    "resetFailed": "We couldn’t send the reset email. Please try again later."
+    "resetFailed": "We couldn’t send the reset email. Please try again later.",
+    "passwordUpdated": "Your password has been updated.",
+  "resetLinkInvalidOrExpired": "This reset link is invalid or has expired. Please request a new one.",
+  "passwordMustBeDifferent": "Your new password must be different from your current password."
+
+    
   },
   "Form": {
     "loginTitle": "Welcome back",
