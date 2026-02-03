@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+
 import type { Variant } from "@/lib/db/products";
-import { buildSizes } from "@/lib/helpers";
+import { buildSizes, formatPrice } from "@/lib/helpers";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
 import { getFinaIdFromVariant } from "@/utils/fina/ids";
 
@@ -16,8 +17,17 @@ type ProductDetailClientProps = {
   variants: Variant[];
   groupName: string;
   description: string;
+
+  // fallback label (range)
   basePriceLabel: string;
+
+  currency?: string | null;
 };
+
+function money(v: number | null, currency: string | null): string | null {
+  if (v == null) return null;
+  return formatPrice(v, currency);
+}
 
 export default function ProductDetailClient({
   locale,
@@ -27,6 +37,7 @@ export default function ProductDetailClient({
   groupName,
   description,
   basePriceLabel,
+  currency = "GEL",
 }: ProductDetailClientProps) {
   const [active, setActive] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -42,7 +53,7 @@ export default function ProductDetailClient({
     return sizeRows.find((r) => r.label === selected) ?? null;
   }, [selected, sizeRows]);
 
-  const selectedVariant: Variant | null = useMemo(() => {
+  const selectedVariant = useMemo(() => {
     const row = selectedRow;
     if (!row) return null;
     if (!row.inStock) return null;
@@ -70,12 +81,10 @@ export default function ProductDetailClient({
     const m = /available\s+([0-9]+(?:\.[0-9]+)?)/i.exec(msg);
     return m?.[1] ?? null;
   }
-
   const available = err ? parseAvailable(err) : null;
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!imgRef.current) return;
-
     const rect = imgRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -88,6 +97,62 @@ export default function ProductDetailClient({
 
   const canAdd = !!selectedVariant && !!selectedFinaId && !isPending;
 
+  // ===== Price block that switches when size selected =====
+  const priceBlock = useMemo(() => {
+    // default: show range label
+    if (!selectedVariant) {
+      return (
+        <p className="text-3xl font-light text-stone-800 tracking-tight">
+          {basePriceLabel}
+        </p>
+      );
+    }
+
+    const eff = selectedVariant.price ?? null;
+    const list = selectedVariant.list_price ?? null;
+
+    const effLabel = money(eff, currency);
+    const listLabel = money(list, currency);
+
+    // prefer DB flag but also infer if needed
+    const hasDiscount =
+      (selectedVariant.has_discount ?? null) === true ||
+      (eff != null && list != null && eff < list);
+
+    // if we cannot format effective price -> fallback to base
+    if (!effLabel) {
+      return (
+        <p className="text-3xl font-light text-stone-800 tracking-tight">
+          {basePriceLabel}
+        </p>
+      );
+    }
+
+    if (hasDiscount && listLabel) {
+      return (
+        <div className="flex items-baseline gap-3">
+          <span className="text-3xl font-light text-stone-800 tracking-tight">
+            {effLabel}
+          </span>
+          <span className="text-sm text-stone-400 line-through font-medium">
+            {listLabel}
+          </span>
+          <span className="text-[10px] uppercase tracking-[0.25em] font-black text-[#B45309]">
+            {t("sale")}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-baseline gap-3">
+        <span className="text-3xl font-light text-stone-800 tracking-tight">
+          {effLabel}
+        </span>
+      </div>
+    );
+  }, [selectedVariant, basePriceLabel, currency, t]);
+
   return (
     <div className="relative grid gap-16 lg:grid-cols-12 items-start pt-4">
       {toast ? (
@@ -96,6 +161,7 @@ export default function ProductDetailClient({
         </div>
       ) : null}
 
+      {/* LEFT */}
       <div className="lg:col-span-7 space-y-8">
         <div
           ref={imgRef}
@@ -145,7 +211,7 @@ export default function ProductDetailClient({
               <button
                 key={`${pht}-${i}`}
                 type="button"
-                aria-label={`View photo ${i + 1}`}
+                aria-label={t("viewPhoto", { n: i + 1 })}
                 onClick={() => setActive(i)}
                 className={`relative h-28 w-20 shrink-0 rounded-2xl overflow-hidden transition-all duration-500 ${
                   isActive
@@ -180,11 +246,16 @@ export default function ProductDetailClient({
             {title}
           </h1>
 
-          <div className="pt-4">
-            <p className="text-3xl font-light text-stone-800 tracking-tight">
-              {basePriceLabel}
+          {/* PRICE */}
+          <div className="pt-4">{priceBlock}</div>
+
+          {/* Selected size line */}
+          {selectedVariant ? (
+            <p className="text-[10px] uppercase tracking-[0.25em] text-stone-400">
+              {t("selectedSize")}{" "}
+              <span className="text-stone-700 font-bold">{selected}</span>
             </p>
-          </div>
+          ) : null}
         </div>
 
         {/* Size Selection */}
@@ -229,14 +300,13 @@ export default function ProductDetailClient({
             })}
           </div>
 
-          {/* helpful message */}
           {!selected ? (
             <p className="text-[10px] uppercase tracking-widest text-stone-400">
               {t("chooseSize")}
             </p>
           ) : selectedRow && !selectedRow.inStock ? (
             <p className="text-[10px] uppercase tracking-widest text-red-700">
-              {t("outOfStock") ?? "This size is out of stock"}
+              {t("outOfStock")}
             </p>
           ) : null}
         </div>
@@ -253,11 +323,10 @@ export default function ProductDetailClient({
           >
             <div className="absolute inset-0 bg-[#D4AF37] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             <span className="relative z-10 text-white group-hover:text-stone-900 text-[12px] font-black uppercase tracking-[0.5em] transition-colors duration-500">
-              {isPending ? "ADDING" : t("addToCart")}
+              {isPending ? t("adding") : t("addToCart")}
             </span>
           </button>
 
-          {/* error from hook */}
           {err ? (
             <p className="text-[10px] uppercase tracking-wide text-red-700">
               {available

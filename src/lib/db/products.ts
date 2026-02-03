@@ -1,29 +1,59 @@
 import { createClient } from "@/utils/supabase/server";
 
-export type CatalogGroupedProductCard = {
-  parent_code: string;
-  name: string;
-  title_ka: string | null;
-  title_en: string | null;
-  description_ka: string | null;
-  description_en: string | null;
-  group_name_ka?: string | null;
-  group_name_en?: string | null;
-  currency: string | null;
-  min_price: number | null;
-  max_price: number | null;
-  photos: unknown | null;
-  variants?: Variant[] | null;
-};
+/* =========================
+   Types
+========================= */
 
 export type Variant = {
   fina_id: number;
   code: string | null;
   name: string;
   size: string | null;
+
+  // effective price (discount-aware)
   price: number | null;
+
+  // original/list price
+  list_price: number | null;
+
+  // discount flag (optional from DB)
+  has_discount: boolean | null;
+
   currency: string | null;
   stock: number | null;
+};
+
+export type CatalogGroupedProductCard = {
+  parent_code: string;
+  name: string;
+
+  title_ka: string | null;
+  title_en: string | null;
+  description_ka: string | null;
+  description_en: string | null;
+
+  photos: unknown | null;
+
+  currency: string | null;
+
+  // effective range
+  min_price: number | null;
+  max_price: number | null;
+
+  // original(list) range
+  min_list_price: number | null;
+  max_list_price: number | null;
+
+  has_discount: boolean | null;
+
+  total_stock?: number | null;
+
+  group_id?: number | null;
+  group_name?: string | null;
+  group_name_en?: string | null;
+  group_name_ka?: string | null;
+
+  variants?: Variant[] | null;
 };
 
 export type CatalogPageResult = {
@@ -40,27 +70,44 @@ type GetCatalogProductsGroupedArgs = {
   groupId?: number | null;
   q?: string | null;
 };
+
 export type CatalogProductDetail = {
   parent_code: string;
+
   group_id: number | null;
   group_name: string | null;
   group_name_en: string | null;
   group_name_ka: string | null;
+
   name: string;
+
   title_ka: string | null;
   title_en: string | null;
-
   description_ka: string | null;
   description_en: string | null;
 
   photos: unknown | null;
+
   currency: string | null;
+
+  // effective range
   min_price: number | null;
   max_price: number | null;
 
+  // original(list) range
+  min_list_price: number | null;
+  max_list_price: number | null;
+
+  has_discount: boolean | null;
+
   total_stock: number | null;
+
   variants: Variant[];
 };
+
+/* =========================
+   Queries
+========================= */
 
 export async function getCatalogProductsGrouped(
   args: GetCatalogProductsGroupedArgs = {},
@@ -74,23 +121,27 @@ export async function getCatalogProductsGrouped(
 
   let query = supabase
     .from("shop_catalog_parent_view")
-
     .select(
       `
-      parent_code,
-      name,
-      title_ka,
-      title_en,
-      description_ka,
-      description_en,
-      photos,
-      currency,
-      min_price,
-      max_price,
-      variants,
-      group_id,
-      group_name
-    `,
+        parent_code,
+        name,
+        title_ka,
+        title_en,
+        description_ka,
+        description_en,
+        photos,
+        currency,
+        min_price,
+        max_price,
+        min_list_price,
+        max_list_price,
+        has_discount,
+        variants,
+        group_id,
+        group_name,
+        group_name_en,
+        group_name_ka
+      `,
       { count: "exact" },
     )
     .order("parent_code", { ascending: true });
@@ -109,7 +160,12 @@ export async function getCatalogProductsGrouped(
   const { data, error, count } = await query.range(from, to);
 
   if (error) {
-    console.error("getCatalogProductsGrouped error:", error);
+    console.error("getCatalogProductsGrouped error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
     throw new Error("Failed to fetch grouped catalog products");
   }
 
@@ -124,6 +180,7 @@ export async function getCatalogProductsGrouped(
     totalPages,
   };
 }
+
 export async function getCatalogProductDetail(
   parentCode: string,
 ): Promise<CatalogProductDetail | null> {
@@ -131,26 +188,28 @@ export async function getCatalogProductDetail(
 
   const { data, error } = await supabase
     .from("shop_catalog_parent_view")
-
     .select(
       `
-      parent_code,
-      group_id,
-      group_name,
-      group_name_en,
-      group_name_ka,
-      name,
-      title_ka,
-      title_en,
-     description_ka,
-      description_en,
-      photos,
-      currency,
-      min_price,
-      max_price,
-      total_stock,
-      variants
-    `,
+        parent_code,
+        group_id,
+        group_name,
+        group_name_en,
+        group_name_ka,
+        name,
+        title_ka,
+        title_en,
+        description_ka,
+        description_en,
+        photos,
+        currency,
+        min_price,
+        max_price,
+        min_list_price,
+        max_list_price,
+        has_discount,
+        total_stock,
+        variants
+      `,
     )
     .eq("parent_code", parentCode)
     .maybeSingle();

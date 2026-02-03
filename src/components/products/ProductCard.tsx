@@ -14,6 +14,24 @@ import { useTranslations } from "next-intl";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
 import { getFinaIdFromVariant } from "@/utils/fina/ids";
 
+function formatRange(
+  min: number | null | undefined,
+  max: number | null | undefined,
+  currency: string | null | undefined,
+) {
+  const a = min ?? null;
+  const b = max ?? null;
+
+  if (a == null && b == null) return null;
+
+  // if only one side exists, fallback to that
+  const lo = a ?? b!;
+  const hi = b ?? a!;
+
+  if (lo === hi) return formatPrice(lo, currency ?? null);
+  return `${formatPrice(lo, currency ?? null)}–${formatPrice(hi, currency ?? null)}`;
+}
+
 export default function ProductCard({
   product,
   locale,
@@ -38,8 +56,6 @@ export default function ProductCard({
       | undefined,
   );
 
-  const priceLabel = formatPrice(product.min_price, product.currency);
-
   const sizeRows = useMemo(
     () => buildSizes(product.variants ?? null),
     [product.variants],
@@ -57,6 +73,19 @@ export default function ProductCard({
     successMessage: p("addedToCart"),
   });
 
+  // discount-aware price rendering (needs fields from view)
+  const hasDiscount = Boolean(product.has_discount);
+  const effectiveLabel = formatRange(
+    product.min_price,
+    product.max_price,
+    product.currency,
+  );
+  const listLabel = formatRange(
+    product.min_list_price,
+    product.max_list_price,
+    product.currency,
+  );
+
   return (
     <div className={`group animate-reveal ${delayClass}`}>
       <div className="relative">
@@ -65,6 +94,7 @@ export default function ProductCard({
             {toast}
           </div>
         ) : null}
+
         <Link
           href={`/${locale}/products/${product.parent_code}`}
           className="block"
@@ -93,6 +123,13 @@ export default function ProductCard({
 
                 {/* vignette */}
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-black/0 to-black/0 opacity-70" />
+
+                {/* SALE BADGE */}
+                {hasDiscount ? (
+                  <div className="absolute left-4 top-4 rounded-full bg-white/70 backdrop-blur-xl px-3 py-1 text-[9px] font-bold uppercase tracking-[0.28em] text-stone-900 ring-1 ring-white/30 shadow-sm">
+                    Sale
+                  </div>
+                ) : null}
               </>
             ) : (
               <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-widest text-stone-400">
@@ -117,10 +154,8 @@ export default function ProductCard({
                     sizeRows.slice(0, 8).map((row) => {
                       const v = row.variant;
 
-                      // keep your existing stock rule
                       const disabledBase = !row.inStock || !v || isPending;
 
-                      // only for showing pending per button
                       const finaId = v ? getFinaIdFromVariant(v) : null;
                       const disabled = disabledBase || finaId == null;
 
@@ -135,7 +170,7 @@ export default function ProductCard({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!disabled && v) onAdd(v); // ✅ use hook
+                            if (!disabled && v) onAdd(v);
                           }}
                           className={[
                             "px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-tight ring-1",
@@ -145,9 +180,7 @@ export default function ProductCard({
                               : "ring-black/5 text-stone-900 hover:bg-stone-900 hover:text-white",
                           ].join(" ")}
                           aria-label={`Add size ${row.label} to bag`}
-                          title={
-                            disabled ? "Not available" : `Add ${row.label}`
-                          }
+                          title={disabled ? "Not available" : `Add ${row.label}`}
                         >
                           {isThisPending ? "…" : row.label}
                         </button>
@@ -183,10 +216,18 @@ export default function ProductCard({
                 </p>
               </div>
 
+              {/* PRICE */}
               <div className="text-right shrink-0">
+                {hasDiscount && listLabel ? (
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400 line-through decoration-stone-300 decoration-1">
+                    {listLabel} ₾
+                  </p>
+                ) : null}
+
                 <p className="font-serif-display italic text-lg text-stone-900">
-                  {priceLabel || "—"}
+                  {effectiveLabel ? `${effectiveLabel} ₾` : "—"}
                 </p>
+
                 <div className="mt-1 h-px w-0 bg-stone-900 transition-all duration-500 group-hover:w-full ml-auto" />
               </div>
             </div>
