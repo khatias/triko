@@ -14,6 +14,7 @@ import {
 
 const CART_COOKIE = "cart_token";
 
+
 /* =========================
    Types
 ========================= */
@@ -32,6 +33,8 @@ export type CartRow = {
   total: string;
   store_id: number;
   price_id: number | null;
+  discount_total?: string;
+  shipping_total?: string;
 };
 
 export type CartItemRow = {
@@ -103,6 +106,8 @@ function parseCartRow(v: unknown): CartRow {
     total: asMoneyString(v.total, "cart.total"),
     store_id: asInt(v.store_id, "cart.store_id"),
     price_id: asNullableInt(v.price_id, "cart.price_id"),
+    discount_total: asMoneyString(v.discount_total, "cart.discount_total"),
+    shipping_total: asMoneyString(v.shipping_total, "cart.shipping_total"),
   };
 }
 

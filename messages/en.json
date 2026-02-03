@@ -134,10 +134,8 @@
     "resetSentGeneric": "If an account exists, we’ve sent a password reset link.",
     "resetFailed": "We couldn’t send the reset email. Please try again later.",
     "passwordUpdated": "Your password has been updated.",
-  "resetLinkInvalidOrExpired": "This reset link is invalid or has expired. Please request a new one.",
-  "passwordMustBeDifferent": "Your new password must be different from your current password."
-
-    
+    "resetLinkInvalidOrExpired": "This reset link is invalid or has expired. Please request a new one.",
+    "passwordMustBeDifferent": "Your new password must be different from your current password."
   },
   "Form": {
     "loginTitle": "Welcome back",
@@ -437,10 +435,14 @@
     "orderSummary": "Order Summary",
     "subtotal": "Subtotal",
     "shipping": "Shipping",
-    "total": "Total",
+    "total": "Total Price",
     "checkout": "Proceed to Checkout",
     "empty": "Your cart is  empty.",
     "continueShopping": "Continue Shopping",
+    "secure": "Secure Payment Process",
+    "products": "Products",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
     "errors": {
       "onlyLeft": "Only {available} left in stock.",
       "notEnoughStock": "Not enough stock available."

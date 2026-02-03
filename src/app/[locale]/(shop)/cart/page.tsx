@@ -1,10 +1,11 @@
 import Image from "next/image";
 import { getCartState, type CartItemRow } from "@/lib/cart/actions";
-import { ShoppingBag, ArrowRight, Lock, CreditCard } from "lucide-react";
+import { ShoppingBag, ArrowRight, ShieldCheck } from "lucide-react";
 import { normalizeLocale, isValidHttpUrl } from "@/utils/type-guards";
 import Link from "next/link";
 import CartItemRowClient from "@/components/cart/CartItemRowClient";
 import { getTranslations } from "next-intl/server";
+import CartAutoRefresh from "@/components/cart/CartAutoRefresh";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -41,6 +42,8 @@ export default async function CartPage(props: {
   const t = await getTranslations("Cart");
   return (
     <div className="min-h-screen bg-white pb-20 pt-6 lg:bg-zinc-50/30">
+      <CartAutoRefresh intervalMs={20000} />
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h1 className="mb-6 text-2xl font-bold tracking-tight text-zinc-900 lg:text-3xl">
           {t("cart")}{" "}
@@ -136,17 +139,27 @@ export default async function CartPage(props: {
                 {/* Body */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-600">{t("subtotal")}</span>
+                    <span className="text-zinc-600">{t("products")}</span>
                     <span className="font-medium text-zinc-900">
                       {state.cart.subtotal} ₾
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-600">{t("shipping")}</span>
-                    <span className="text-zinc-400 italic"></span>
+                    <span className="text-zinc-600">{t("deliveryFee")}</span>
+                    <span className="text-zinc-400 ">
+                      {state.cart.shipping_total} ₾
+                    </span>
                   </div>
-
+                  {state.cart.discount_total &&
+                    state.cart.discount_total !== "0.00" && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-zinc-600">{t("discount")}</span>
+                        <span className="font-medium text-green-600">
+                          {state.cart.discount_total} ₾
+                        </span>
+                      </div>
+                    )}
                   {/* Divider */}
                   <div className="my-2 border-t border-dashed border-zinc-200"></div>
 
@@ -172,14 +185,9 @@ export default async function CartPage(props: {
                   </button>
 
                   {/* Trust Badges */}
-                  <div className="mt-4 flex items-center justify-center gap-4 text-xs text-zinc-400">
-                    <div className="flex items-center gap-1.5">
-                      <Lock className="h-3 w-3" /> Secure
-                    </div>
-                    <div className="h-3 w-px bg-zinc-200"></div>
-                    <div className="flex items-center gap-1.5">
-                      <CreditCard className="h-3 w-3" /> Encrypted
-                    </div>
+                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-zinc-400">
+                    <ShieldCheck className="h-4 w-5 text-green-600" />{" "}
+                    {t("secure")}{" "}
                   </div>
                 </div>
               </div>

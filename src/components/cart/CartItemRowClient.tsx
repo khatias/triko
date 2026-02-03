@@ -6,45 +6,34 @@ import { removeCartItem, updateCartQty } from "@/lib/cart/actions";
 import { CartError } from "@/lib/cart/errors";
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 
-type Props = {
-  locale: "en" | "ka";
-  item: CartItemRow;
-};
+type Props = { locale: "en" | "ka"; item: CartItemRow };
 
 export default function CartItemRowClient({ locale, item }: Props) {
   const [isPending, startTransition] = useTransition();
-  const [qty, setQty] = useState<number>(item.qty);
   const [msg, setMsg] = useState<string | null>(null);
-
+  const router = useRouter();
   const cartT = useTranslations("Cart");
+
+  const qty = item.qty;
 
   function run(fn: () => Promise<ActionResult>) {
     setMsg(null);
-
     startTransition(() => {
       (async () => {
-        try {
-          const res = await fn();
-
-          if (!res.ok) {
-            setMsg(CartError(res, cartT));
-            setQty(item.qty);
-            return;
-          }
-
-          setMsg(null);
-        } catch {
-          setMsg(cartT("errors.generic"));
-          setQty(item.qty);
+        const res = await fn();
+        if (!res.ok) {
+          setMsg(CartError(res, cartT));
+          return;
         }
-      })();
+        router.refresh(); // ✅ აქ
+      })().catch(() => setMsg(cartT("errors.generic")));
     });
   }
 
-  function onUpdate(newQty: number) {
-    const next = Math.max(0, Math.floor(newQty));
-    setQty(next);
+  function onUpdate(nextQty: number) {
+    const next = Math.max(0, Math.floor(nextQty));
     run(() => updateCartQty(locale, item.fina_id, next));
   }
 

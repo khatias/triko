@@ -73,7 +73,8 @@ export async function getCatalogProductsGrouped(
   const to = from + pageSize - 1;
 
   let query = supabase
-    .from("shop_customer_parent_test_view")
+    .from("shop_catalog_parent_view")
+
     .select(
       `
       parent_code,
@@ -129,7 +130,8 @@ export async function getCatalogProductDetail(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("shop_customer_parent_test_view")
+    .from("shop_catalog_parent_view")
+
     .select(
       `
       parent_code,
