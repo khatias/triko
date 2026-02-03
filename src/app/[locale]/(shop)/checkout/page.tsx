@@ -1,8 +1,18 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
+import CheckoutFormClient from "./_components/CheckoutFormClient";
 
 export const dynamic = "force-dynamic";
+
+type AddressPrefill = {
+  id: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  region: string | null;
+  is_default_shipping: boolean;
+  created_at: string;
+};
 
 function encNext(path: string) {
   return encodeURIComponent(path);
@@ -20,75 +30,39 @@ export default async function CheckoutPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-
+  // Auth-only checkout
   if (!user) {
     redirect(`/${locale}/login?next=${encNext(`/${locale}/checkout`)}`);
   }
 
+  const { data: rows, error } = await supabase
+    .from("addresses")
+    .select("id,line1,line2,city,region,is_default_shipping,created_at")
+    .eq("user_id", user.id)
+    .eq("kind", "shipping")
+    .order("is_default_shipping", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    // If address fetch fails, still render checkout (manual address entry)
+    // Avoid throwing here to keep checkout usable.
+    // You can log this if you want.
+  }
+
+  const savedAddresses: AddressPrefill[] = (rows ?? []).map((r) => ({
+    id: r.id,
+    line1: r.line1,
+    line2: r.line2,
+    city: r.city,
+    region: r.region,
+    is_default_shipping: r.is_default_shipping,
+    created_at: r.created_at,
+  }));
+
   return (
     <div className="mx-auto max-w-3xl p-4">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Checkout</h1>
-
-        <Link className="text-sm underline" href={`/${locale}/cart`}>
-          Back to cart
-        </Link>
-      </div>
-
-      <div className="grid gap-6">
-        <section className="rounded-2xl border p-4">
-          <h2 className="text-lg font-medium">Contact and delivery</h2>
-
-          <form className="mt-4 space-y-3">
-            <div>
-              <label className="block text-sm">Full name</label>
-              <input
-                className="mt-1 w-full rounded-xl border p-2"
-                name="full_name"
-                autoComplete="name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm">Phone</label>
-              <input
-                className="mt-1 w-full rounded-xl border p-2"
-                name="phone"
-                autoComplete="tel"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm">Address</label>
-              <input
-                className="mt-1 w-full rounded-xl border p-2"
-                name="address"
-                autoComplete="street-address"
-              />
-            </div>
-
-            <button
-              type="button"
-              className="mt-2 w-full rounded-xl border px-4 py-2"
-              disabled
-            >
-              Pay
-            </button>
-
-            <p className="text-xs opacity-70">
-              Next step: I’ll connect this button to “Create pending order”, then
-              redirect to Bank of Georgia hosted payment.
-            </p>
-          </form>
-        </section>
-
-        <section className="rounded-2xl border p-4">
-          <h2 className="text-lg font-medium">Order summary</h2>
-          <p className="mt-2 text-sm opacity-70">
-            Summary will appear here in the next step (after I map  real CartState fields).
-          </p>
-        </section>
-      </div>
+      <h1 className="text-2xl font-semibold">Checkout</h1>
+      <CheckoutFormClient locale={locale} savedAddresses={savedAddresses} />
     </div>
   );
 }
