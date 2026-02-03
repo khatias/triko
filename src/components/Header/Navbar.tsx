@@ -22,7 +22,7 @@ import SocialMedia from "../socialMedia/SocialMedia";
 import AccountMenu from "./AccountMenu";
 import { wrap } from "../UI/primitives";
 
-import { useTranslations } from "use-intl";
+import { useTranslations } from "next-intl";
 import type { SafeUser } from "@/types/auth";
 import type { ShopGroup } from "@/lib/db/groups";
 
@@ -66,7 +66,7 @@ function CartIconWithBadge({
     >
       <ShoppingCartIcon className="h-6 w-6 text-slate-800 cursor-pointer" />
       {badge ? (
-        <span className="absolute -right-2 -top-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-[18px] text-center shadow-sm">
+        <span className="absolute -right-2 -top-2 min-w-4.5 h-4.5 px-1 rounded-full bg-red-600 text-white text-[10px] font-bold leading-4.5 text-center shadow-sm">
           {badge}
         </span>
       ) : null}
@@ -96,7 +96,7 @@ export default function Navbar({
   });
 
   return (
-    <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white">
+    <nav className=" border-b border-slate-200/70 bg-white/80 backdrop-blur supports-backdrop-filter:bg-white">
       {/* DESKTOP */}
       <div className={`hidden lg:block ${wrap}`}>
         <div className="grid grid-cols-[auto_1fr_auto] items-center py-3">
@@ -121,7 +121,7 @@ export default function Navbar({
               <input
                 type="text"
                 placeholder="Search"
-                className="h-11 w-[28rem] rounded-xl border border-slate-200/60 bg-white/70 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 shadow-inner transition focus:outline-none focus:ring-2 focus:ring-rose-200 focus:bg-white"
+                className="h-11 w-md rounded-xl border border-slate-200/60 bg-white/70 pl-9 pr-3 text-sm text-slate-700 placeholder-slate-400 shadow-inner transition focus:outline-none focus:ring-2 focus:ring-rose-200 focus:bg-white"
               />
             </div>
 
@@ -184,7 +184,7 @@ export default function Navbar({
 
       {/* MOBILE DRAWER */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-[100dvh] w-full max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed left-0 top-0 z-50 h-dvh w-full max-w-[85%] transform bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         role="dialog"
