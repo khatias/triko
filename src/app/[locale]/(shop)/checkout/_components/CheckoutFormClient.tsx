@@ -3,7 +3,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createPendingOrder, type CreateOrderInput } from "../actions/createPendingOrder";
+import {
+  createPendingOrder,
+  type CreateOrderInput,
+} from "../actions/createPendingOrder";
 
 type AddressPrefill = {
   id: string;
@@ -111,19 +114,20 @@ export default function CheckoutFormClient({ locale, savedAddresses }: Props) {
       return;
     }
     if (!required(line1) || !required(city)) {
-      setError("Please enter your delivery address (line1 and city are required).");
+      setError(
+        "Please enter your delivery address (line1 and city are required).",
+      );
       return;
     }
-
-    const addressText =
-      [line1, line2].filter((x) => x.trim().length > 0).join(", ") +
-      `, ${city}` +
-      (region.trim().length > 0 ? `, ${region}` : "");
 
     const input: CreateOrderInput = {
       full_name: fullName.trim(),
       phone: phone.trim(),
-      address: addressText,
+      line1: line1.trim(),
+      line2: line2.trim() || undefined,
+      city: city.trim(),
+      region: region.trim() || undefined,
+      shipping_address_id: useSaved ? selectedAddressId : undefined,
     };
 
     setLoading(true);
@@ -190,7 +194,9 @@ export default function CheckoutFormClient({ locale, savedAddresses }: Props) {
               />
               <div>
                 <div className="font-medium">Use a saved address</div>
-                <div className="opacity-70">Choose from your saved shipping addresses</div>
+                <div className="opacity-70">
+                  Choose from your saved shipping addresses
+                </div>
               </div>
             </label>
 
@@ -286,7 +292,8 @@ export default function CheckoutFormClient({ locale, savedAddresses }: Props) {
           </button>
 
           <p className="text-xs opacity-70">
-            Next: implement real order creation (orders + order_items), then connect Bank of Georgia hosted payment.
+            Next: implement real order creation (orders + order_items), then
+            connect Bank of Georgia hosted payment.
           </p>
         </div>
       </section>
