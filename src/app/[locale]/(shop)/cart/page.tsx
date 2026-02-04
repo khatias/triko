@@ -186,10 +186,13 @@ export default async function CartPage(props: {
                   </div>
 
                   {/* Checkout Button */}
-                  <button className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 transition-all hover:bg-black hover:scale-[1.01] active:scale-[0.99]">
-                    {t("checkout")}{" "}
+                  <Link
+                    href={`/${locale}/checkout`}
+                    className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 transition-all hover:bg-black hover:scale-[1.01] active:scale-[0.99]"
+                  >
+                    {t("checkout")}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </button>
+                  </Link>
 
                   {/* Trust Badges */}
                   <div className="flex items-center justify-center gap-2 text-xs font-medium text-zinc-400">
