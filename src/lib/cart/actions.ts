@@ -12,16 +12,19 @@ import {
   asMoneyString,
   asInt,
 } from "@/utils/type-guards";
-
+import { getTranslations } from "next-intl/server";
 const CART_COOKIE = "cart_token";
 
 /* =========================
-   Types
+   Result Types
 ========================= */
 type ActionOk = { ok: true };
 type ActionErr = { ok: false; message: string; kind: "stock" | "unknown" };
 export type ActionResult = ActionOk | ActionErr;
 
+/* =========================
+   DB Types
+========================= */
 export type CartRow = {
   id: string;
   user_id: string | null;
@@ -30,11 +33,11 @@ export type CartRow = {
   currency: string;
   items_count: number;
   subtotal: string;
+  discount_total: string;
+  shipping_total: string;
   total: string;
   store_id: number;
   price_id: number | null;
-  discount_total?: string;
-  shipping_total?: string;
 };
 
 export type CartItemRow = {
@@ -44,10 +47,7 @@ export type CartItemRow = {
   fina_id: number;
   qty: number;
 
-  // effective price
   price_at_add: string;
-
-  // ✅ NEW: original/list price
   list_price_at_add: string | null;
 
   parent_code: string | null;
@@ -68,17 +68,28 @@ export type CartState = {
 };
 
 /* =========================
-   Parsers (no any)
+   Helpers
 ========================= */
-function classifyError(message: string): ActionErr {
-  const m = message.toLowerCase();
+function normalizeSupabaseErrorMessage(msg: string): string {
+  // Keep this conservative: just normalize whitespace + case checks elsewhere
+  return (msg ?? "UNKNOWN").trim();
+}
 
-  // your SQL raises: "not enough stock. requested X, available Y"
-  if (m.includes("not enough stock")) {
-    return { ok: false, message, kind: "stock" };
+async function classifyRpcError(message: string): Promise<ActionErr> {
+  const raw = normalizeSupabaseErrorMessage(message);
+  const m = raw.toLowerCase();
+  const t = await getTranslations("Cart.errors");
+  // Our SQL raises exactly: OUT_OF_STOCK
+  if (m.includes("out_of_stock")) {
+    return { ok: false, kind: "stock", message: t("notEnoughStock") };
   }
 
-  return { ok: false, message, kind: "unknown" };
+  // Older versions used different text
+  if (m.includes("not enough stock")) {
+    return { ok: false, kind: "stock", message: t("notEnoughStock") };
+  }
+
+  return { ok: false, kind: "unknown", message: "Something went wrong" };
 }
 
 function parseCartRow(v: unknown): CartRow {
@@ -107,11 +118,11 @@ function parseCartRow(v: unknown): CartRow {
     currency,
     items_count: asInt(v.items_count, "cart.items_count"),
     subtotal: asMoneyString(v.subtotal, "cart.subtotal"),
+    discount_total: asMoneyString(v.discount_total, "cart.discount_total"),
+    shipping_total: asMoneyString(v.shipping_total, "cart.shipping_total"),
     total: asMoneyString(v.total, "cart.total"),
     store_id: asInt(v.store_id, "cart.store_id"),
     price_id: asNullableInt(v.price_id, "cart.price_id"),
-    discount_total: asMoneyString(v.discount_total, "cart.discount_total"),
-    shipping_total: asMoneyString(v.shipping_total, "cart.shipping_total"),
   };
 }
 
@@ -132,12 +143,10 @@ function parseCartItemRow(v: unknown): CartItemRow {
     qty: asInt(v.qty, "item.qty"),
 
     price_at_add: asMoneyString(v.price_at_add, "item.price_at_add"),
-
-   list_price_at_add: asNullableMoneyString(
-  v.list_price_at_add,
-  "item.list_price_at_add",
-),
-
+    list_price_at_add: asNullableMoneyString(
+      v.list_price_at_add,
+      "item.list_price_at_add",
+    ),
 
     parent_code: asNullableString(v.parent_code),
 
@@ -147,10 +156,10 @@ function parseCartItemRow(v: unknown): CartItemRow {
     product_name: asNullableString(v.product_name),
     variant_size: asNullableString(v.variant_size),
     variant_code: asNullableString(v.variant_code),
+
     image_url: asNullableString(v.image_url),
   };
 }
-
 
 function parseCartReadResponse(payload: unknown): CartState {
   if (!isObject(payload))
@@ -205,7 +214,7 @@ export async function addToCart(
   locale: string,
   finaId: number,
   qty = 1,
-): Promise<void> {
+): Promise<ActionResult> {
   const supabase = await createClient();
   const token = await getCartToken();
 
@@ -217,9 +226,12 @@ export async function addToCart(
     p_qty: safeQty,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    return await classifyRpcError(error.message);
+  }
 
   revalidatePath(`/${locale}/cart`);
+  return { ok: true };
 }
 
 export async function updateCartQty(
@@ -239,7 +251,7 @@ export async function updateCartQty(
   });
 
   if (error) {
-    return classifyError(error.message);
+    return classifyRpcError(error.message);
   }
 
   revalidatePath(`/${locale}/cart`);
@@ -250,27 +262,5 @@ export async function removeCartItem(
   locale: string,
   finaId: number,
 ): Promise<ActionResult> {
-  // assuming your SQL deletes when qty <= 0
   return updateCartQty(locale, finaId, 0);
 }
-
-// export async function setCartQty(
-//   locale: string,
-//   finaId: number,
-//   qty: number,
-// ): Promise<void> {
-//   const supabase = await createClient();
-//   const token = await getCartToken();
-
-//   const safeQty = clampQty(qty, 0);
-
-//   const { error } = await supabase.rpc("cart_set_qty_by_fina", {
-//     p_cart_token: token,
-//     p_fina_id: finaId,
-//     p_qty: safeQty,
-//   });
-
-//   if (error) throw new Error(error.message);
-
-//   revalidatePath(`/${locale}/cart`);
-// }

@@ -56,7 +56,13 @@ export function useAddToCart({
       startTransition(() => {
         (async () => {
           try {
-            await addToCart(locale, finaId, qty);
+            const res = await addToCart(locale, finaId, qty);
+
+            if (!res.ok) {
+              setErr(res.message);
+              return;
+            }
+
             setToast(successMessage);
           } catch (e) {
             const msg =
