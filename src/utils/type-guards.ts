@@ -34,11 +34,13 @@ export function asMoneyString(v: unknown, field: string): string {
   }
   throw new Error(`Invalid money for ${field}`);
 }
-export function asNullableMoneyString(v: unknown, field: string): string | null {
+export function asNullableMoneyString(
+  v: unknown,
+  field: string,
+): string | null {
   if (v === null) return null;
   return asMoneyString(v, field);
 }
-
 
 export function isValidHttpUrl(v: string): boolean {
   try {
@@ -51,4 +53,20 @@ export function isValidHttpUrl(v: string): boolean {
 
 export function normalizeLocale(v: string): "en" | "ka" {
   return v === "ka" ? "ka" : "en";
+}
+
+export function readString(
+  obj: Record<string, unknown>,
+  key: string,
+): string | null {
+  const v = obj[key];
+  return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
+}
+
+export function readNumber(
+  obj: Record<string, unknown>,
+  key: string,
+): number | null {
+  const v = obj[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
