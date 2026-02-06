@@ -1,3 +1,5 @@
+import { BogCurrency, BogLanguage } from "@/types/bog";
+
 export function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
@@ -67,6 +69,50 @@ export function readNumber(
   obj: Record<string, unknown>,
   key: string,
 ): number | null {
+  const v = obj[key];
+  return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+export function localeToLang(locale?: string): BogLanguage {
+  return locale === "en" ? "en" : "ka";
+}
+export function toNumber(v: string | number): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+export function toTetri(v: string | number): number {
+  const n = typeof v === "number" ? v : Number(v);
+  if (!Number.isFinite(n)) return 0;
+  return Math.round(n * 100);
+}
+
+export function fromTetri(t: number): number {
+  return t / 100;
+}
+
+export function sumBasketTetri(
+  basket: { unit_price: number; quantity: number }[],
+): number {
+  return basket.reduce(
+    (acc, it) => acc + Math.round(it.unit_price * 100) * it.quantity,
+    0,
+  );
+}
+
+export function asBogCurrency(v: unknown): BogCurrency {
+  const s = typeof v === "string" ? v.toUpperCase() : "";
+  if (s === "USD" || s === "EUR" || s === "GBP" || s === "GEL") return s;
+  return "GEL";
+}
+
+
+export function readBoolean(obj: Record<string, unknown>, key: string): boolean | null {
+  const v = obj[key];
+  return typeof v === "boolean" ? v : null;
+}
+
+export function readNumberStrict(obj: Record<string, unknown>, key: string): number | null {
   const v = obj[key];
   return typeof v === "number" && Number.isFinite(v) ? v : null;
 }
