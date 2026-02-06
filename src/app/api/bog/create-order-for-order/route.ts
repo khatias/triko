@@ -43,13 +43,13 @@ function mustHttpsBaseUrl(raw: string): string {
   return u.toString().replace(/\/$/, "");
 }
 
-
 type BogPrepareOkAlready = {
   ok: true;
   already: true;
   bog_order_id: string;
   redirect_url: string;
   details_url?: string;
+  public_status_token: string;
 };
 
 type BogPrepareOkNew = {
@@ -58,6 +58,7 @@ type BogPrepareOkNew = {
   idempotency_key: string;
   currency: string;
   total: number;
+  public_status_token: string;
 };
 
 type BogPrepareFail = {
@@ -83,7 +84,6 @@ type BogFinalizeFail = {
 
 type BogFinalizeResult = BogFinalizeOk | BogFinalizeFail;
 
-
 function parseBogPrepareResult(raw: unknown): BogPrepareResult {
   if (!isObject(raw)) return { ok: false, status: 500, message: "Invalid RPC response" };
 
@@ -101,24 +101,25 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
     const bog_order_id = readString(raw, "bog_order_id");
     const redirect_url = readString(raw, "redirect_url");
     const details_url = readString(raw, "details_url") ?? undefined;
+    const public_status_token = readString(raw, "public_status_token");
 
-    if (!bog_order_id || !redirect_url) {
+    if (!bog_order_id || !redirect_url || !public_status_token) {
       return { ok: false, status: 500, message: "Invalid already response" };
     }
 
-    return { ok: true, already: true, bog_order_id, redirect_url, details_url };
+    return { ok: true, already: true, bog_order_id, redirect_url, details_url, public_status_token };
   }
 
-  // already === false (or missing => treat as false but validate fields)
   const idempotency_key = readString(raw, "idempotency_key");
   const currency = readString(raw, "currency");
   const total = readNumberStrict(raw, "total");
+  const public_status_token = readString(raw, "public_status_token");
 
-  if (!idempotency_key || !currency || total === null) {
+  if (!idempotency_key || !currency || total === null || !public_status_token) {
     return { ok: false, status: 500, message: "Invalid prepare response" };
   }
 
-  return { ok: true, already: false, idempotency_key, currency, total };
+  return { ok: true, already: false, idempotency_key, currency, total, public_status_token };
 }
 
 function parseBogFinalizeResult(raw: unknown): BogFinalizeResult {
@@ -141,15 +142,25 @@ function parseBogFinalizeResult(raw: unknown): BogFinalizeResult {
   };
 }
 
-function getBogHref(
-  bog: BogCreateOrderResponse,
-  rel: "redirect" | "details",
-): string {
+function getBogHref(bog: BogCreateOrderResponse, rel: "redirect" | "details"): string {
   const href = bog._links?.[rel]?.href;
   if (typeof href !== "string" || href.length === 0) {
     throw new Error(`[BOG] Missing _links.${rel}.href`);
   }
   return href;
+}
+
+function buildReturnUrl(args: {
+  publicSiteUrl: string;
+  localeSeg: string;
+  orderId: string;
+  status: "success" | "fail";
+  publicStatusToken: string;
+}): string {
+  const u = new URL(`/${args.localeSeg}/payment/return/${args.orderId}`, args.publicSiteUrl);
+  u.searchParams.set("status", args.status);
+  u.searchParams.set("token", args.publicStatusToken);
+  return u.toString();
 }
 
 export async function POST(req: NextRequest) {
@@ -175,11 +186,9 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
-    // 1) Lock + prepare (concurrency proof)
-    const { data: prepRaw, error: prepErr } = await supabase.rpc(
-      "bog_prepare_create_order",
-      { p_order_id: orderId },
-    );
+    const { data: prepRaw, error: prepErr } = await supabase.rpc("bog_prepare_create_order", {
+      p_order_id: orderId,
+    });
 
     if (prepErr) {
       console.error("[BOG] prepare rpc failed", prepErr);
@@ -210,8 +219,8 @@ export async function POST(req: NextRequest) {
     const idempotencyKey = prep.idempotency_key;
     const currency = prep.currency;
     const orderTotal = prep.total;
+    const publicStatusToken = prep.public_status_token;
 
-    // 2) Load items
     const { data: items, error: itemsErr } = await supabase
       .from("order_items")
       .select("fina_id,quantity,unit_price,product_name")
@@ -225,7 +234,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3) URLs
     const publicSiteUrl = getPublicSiteUrl();
     const callbackUrl = getCallbackUrl(publicSiteUrl);
 
@@ -239,17 +247,22 @@ export async function POST(req: NextRequest) {
     const acceptLanguage = localeToLang(locale);
     const localeSeg = normalizeLocale(locale ?? "ka");
 
-    const successUrl = new URL(
-      `/${localeSeg}/payment/return/${orderId}?status=success`,
+    const successUrl = buildReturnUrl({
       publicSiteUrl,
-    ).toString();
+      localeSeg,
+      orderId,
+      status: "success",
+      publicStatusToken,
+    });
 
-    const failUrl = new URL(
-      `/${localeSeg}/payment/return/${orderId}?status=fail`,
+    const failUrl = buildReturnUrl({
       publicSiteUrl,
-    ).toString();
+      localeSeg,
+      orderId,
+      status: "fail",
+      publicStatusToken,
+    });
 
-    // 4) Basket + totals check (tetri safe)
     const basket: BogBasketItem[] = items.map((it) => ({
       product_id: String(it.fina_id),
       quantity: it.quantity,
@@ -288,7 +301,6 @@ export async function POST(req: NextRequest) {
     const base = mustHttpsBaseUrl(baseRaw);
     const token = await getBogAccessToken();
 
-    // 5) Call BOG
     const resp = await axios.post<BogCreateOrderResponse>(
       `${base}/payments/v1/ecommerce/orders`,
       payload,
@@ -317,18 +329,14 @@ export async function POST(req: NextRequest) {
       throw new Error("[BOG] Invalid redirect url from provider");
     }
 
-    // 6) Finalize via RPC (idempotent + locked)
-    const { data: finRaw, error: finErr } = await supabase.rpc(
-      "bog_finalize_create_order",
-      {
-        p_order_id: orderId,
-        p_bog_order_id: bogOrderId,
-        p_redirect_url: redirectUrl,
-        p_details_url: detailsUrl,
-        p_amount: totalAmount,
-        p_currency: asBogCurrency(currency),
-      },
-    );
+    const { data: finRaw, error: finErr } = await supabase.rpc("bog_finalize_create_order", {
+      p_order_id: orderId,
+      p_bog_order_id: bogOrderId,
+      p_redirect_url: redirectUrl,
+      p_details_url: detailsUrl,
+      p_amount: totalAmount,
+      p_currency: asBogCurrency(currency),
+    });
 
     if (finErr) {
       console.error("[BOG] finalize rpc failed", finErr);
@@ -344,7 +352,6 @@ export async function POST(req: NextRequest) {
     const fin = parseBogFinalizeResult(finRaw);
 
     if (!fin.ok) {
-      // Keep user flow working even if finalize RPC returns a structured failure.
       console.error("[BOG] finalize rpc returned fail:", fin);
       return NextResponse.json<BogCreateOrderApiResponse>({
         ok: true,
