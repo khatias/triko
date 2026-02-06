@@ -57,6 +57,11 @@ export function normalizeLocale(v: string): "en" | "ka" {
   return v === "ka" ? "ka" : "en";
 }
 
+export function normalizeId(v: unknown): string | null {
+  if (typeof v === "string" && v.trim().length) return v.trim();
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  return null;
+}
 export function readString(
   obj: Record<string, unknown>,
   key: string,
