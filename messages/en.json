@@ -426,6 +426,37 @@
       "save": "Save Address",
       "saving": "Saving…",
       "cancel": "Cancel"
+    },
+    "orders": {
+      "title": "My Orders",
+      "subtitle": "Track your order history and status.",
+      "totalOrders": "Total Orders: ",
+      "pendingPayments": "Pending Payments",
+      "noOrders": "You have not placed any orders yet.",
+      "continueShopping": "Continue Shopping",
+      "logintoView": "please log in to view your orders.",
+      "failedToLoad": "Failed to load orders. Please try again later.",
+      "activeOrders": "Active",
+      "loginCta": "Log in",
+      "confirmedLabel": "Order Confirmed",
+      "confirmedDesc": "We have received your order and it is being processed.",
+      "inTransitLabel": "In Transit",
+      "inTransitDesc": "Your order is on its way to the delivery address.",
+      "deliveredLabel": "Delivered",
+      "deliveredDesc": "Your order has been delivered. We hope you enjoy your purchase!",
+
+      "paymentFailedLabel": "Payment Failed",
+      "paymentFailedDesc": "Shipping will not start for unpaid orders.",
+      "awaitingPaymentLabel": "Awaiting Payment",
+      "awaitingPaymentDesc": "Complete payment to start shipping.",
+      "notStartedLabel": "Not started",
+      "notStartedDesc": "Shipping starts after payment.",
+
+      "completePaymentHint": "Complete payment to continue",
+      "failedPayments": "Failed payments",
+      "viewDetails": "View details",
+      "discountApplied": "Discount applied",
+      "itemsCount": "{count, plural, one {# item} other {# items}}"
     }
   },
   "Helpers": {

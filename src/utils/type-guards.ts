@@ -130,3 +130,25 @@ export function readNumberStrict(
 export function hasImg(url: string | null | undefined): url is string {
   return typeof url === "string" && url.trim().length > 0;
 }
+export function isPaidStatus(status: string) {
+  const s = status.toLowerCase();
+  return s === "paid" || s === "completed" || s === "succeeded";
+}
+
+export function isFailedStatus(status: string) {
+  const s = status.toLowerCase();
+  return (
+    s === "failed" || s === "declined" || s === "cancelled" || s === "canceled"
+  );
+}
+
+export function isPendingStatus(status: string) {
+  const s = status.toLowerCase();
+  return (
+    s === "pending_payment" ||
+    s === "checkout_pending" ||
+    s === "processing" ||
+    s === "requires_action" ||
+    s === "requires_payment_method"
+  );
+}
