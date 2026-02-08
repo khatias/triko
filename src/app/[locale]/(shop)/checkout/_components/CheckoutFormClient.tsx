@@ -1,12 +1,19 @@
 "use client";
-
-import React, { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { Lock, Check, ShoppingBag } from "lucide-react";
-import { z } from "zod";
 import { useTranslations } from "next-intl";
 
-import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  Lock,
+  Check,
+  ShoppingBag,
+  MapPin,
+  Truck,
+  AlertCircle,
+} from "lucide-react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -15,11 +22,21 @@ import {
   type OutOfStockItem,
   type OutOfStockReason,
 } from "../actions/createPendingOrder";
-import type { AddressRow, CartItemRow, ProfileInfo, SummaryInfo } from "../page";
+
+import type {
+  AddressRow,
+  CartItemRow,
+  ProfileInfo,
+  SummaryInfo,
+} from "../page";
 import { hasImg, toNumber } from "@/utils/type-guards";
 import { formatPrice } from "@/lib/helpers";
-
-import { addressSchema, fullNameSchema } from "@/lib/validation/profile";
+import {
+  addressSchema,
+  fullNameSchema,
+  makeGeorgiaPhoneSchema,
+} from "@/lib/validation/profile";
+import { InputField } from "@/components/form/Field";
 
 /* ---------------- helpers ---------------- */
 
@@ -33,83 +50,50 @@ function money(v: number | null, currency: string | null): string | null {
   return formatPrice(v, currency);
 }
 
-function normalizeGePhoneToNational9(raw: string): string | null {
-  const digits = raw.replace(/\D/g, "");
-  if (digits.startsWith("995") && digits.length === 12) return digits.slice(3);
-  if (digits.startsWith("0") && digits.length === 10) return digits.slice(1);
-  if (digits.length === 9) return digits;
-  return null;
+function reasonKey(r: OutOfStockReason) {
+  if (r === "reserved_temporarily") return "oos_reserved_temporarily";
+  if (r === "no_stock") return "oos_no_stock";
+  return "oos_insufficient";
 }
 
-function makeGeorgiaPhoneSchema(params: {
-  t: (k: string) => string;
-  output?: "national" | "e164";
-  allowLandline?: boolean;
-}) {
-  const { t, output = "e164", allowLandline = false } = params;
+const bogInitSchema = z.object({
+  redirectUrl: z.string().min(1),
+});
 
-  return z
-    .string()
-    .trim()
-    .min(1, { message: t("phoneRequired") })
-    .transform((raw, ctx) => {
-      const s = raw.trim();
+async function initBogPayment(
+  orderId: string,
+  locale: string,
+): Promise<string | null> {
+  const res = await fetch("/api/bog/create-order-for-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId, locale }),
+  });
 
-      if (!/^[0-9+\s()-]*$/.test(s)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t("phoneInvalidCharacters"),
-        });
-        return z.NEVER;
-      }
+  const json: unknown = await res.json().catch(() => null);
+  const parsed = bogInitSchema.safeParse(json);
 
-      const national9 = normalizeGePhoneToNational9(s);
-      if (!national9) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t("phoneMustHave9Digits"),
-        });
-        return z.NEVER;
-      }
-
-      if (/^(\d)\1{8}$/.test(national9)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t("phoneLooksInvalid"),
-        });
-        return z.NEVER;
-      }
-
-      if (!allowLandline && !national9.startsWith("5")) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t("phoneMustBeMobile"),
-        });
-        return z.NEVER;
-      }
-
-      return output === "e164" ? `+995${national9}` : national9;
-    });
+  if (!res.ok || !parsed.success) return null;
+  return parsed.data.redirectUrl;
 }
 
 /* ---------------- schema ---------------- */
 
-function makeCheckoutSchema(t: (k: string) => string) {
+function makeCheckoutSchema(tErr: (k: string) => string) {
   const phone = makeGeorgiaPhoneSchema({
-    t,
+    t: tErr,
     output: "e164",
     allowLandline: false,
   });
 
-  const fullName = fullNameSchema(t);
-  const addr = addressSchema(t);
+  const fullName = fullNameSchema(tErr);
+  const addr = addressSchema(tErr);
 
   return z
     .object({
       fullName,
       phone,
       useSaved: z.boolean(),
-
       selectedAddrId: z.string(),
       line1: z.string(),
       line2: z.string(),
@@ -119,9 +103,9 @@ function makeCheckoutSchema(t: (k: string) => string) {
       if (val.useSaved) {
         if (!val.selectedAddrId.trim()) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             path: ["selectedAddrId"],
-            message: t("addressSelectionRequired"),
+            message: tErr("addressSelectionRequired"),
           });
         }
         return;
@@ -136,16 +120,17 @@ function makeCheckoutSchema(t: (k: string) => string) {
 
       if (!r.success) {
         const flat = r.error.flatten().fieldErrors;
+
         if (flat.line1?.[0]) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             path: ["line1"],
             message: flat.line1[0],
           });
         }
         if (flat.city?.[0]) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             path: ["city"],
             message: flat.city[0],
           });
@@ -155,6 +140,7 @@ function makeCheckoutSchema(t: (k: string) => string) {
 }
 
 type CheckoutValues = z.infer<ReturnType<typeof makeCheckoutSchema>>;
+type TValues = Record<string, string | number>;
 
 /* ---------------- component ---------------- */
 
@@ -166,8 +152,6 @@ type Props = {
   summary: SummaryInfo;
 };
 
-type TValues = Record<string, string | number>;
-
 export default function CheckoutFormClient({
   locale,
   savedAddresses,
@@ -175,25 +159,35 @@ export default function CheckoutFormClient({
   profileInfo,
   summary,
 }: Props) {
-  const tErrorsIntl = useTranslations("Errors");
+  const router = useRouter();
 
-  const tErrorsSimple = useMemo(
-    () => (k: string) => tErrorsIntl(k as never),
-    [tErrorsIntl],
+  const t = useTranslations("Checkout");
+  const eIntl = useTranslations("Errors");
+
+  const e = useCallback((k: string) => eIntl(k as never), [eIntl]);
+  const eVars = useCallback(
+    (k: string, values: TValues) => eIntl(k as never, values as never),
+    [eIntl],
   );
 
-  const tErrors = useMemo(
-    () => (k: string, values?: TValues) => tErrorsIntl(k as never, values as never),
-    [tErrorsIntl],
-  );
-
-  const schema = useMemo(() => makeCheckoutSchema(tErrorsSimple), [tErrorsSimple]);
+  const schema = useMemo(() => makeCheckoutSchema(e), [e]);
 
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [oosItems, setOosItems] = useState<OutOfStockItem[] | null>(null);
 
-  const defaultUseSaved = savedAddresses.length > 0;
-  const defaultAddrId = savedAddresses[0]?.id ?? "";
+  const clearBanner = useCallback(() => {
+    setBannerError(null);
+    setOosItems(null);
+  }, []);
+
+  const cartIsEmpty = cartItems.length === 0;
+
+  useEffect(() => {
+    if (cartIsEmpty) router.replace(`/${locale}/cart`);
+  }, [cartIsEmpty, locale, router]);
+
+  const canUseSaved = savedAddresses.length > 0;
+  const firstAddrId = savedAddresses[0]?.id ?? "";
 
   const {
     register,
@@ -205,457 +199,558 @@ export default function CheckoutFormClient({
   } = useForm<CheckoutValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    reValidateMode: "onChange",
     defaultValues: {
       fullName: profileInfo.full_name ?? "",
       phone: profileInfo.phone ?? "",
-      useSaved: defaultUseSaved,
-      selectedAddrId: defaultAddrId,
+      useSaved: canUseSaved,
+      selectedAddrId: firstAddrId,
       line1: "",
       line2: "",
       city: "",
     },
   });
 
-  const useSaved = watch("useSaved");
+  const useSavedRaw = watch("useSaved");
   const selectedAddrId = watch("selectedAddrId");
 
-  const selectedAddress = useMemo(() => {
-    if (!useSaved) return null;
-    return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
-  }, [useSaved, savedAddresses, selectedAddrId]);
+  const useSaved = canUseSaved && useSavedRaw;
 
   useEffect(() => {
-    if (!savedAddresses.length) {
-      setValue("useSaved", false, { shouldValidate: true });
-      setValue("selectedAddrId", "", { shouldValidate: true });
+    if (!canUseSaved) {
+      if (useSavedRaw) {
+        setValue("useSaved", false, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+      if (selectedAddrId) {
+        setValue("selectedAddrId", "", {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
       return;
     }
 
     if (useSaved) {
-      const stillExists = savedAddresses.some((a) => a.id === selectedAddrId);
-      if (!stillExists) {
-        setValue("selectedAddrId", savedAddresses[0]?.id ?? "", { shouldValidate: true });
+      const exists = savedAddresses.some((a) => a.id === selectedAddrId);
+      if (!exists) {
+        setValue("selectedAddrId", firstAddrId, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     }
-  }, [savedAddresses, useSaved, selectedAddrId, setValue]);
-
-  useEffect(() => {
-    if (!useSaved) return;
-    if (!selectedAddress) return;
-
-    setValue("line1", selectedAddress.line1 ?? "", { shouldValidate: false });
-    setValue("line2", selectedAddress.line2 ?? "", { shouldValidate: false });
-    setValue("city", selectedAddress.city ?? "", { shouldValidate: false });
-  }, [useSaved, selectedAddress, setValue]);
+  }, [
+    canUseSaved,
+    useSaved,
+    useSavedRaw,
+    selectedAddrId,
+    savedAddresses,
+    setValue,
+    firstAddrId,
+  ]);
 
   const showErr = (name: keyof CheckoutValues) =>
-    Boolean(errors[name]?.message) && (Boolean(dirtyFields[name]) || isSubmitted);
+    Boolean(errors[name]?.message) &&
+    (Boolean(dirtyFields[name]) || isSubmitted);
 
   function oosTitleFor(item: OutOfStockItem) {
     const title =
       locale === "ka"
-        ? item.title_ka ?? item.product_name
-        : item.title_en ?? item.product_name;
+        ? (item.title_ka ?? item.product_name)
+        : (item.title_en ?? item.product_name);
     return (title ?? "Product").trim();
   }
 
-  function reasonKey(r: OutOfStockReason) {
-    if (r === "reserved_temporarily") return "oos_reserved_temporarily";
-    if (r === "no_stock") return "oos_no_stock";
-    return "oos_insufficient";
-  }
+  const regFullName = register("fullName", { onChange: clearBanner });
+  const regPhone = register("phone", { onChange: clearBanner });
+  const regLine1 = register("line1", { onChange: clearBanner });
+  const regLine2 = register("line2", { onChange: clearBanner });
+  const regCity = register("city", { onChange: clearBanner });
+
+  const toggleAddressMode = useCallback(() => {
+    clearBanner();
+    if (!canUseSaved) return;
+
+    const next = !useSavedRaw;
+    setValue("useSaved", next, { shouldValidate: true, shouldDirty: true });
+
+    if (next) {
+      const exists = savedAddresses.some((a) => a.id === selectedAddrId);
+      if (!exists) {
+        setValue("selectedAddrId", firstAddrId, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    } else {
+      setValue("selectedAddrId", "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [
+    clearBanner,
+    canUseSaved,
+    useSavedRaw,
+    setValue,
+    savedAddresses,
+    selectedAddrId,
+    firstAddrId,
+  ]);
 
   const onSubmit = handleSubmit(async (values) => {
-    setBannerError(null);
-    setOosItems(null);
+    clearBanner();
 
-    if (values.useSaved) {
+    const normalizedUseSaved = canUseSaved && values.useSaved;
+
+    if (normalizedUseSaved) {
       const exists = savedAddresses.some((a) => a.id === values.selectedAddrId);
       if (!exists) {
         setError("selectedAddrId", {
           type: "validate",
-          message: tErrorsSimple("addressSelectionRequired"),
+          message: e("addressSelectionRequired"),
         });
         return;
       }
     }
 
-    const addr = values.useSaved
+    const addr = normalizedUseSaved
       ? (savedAddresses.find((a) => a.id === values.selectedAddrId) ?? null)
       : null;
 
     const payload: CreateOrderInput = {
       full_name: values.fullName,
       phone: values.phone,
-      line1: values.useSaved ? (addr?.line1 ?? "") : values.line1,
-      line2: values.useSaved ? (addr?.line2 ?? "") : values.line2,
-      city: values.useSaved ? (addr?.city ?? "") : values.city,
-      shipping_address_id: values.useSaved ? values.selectedAddrId : undefined,
+      line1: normalizedUseSaved ? (addr?.line1 ?? "") : values.line1,
+      line2: normalizedUseSaved ? (addr?.line2 ?? "") : values.line2,
+      city: normalizedUseSaved ? (addr?.city ?? "") : values.city,
+      shipping_address_id: normalizedUseSaved
+        ? values.selectedAddrId
+        : undefined,
     };
 
     const r = await createPendingOrder(payload);
 
     if (!r.ok) {
-      setBannerError(tErrorsSimple(r.code));
+      setBannerError(e(r.code));
       if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length) {
         setOosItems(r.outOfStock);
       }
       return;
     }
 
-    try {
-      const res = await fetch("/api/bog/create-order-for-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: r.orderId, locale }),
-      });
-
-      let data: unknown = null;
-      try {
-        data = await res.json();
-      } catch {
-        data = null;
-      }
-
-      if (!res.ok) {
-        setBannerError(tErrorsSimple("PAYMENT_INIT_FAILED"));
-        return;
-      }
-
-      const redirectUrl =
-        typeof data === "object" &&
-        data !== null &&
-        "redirectUrl" in data &&
-        typeof (data as { redirectUrl: unknown }).redirectUrl === "string"
-          ? (data as { redirectUrl: string }).redirectUrl
-          : null;
-
-      if (!redirectUrl) {
-        setBannerError(tErrorsSimple("PAYMENT_INIT_FAILED"));
-        return;
-      }
-
-      window.location.assign(redirectUrl);
-    } catch {
-      setBannerError(tErrorsSimple("CHECKOUT_FAILED"));
+    const redirectUrl = await initBogPayment(r.orderId, locale);
+    if (!redirectUrl) {
+      setBannerError(e("PAYMENT_INIT_FAILED"));
+      return;
     }
+
+    window.location.assign(redirectUrl);
   });
 
+  if (cartIsEmpty) return null;
+
   return (
-    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-      {/* LEFT */}
-      <div className="lg:col-span-7 space-y-10">
-        {/* Products */}
-        <section>
-          <h2 className="text-lg font-semibold text-black mb-4">
-            Review Your Products
-          </h2>
+    <form
+      onSubmit={onSubmit}
+      className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8"
+    >
+      <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
+        {/* LEFT COLUMN */}
+        <div className="lg:col-span-7 space-y-12">
+          {/* Contact */}
+          <section
+            aria-labelledby="contact-heading"
+            className="animate-in fade-in slide-in-from-bottom-4 duration-700"
+          >
+            <h2
+              id="contact-heading"
+              className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                1
+              </span>
+              {t("contactTitle")}
+            </h2>
 
-          <div className="space-y-4">
-            {cartItems.map((item) => {
-              const unit = toNumber(item.price_at_add);
-              const qty =
-                typeof item.qty === "number" ? item.qty : (toNumber(item.qty) ?? 0);
+            <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+              <InputField
+                id="fullName"
+                label={t("fullNameLabel")}
+                autoComplete="name"
+                error={errors.fullName?.message ?? null}
+                {...regFullName}
+              />
 
-              const safeUnit = Number.isFinite(unit) ? unit : 0;
-              const safeQty = Number.isFinite(qty) ? qty : 0;
-              const lineTotal = safeUnit * safeQty;
+              <InputField
+                id="phone"
+                label={t("phoneLabel")}
+                inputMode="tel"
+                autoComplete="tel"
+                error={errors.phone?.message ?? null}
+                {...regPhone}
+              />
+            </div>
+          </section>
 
-              return (
-                <div
-                  key={item.id}
-                  className="group flex gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
-                >
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-50 border border-gray-100 shadow-sm">
-                    {hasImg(item.image_url) ? (
-                      <Image
-                        src={item.image_url}
-                        alt={itemTitle(item, locale)}
-                        fill
-                        sizes="80px"
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="grid h-full w-full place-items-center text-gray-300">
-                        <ShoppingBag size={24} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-1 flex-col justify-center min-w-0">
-                    <div className="flex justify-between items-start gap-4 mb-1">
-                      <h4 className="text-sm font-bold text-gray-900 line-clamp-2">
-                        {itemTitle(item, locale)}
-                      </h4>
-                      <p className="text-sm font-bold text-red-600 whitespace-nowrap">
-                        {money(lineTotal, "GEL")}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[10px] font-medium text-gray-600">
-                        Qty: {safeQty}
-                      </span>
-                      {item.variant_code ? (
-                        <span className="text-xs text-gray-400 truncate">
-                          {item.variant_code}
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section>
-          <h2 className="text-lg font-semibold text-black mb-6">
-            Contact Information
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <MinimalInput
-              label="Full Name"
-              placeholder="Name Surname"
-              autoComplete="name"
-              registration={register("fullName")}
-              error={showErr("fullName") ? (errors.fullName?.message ?? null) : null}
-            />
-
-            <MinimalInput
-              label="Phone Number"
-              placeholder="+995 5XX XX XX XX"
-              inputMode="tel"
-              autoComplete="tel"
-              registration={register("phone")}
-              error={showErr("phone") ? (errors.phone?.message ?? null) : null}
-            />
-          </div>
-        </section>
-
-        {/* Shipping */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-black">Shipping Address</h2>
-
-            {savedAddresses.length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setValue("useSaved", !useSaved, { shouldValidate: true });
-                  setBannerError(null);
-                  setOosItems(null);
-                }}
-                className="text-sm font-medium text-gray-500 hover:text-black underline decoration-gray-300 underline-offset-4"
+          {/* Shipping */}
+          <section
+            aria-labelledby="shipping-heading"
+            className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2
+                id="shipping-heading"
+                className="text-xl font-semibold tracking-tight text-gray-900 flex items-center gap-2"
               >
-                {useSaved ? "Enter manually" : "Select saved address"}
-              </button>
-            )}
-          </div>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                  2
+                </span>
+                {t("shippingTitle")}
+              </h2>
 
-          {useSaved ? (
-            <div className="space-y-3">
-              {showErr("selectedAddrId") && errors.selectedAddrId?.message ? (
-                <div className="mb-2 text-sm text-red-600">
-                  {errors.selectedAddrId.message}
-                </div>
-              ) : null}
+              {canUseSaved && (
+                <button
+                  type="button"
+                  onClick={toggleAddressMode}
+                  className="group text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center gap-1"
+                >
+                  <span>{useSaved ? t("toggleManual") : t("toggleSaved")}</span>
+                </button>
+              )}
+            </div>
 
-              {savedAddresses.map((addr) => {
-                const isSelected = selectedAddrId === addr.id;
+            {useSaved ? (
+              <div className="space-y-4">
+                {showErr("selectedAddrId") && errors.selectedAddrId?.message ? (
+                  <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+                    <AlertCircle size={16} />
+                    {errors.selectedAddrId.message}
+                  </div>
+                ) : null}
 
-                return (
-                  <button
-                    key={addr.id}
-                    type="button"
-                    onClick={() =>
-                      setValue("selectedAddrId", addr.id, { shouldValidate: true })
-                    }
-                    className={`w-full text-left relative rounded-xl border p-4 transition-all ${
-                      isSelected
-                        ? "border-black bg-white shadow-sm"
-                        : "border-gray-200 bg-transparent hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm text-black truncate">
-                          {addr.city}
-                        </p>
-                        <p className="text-sm text-gray-500 truncate">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {savedAddresses.map((addr) => {
+                    const isSelected = selectedAddrId === addr.id;
+                    return (
+                      <button
+                        key={addr.id}
+                        type="button"
+                        onClick={() => {
+                          clearBanner();
+                          setValue("selectedAddrId", addr.id, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                            shouldTouch: true,
+                          });
+                        }}
+                        className={`relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
+                          isSelected
+                            ? "bg-gray-50 border-black shadow-[0_0_0_1px_black] z-10"
+                            : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                        }`}
+                      >
+                        <div className="flex w-full justify-between items-start">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                            <MapPin
+                              size={14}
+                              className={
+                                isSelected ? "text-black" : "text-gray-400"
+                              }
+                            />
+                            {addr.city}
+                          </div>
+
+                          <div
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                              isSelected
+                                ? "border-black bg-black text-white"
+                                : "border-gray-300 bg-transparent"
+                            }`}
+                          >
+                            {isSelected && <Check size={10} strokeWidth={3} />}
+                          </div>
+                        </div>
+
+                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 pl-6">
                           {addr.line1}
                         </p>
-                      </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2 animate-in fade-in zoom-in-95 duration-300">
+                <div className="sm:col-span-2">
+                  <InputField
+                    id="line1"
+                    label={t("addressLine1Label")}
+                    autoComplete="address-line1"
+                    {...regLine1}
+                    error={
+                      showErr("line1") ? (errors.line1?.message ?? null) : null
+                    }
+                  />
+                </div>
 
-                      {isSelected ? (
-                        <div className="h-5 w-5 bg-black rounded-full flex items-center justify-center text-white shrink-0">
-                          <Check size={12} />
-                        </div>
+                <div className="sm:col-span-2">
+                  <InputField
+                    id="line2"
+                    label={t("addressLine2Label")}
+                    autoComplete="address-line2"
+                    {...regLine2}
+                  />
+                </div>
+
+                <InputField
+                  id="city"
+                  label={t("cityLabel")}
+                  autoComplete="address-level2"
+                  {...regCity}
+                  error={
+                    showErr("city") ? (errors.city?.message ?? null) : null
+                  }
+                />
+
+                <div className="opacity-60 pointer-events-none select-none">
+                  <InputField
+                    id="country"
+                    label={t("countryLabel")}
+                    value={t("countryValue")}
+                    disabled
+                  />
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Product Review */}
+          <section
+            aria-labelledby="review-heading"
+            className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
+          >
+            <h2
+              id="review-heading"
+              className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                3
+              </span>
+              {t("reviewTitle")}
+            </h2>
+
+            <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+              {cartItems.map((item) => {
+                const unit = toNumber(item.price_at_add);
+                const qty =
+                  typeof item.qty === "number"
+                    ? item.qty
+                    : (toNumber(item.qty) ?? 0);
+                const safeUnit = Number.isFinite(unit) ? unit : 0;
+                const safeQty = Number.isFinite(qty) ? qty : 0;
+                const lineTotal = safeUnit * safeQty;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex gap-6 p-6 transition-colors hover:bg-gray-50/50"
+                  >
+                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+                      {hasImg(item.image_url) ? (
+                        <Image
+                          src={item.image_url}
+                          alt={itemTitle(item, locale)}
+                          fill
+                          sizes="96px"
+                          className="object-cover object-center"
+                        />
                       ) : (
-                        <div className="h-5 w-5 rounded-full border border-gray-300 shrink-0" />
+                        <div className="grid h-full w-full place-items-center text-gray-300">
+                          <ShoppingBag size={24} />
+                        </div>
                       )}
                     </div>
-                  </button>
+
+                    <div className="flex flex-1 flex-col justify-between">
+                      <div className="flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
+                            {itemTitle(item, locale)}
+                          </h3>
+                          {item.variant_code && (
+                            <p className="text-xs text-gray-500 font-medium font-mono">
+                              {item.variant_code}
+                            </p>
+                          )}
+                          {item.variant_name && (
+                            <p className="text-xs text-gray-500 font-medium">
+                              {t("sizeLabel")} {item.variant_name}
+                            </p>
+                          )}
+                        </div>
+                        <p className="text-sm font-bold text-gray-900 whitespace-nowrap">
+                          {money(lineTotal, "GEL")}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span>
+                          {t("qtyLabel")}{" "}
+                          <span className="text-gray-900 font-medium">
+                            {safeQty}
+                          </span>
+                        </span>
+                        <span className="mx-2 text-gray-300">•</span>
+                        <span>{money(unit, "GEL")} / unit</span>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          ) : (
-            <div className="space-y-5 animate-in fade-in duration-300">
-              <MinimalInput
-                label="Address Line"
-                placeholder="Street, Building, Apt"
-                autoComplete="address-line1"
-                registration={register("line1")}
-                error={showErr("line1") ? (errors.line1?.message ?? null) : null}
-              />
+          </section>
+        </div>
 
-              <MinimalInput
-                label="Address Line 2"
-                placeholder="Apartment, floor, etc."
-                autoComplete="address-line2"
-                registration={register("line2")}
-              />
+        {/* RIGHT COLUMN */}
+        <div className="mt-16 lg:col-span-5 lg:mt-0">
+          <div className="sticky top-10 overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] ring-1 ring-gray-900/5">
+            <div className="p-8">
+              <h2 className="text-lg font-bold tracking-tight text-gray-900 mb-6">
+                {t("orderSummaryTitle")}
+              </h2>
 
-              <div className="grid grid-cols-2 gap-5">
-                <MinimalInput
-                  label="City"
-                  placeholder="City"
-                  autoComplete="address-level2"
-                  registration={register("city")}
-                  error={showErr("city") ? (errors.city?.message ?? null) : null}
-                />
-
-                <div className="opacity-50 pointer-events-none">
-                  <MinimalInput label="Country" value="Georgia" disabled />
+              <dl className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <dt className="text-sm text-gray-500">{t("subtotal")}</dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {money(summary.subtotal, "GEL")}
+                  </dd>
                 </div>
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
 
-      {/* RIGHT */}
-      <div className="lg:col-span-5">
-        <div className="sticky top-10 rounded-2xl bg-white p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
-          <h2 className="text-lg font-semibold mb-6">Order Summary</h2>
-
-          <div className="space-y-4 border-b border-gray-100 pb-6 mb-6">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Subtotal</span>
-              <span className="font-medium">{money(summary.subtotal, "GEL")}</span>
-            </div>
-
-            {summary.discount_total > 0 ? (
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Discount</span>
-                <span className="font-medium text-red-600">
-                  -{money(summary.discount_total, "GEL")}
-                </span>
-              </div>
-            ) : null}
-
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Shipping</span>
-              <span className="font-medium">{money(summary.shipping_total, "GEL")}</span>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-end mb-8">
-            <span className="text-base font-semibold">Total</span>
-            <span className="text-3xl font-bold tracking-tight">
-              {money(summary.total, "GEL")}
-            </span>
-          </div>
-
-          {bannerError ? (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 space-y-3">
-              <div>{bannerError}</div>
-
-              {oosItems && oosItems.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-red-800">
-                    {tErrorsSimple("OOS_DETAILS_TITLE")}
+                {summary.discount_total > 0 && (
+                  <div className="flex items-center justify-between">
+                    <dt className="text-sm text-gray-500">{t("discount")}</dt>
+                    <dd className="text-sm font-medium text-emerald-600">
+                      -{money(summary.discount_total, "GEL")}
+                    </dd>
                   </div>
+                )}
 
-                  <ul className="space-y-2">
-                    {oosItems.map((it) => (
-                      <li key={`${it.fina_id}`} className="rounded-md bg-white/60 border border-red-100 p-2">
-                        <div className="font-semibold text-red-900 text-sm">
-                          {oosTitleFor(it)}
+                <div className="flex items-center justify-between">
+                  <dt className="text-sm text-gray-500 flex items-center gap-2">
+                    {t("shipping")}
+                    <Truck size={14} className="text-gray-300" />
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    {money(summary.shipping_total, "GEL")}
+                  </dd>
+                </div>
+
+                <div className="my-6 border-t border-gray-100 pt-6 flex items-center justify-between">
+                  <dt className="text-base font-bold text-gray-900">
+                    {t("total")}
+                  </dt>
+                  <dd className="text-2xl font-bold tracking-tight text-gray-900">
+                    {money(summary.total, "GEL")}
+                  </dd>
+                </div>
+              </dl>
+
+              {bannerError ? (
+                <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-100 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-medium text-red-800">
+                        {bannerError}
+                      </h3>
+
+                      {oosItems && oosItems.length > 0 && (
+                        <div className="mt-2 space-y-2">
+                          <p className="text-xs font-semibold text-red-700 uppercase tracking-wide opacity-80">
+                            {e("OOS_DETAILS_TITLE")}
+                          </p>
+
+                          <ul className="space-y-2">
+                            {oosItems.map((it) => (
+                              <li
+                                key={`${it.fina_id}`}
+                                className="text-xs text-red-700 bg-white/50 p-2 rounded border border-red-100/50"
+                              >
+                                <span className="font-semibold block mb-1">
+                                  {oosTitleFor(it)}
+                                </span>
+                                <span>
+                                  {eVars("OOS_QTY_LINE", {
+                                    requested: it.requested,
+                                    available: it.available,
+                                  })}
+                                </span>
+                                <span className="block mt-0.5 opacity-75">
+                                  {e(reasonKey(it.reason))}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <div className="text-xs text-red-700">
-                          {tErrors("OOS_QTY_LINE", { requested: it.requested, available: it.available })}
-                        </div>
-                        <div className="text-xs text-red-700">
-                          {tErrorsSimple(reasonKey(it.reason))}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ) : null}
+
+              <button
+                type="submit"
+                disabled={isSubmitting || !isValid}
+                className="group relative w-full overflow-hidden rounded-xl bg-black px-4 py-4 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-neutral-800 hover:shadow-lg hover:shadow-neutral-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin text-white/50"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                      {t("processing")}
+                    </>
+                  ) : (
+                    <>
+                      {t("payNow")}
+                      <Lock
+                        size={14}
+                        className="text-white/70 group-hover:text-white transition-colors"
+                      />
+                    </>
+                  )}
+                </span>
+              </button>
+
+              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+                <Lock size={12} />
+                <span>{t("securePayment")}</span>
+              </div>
             </div>
-          ) : null}
 
-          <button
-            type="submit"
-            disabled={isSubmitting || !isValid}
-            className="w-full h-14 bg-black text-white rounded-xl font-medium text-base transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? "Processing..." : "Pay Now"}
-          </button>
-
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
-            <Lock size={12} />
-            <span>Secure payment via Bank of Georgia</span>
+            <div className="h-1.5 w-full bg-linear-to-r from-gray-100 via-gray-200 to-gray-100" />
           </div>
         </div>
       </div>
     </form>
-  );
-}
-
-/* ---------------- MinimalInput ---------------- */
-
-type MinimalInputProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "name" | "onChange" | "onBlur" | "ref"
-> & {
-  label: string;
-  error?: string | null;
-  registration?: UseFormRegisterReturn;
-};
-
-function MinimalInput({
-  label,
-  error,
-  registration,
-  className,
-  ...props
-}: MinimalInputProps) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-        {label}
-      </label>
-
-      <input
-        {...props}
-        {...registration}
-        aria-invalid={Boolean(error)}
-        className={[
-          "w-full h-12 rounded-xl border bg-white px-4 text-sm outline-none transition-all placeholder:text-gray-300 disabled:bg-gray-50",
-          error
-            ? "border-red-300 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-            : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black",
-          className ?? "",
-        ].join(" ")}
-      />
-
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
-    </div>
   );
 }

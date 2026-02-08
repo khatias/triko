@@ -18,6 +18,7 @@ export type CartItemRow = {
   id: string;
   qty: number;
   variant_code: string | null;
+  variant_name?: string | null;
   product_name: string;
   title_ka: string | null;
   title_en: string | null;
@@ -35,6 +36,7 @@ export type SummaryInfo = {
   shipping_total: number;
   total: number;
 };
+
 export default async function CheckoutPage({
   params,
 }: {
@@ -77,13 +79,17 @@ export default async function CheckoutPage({
     ? await supabase
         .from("cart_items")
         .select(
-          "id,qty,variant_code,product_name,title_ka,title_en,price_at_add,image_url",
+          "id,qty,variant_code, variant_name, product_name,title_ka,title_en,price_at_add,image_url",
         )
         .eq("cart_id", cart.id)
         .order("created_at", { ascending: true })
     : { data: [] as CartItemRow[], error: null as null };
 
   if (cartItemsError) throw cartItemsError;
+  if (!cartItems || cartItems.length === 0) {
+    redirect(`/${locale}/cart`);
+  }
+
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("full_name, phone")
@@ -91,15 +97,11 @@ export default async function CheckoutPage({
     .maybeSingle();
 
   if (profileError) throw profileError;
+  
   return (
-    <div className="min-h-screen bg-[#F9F9F9] py-12 px-4 md:px-6">
-      <div className="mx-auto max-w-275">
-        <div className="mb-10 flex items-center justify-between border-b border-gray-200 pb-6">
-          <h1 className="text-3xl font-bold tracking-tight text-black">
-            Checkout
-          </h1>
-        </div>
-
+    // Changed bg to slate-50 for a softer look, improved padding
+    <div className="min-h-screen bg-slate-50 py-12 lg:py-20 px-4 md:px-6 font-sans text-slate-900">
+      <div className="mx-auto max-w-7xl">
         <CheckoutFormClient
           locale={locale}
           savedAddresses={(addresses ?? []) as AddressRow[]}

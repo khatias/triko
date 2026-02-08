@@ -254,7 +254,8 @@
     "addressLineTooLong": "მისამართი ძალიან გრძელია.",
     "addressLineTooShort": "მისამართი ძალიან მოკლეა",
     "addressLineMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი მისამართი.",
-
+    "addressSelectionRequired": "გთხოვთ, აირჩიეთ შენახული მისამართი ან შეიყვანეთ ახალი.",
+    "selectedAddrId": "გთხოვთ, აირჩიეთ ვალიდური შენახული მისამართი.",
     "regionTooLong": "რეგიონის დასახელება ძალიან გრძელია.",
     "regionMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი რეგიონი.",
     "phoneInvalidCharacters": "მობილურის ნომრის ველი უნდა შეიცავდეს მხოლოდ რიცხვით სიმბოლოებს."
@@ -491,5 +492,35 @@
       "onlyLeft": "მარაგში დარჩენილია მხოლოდ {available} ცალი.",
       "notEnoughStock": "არ არის საკმარისი მარაგი."
     }
+  },
+  "Checkout": {
+    "reviewTitle": "შეკვეთაში არსებული პროდუქტები",
+    "qtyLabel": "რაოდენობა:",
+    "contactTitle": "საკონტაქტო ინფორმაცია",
+    "fullNameLabel": "სახელი და გვარი",
+    "fullNamePlaceholder": "სახელი გვარი",
+    "phoneLabel": "ტელეფონის ნომერი",
+    "phonePlaceholder": "+995 5XX XX XX XX",
+    "shippingTitle": "მიტანის მისამართი",
+    "toggleManual": "ხელით შეყვანა",
+    "toggleSaved": "შენახული მისამართის არჩევა",
+    "addressLine1Label": "მისამართი",
+    "addressLine1Placeholder": "ქუჩა, შენობა, ბინა",
+    "addressLine2Label": "მისამართი 2",
+    "addressLine2Placeholder": "ბინა, სართული და სხვა",
+    "cityLabel": "ქალაქი",
+    "cityPlaceholder": "ქალაქი",
+    "countryLabel": "ქვეყანა",
+    "countryValue": "საქართველო",
+    "orderSummaryTitle": "შეკვეთის შეჯამება",
+    "subtotal": "ქვეჯამი",
+    "discount": "ფასდაკლება",
+    "shipping": "მიტანა",
+    "total": "ჯამი",
+    "processing": "დამუშავება...",
+    "payNow": "გადახდა",
+      "sizeLabel": "ზომა",
+    "securePayment": "უსაფრთხო გადახდა საქართველოს ბანკით"
+  
   }
 }

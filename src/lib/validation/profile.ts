@@ -42,7 +42,8 @@ export function makeGeorgiaPhoneSchema(params: {
       // allowed: digits, spaces, +, (, ), -
       if (!/^[0-9+\s()-]*$/.test(s)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+
           message: t("phoneInvalidCharacters"),
         });
         return z.NEVER;
@@ -51,7 +52,8 @@ export function makeGeorgiaPhoneSchema(params: {
       const national9 = normalizeGePhoneToNational9(s);
       if (!national9) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+        code: "custom",
+
           message: t("phoneMustHave9Digits"),
         });
         return z.NEVER;
@@ -59,7 +61,8 @@ export function makeGeorgiaPhoneSchema(params: {
 
       if (/^(\d)\1{8}$/.test(national9)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+
           message: t("phoneLooksInvalid"),
         });
         return z.NEVER;
@@ -67,7 +70,8 @@ export function makeGeorgiaPhoneSchema(params: {
 
       if (!allowLandline && !national9.startsWith("5")) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
+
           message: t("phoneMustBeMobile"),
         });
         return z.NEVER;
