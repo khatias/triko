@@ -519,5 +519,29 @@
     "payNow": "Pay now",
     "sizeLabel": "Size",
     "securePayment": "Secure payment via Bank of Georgia"
+  },
+  "PaymentReturn": {
+    "checking": {
+      "title": "Verifying payment",
+      "desc": "Please wait while we confirm your transaction with the bank."
+    },
+
+    "success": {
+      "title": "Order confirmed",
+      "desc": "Thanks for choosing Triko. Your payment was successful."
+    },
+
+    "error": {
+      "title": "Payment failed",
+      "desc": "The transaction was declined or cancelled. If a hold was placed on your card, your bank will release it shortly."
+    },
+
+    "orderRefLabel": "Order reference",
+    "copyOrderId": "Copy order ID",
+    "viewMyOrder": "View my orders",
+    "tryAgain": "Try again",
+    "returnToStore": "Return to store",
+    "secureNote": "Secure connection established",
+    "brand": "Triko"
   }
 }
