@@ -12,13 +12,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createPendingOrder,
   type CreateOrderInput,
+  type OutOfStockItem,
+  type OutOfStockReason,
 } from "../actions/createPendingOrder";
-import type {
-  AddressRow,
-  CartItemRow,
-  ProfileInfo,
-  SummaryInfo,
-} from "../page";
+import type { AddressRow, CartItemRow, ProfileInfo, SummaryInfo } from "../page";
 import { hasImg, toNumber } from "@/utils/type-guards";
 import { formatPrice } from "@/lib/helpers";
 
@@ -58,7 +55,6 @@ function makeGeorgiaPhoneSchema(params: {
     .transform((raw, ctx) => {
       const s = raw.trim();
 
-      // ✅ reject letters and random chars
       if (!/^[0-9+\s()-]*$/.test(s)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -170,6 +166,8 @@ type Props = {
   summary: SummaryInfo;
 };
 
+type TValues = Record<string, string | number>;
+
 export default function CheckoutFormClient({
   locale,
   savedAddresses,
@@ -178,14 +176,21 @@ export default function CheckoutFormClient({
   summary,
 }: Props) {
   const tErrorsIntl = useTranslations("Errors");
-  const tErrors = useMemo(
+
+  const tErrorsSimple = useMemo(
     () => (k: string) => tErrorsIntl(k as never),
     [tErrorsIntl],
   );
 
-  const schema = useMemo(() => makeCheckoutSchema(tErrors), [tErrors]);
+  const tErrors = useMemo(
+    () => (k: string, values?: TValues) => tErrorsIntl(k as never, values as never),
+    [tErrorsIntl],
+  );
+
+  const schema = useMemo(() => makeCheckoutSchema(tErrorsSimple), [tErrorsSimple]);
 
   const [bannerError, setBannerError] = useState<string | null>(null);
+  const [oosItems, setOosItems] = useState<OutOfStockItem[] | null>(null);
 
   const defaultUseSaved = savedAddresses.length > 0;
   const defaultAddrId = savedAddresses[0]?.id ?? "";
@@ -220,7 +225,6 @@ export default function CheckoutFormClient({
     return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
   }, [useSaved, savedAddresses, selectedAddrId]);
 
-  // keep selection valid if list changes
   useEffect(() => {
     if (!savedAddresses.length) {
       setValue("useSaved", false, { shouldValidate: true });
@@ -231,14 +235,11 @@ export default function CheckoutFormClient({
     if (useSaved) {
       const stillExists = savedAddresses.some((a) => a.id === selectedAddrId);
       if (!stillExists) {
-        setValue("selectedAddrId", savedAddresses[0]?.id ?? "", {
-          shouldValidate: true,
-        });
+        setValue("selectedAddrId", savedAddresses[0]?.id ?? "", { shouldValidate: true });
       }
     }
   }, [savedAddresses, useSaved, selectedAddrId, setValue]);
 
-  // hydrate visible fields when saved selected (optional)
   useEffect(() => {
     if (!useSaved) return;
     if (!selectedAddress) return;
@@ -248,21 +249,33 @@ export default function CheckoutFormClient({
     setValue("city", selectedAddress.city ?? "", { shouldValidate: false });
   }, [useSaved, selectedAddress, setValue]);
 
-  // show errors as soon as user changed a field OR after submit
   const showErr = (name: keyof CheckoutValues) =>
-    Boolean(errors[name]?.message) &&
-    (Boolean(dirtyFields[name]) || isSubmitted);
+    Boolean(errors[name]?.message) && (Boolean(dirtyFields[name]) || isSubmitted);
+
+  function oosTitleFor(item: OutOfStockItem) {
+    const title =
+      locale === "ka"
+        ? item.title_ka ?? item.product_name
+        : item.title_en ?? item.product_name;
+    return (title ?? "Product").trim();
+  }
+
+  function reasonKey(r: OutOfStockReason) {
+    if (r === "reserved_temporarily") return "oos_reserved_temporarily";
+    if (r === "no_stock") return "oos_no_stock";
+    return "oos_insufficient";
+  }
 
   const onSubmit = handleSubmit(async (values) => {
     setBannerError(null);
+    setOosItems(null);
 
-    // extra guard: ensure saved address id still exists
     if (values.useSaved) {
       const exists = savedAddresses.some((a) => a.id === values.selectedAddrId);
       if (!exists) {
         setError("selectedAddrId", {
           type: "validate",
-          message: tErrors("addressSelectionRequired"),
+          message: tErrorsSimple("addressSelectionRequired"),
         });
         return;
       }
@@ -274,20 +287,28 @@ export default function CheckoutFormClient({
 
     const payload: CreateOrderInput = {
       full_name: values.fullName,
-      phone: values.phone, // ✅ e164 +995...
+      phone: values.phone,
       line1: values.useSaved ? (addr?.line1 ?? "") : values.line1,
       line2: values.useSaved ? (addr?.line2 ?? "") : values.line2,
       city: values.useSaved ? (addr?.city ?? "") : values.city,
       shipping_address_id: values.useSaved ? values.selectedAddrId : undefined,
     };
 
-    try {
-      const { orderId } = await createPendingOrder(payload);
+    const r = await createPendingOrder(payload);
 
+    if (!r.ok) {
+      setBannerError(tErrorsSimple(r.code));
+      if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length) {
+        setOosItems(r.outOfStock);
+      }
+      return;
+    }
+
+    try {
       const res = await fetch("/api/bog/create-order-for-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, locale }),
+        body: JSON.stringify({ orderId: r.orderId, locale }),
       });
 
       let data: unknown = null;
@@ -298,14 +319,8 @@ export default function CheckoutFormClient({
       }
 
       if (!res.ok) {
-        const msg =
-          typeof data === "object" &&
-          data !== null &&
-          "message" in data &&
-          typeof (data as { message: unknown }).message === "string"
-            ? (data as { message: string }).message
-            : "Payment initiation failed.";
-        throw new Error(msg);
+        setBannerError(tErrorsSimple("PAYMENT_INIT_FAILED"));
+        return;
       }
 
       const redirectUrl =
@@ -316,20 +331,19 @@ export default function CheckoutFormClient({
           ? (data as { redirectUrl: string }).redirectUrl
           : null;
 
-      if (!redirectUrl) throw new Error("Payment initiation failed.");
+      if (!redirectUrl) {
+        setBannerError(tErrorsSimple("PAYMENT_INIT_FAILED"));
+        return;
+      }
 
       window.location.assign(redirectUrl);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "An error occurred.";
-      setBannerError(msg);
+    } catch {
+      setBannerError(tErrorsSimple("CHECKOUT_FAILED"));
     }
   });
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="grid grid-cols-1 gap-12 lg:grid-cols-12"
-    >
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-12 lg:grid-cols-12">
       {/* LEFT */}
       <div className="lg:col-span-7 space-y-10">
         {/* Products */}
@@ -342,9 +356,7 @@ export default function CheckoutFormClient({
             {cartItems.map((item) => {
               const unit = toNumber(item.price_at_add);
               const qty =
-                typeof item.qty === "number"
-                  ? item.qty
-                  : (toNumber(item.qty) ?? 0);
+                typeof item.qty === "number" ? item.qty : (toNumber(item.qty) ?? 0);
 
               const safeUnit = Number.isFinite(unit) ? unit : 0;
               const safeQty = Number.isFinite(qty) ? qty : 0;
@@ -410,9 +422,7 @@ export default function CheckoutFormClient({
               placeholder="Name Surname"
               autoComplete="name"
               registration={register("fullName")}
-              error={
-                showErr("fullName") ? (errors.fullName?.message ?? null) : null
-              }
+              error={showErr("fullName") ? (errors.fullName?.message ?? null) : null}
             />
 
             <MinimalInput
@@ -429,9 +439,7 @@ export default function CheckoutFormClient({
         {/* Shipping */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-black">
-              Shipping Address
-            </h2>
+            <h2 className="text-lg font-semibold text-black">Shipping Address</h2>
 
             {savedAddresses.length > 0 && (
               <button
@@ -439,6 +447,7 @@ export default function CheckoutFormClient({
                 onClick={() => {
                   setValue("useSaved", !useSaved, { shouldValidate: true });
                   setBannerError(null);
+                  setOosItems(null);
                 }}
                 className="text-sm font-medium text-gray-500 hover:text-black underline decoration-gray-300 underline-offset-4"
               >
@@ -463,9 +472,7 @@ export default function CheckoutFormClient({
                     key={addr.id}
                     type="button"
                     onClick={() =>
-                      setValue("selectedAddrId", addr.id, {
-                        shouldValidate: true,
-                      })
+                      setValue("selectedAddrId", addr.id, { shouldValidate: true })
                     }
                     className={`w-full text-left relative rounded-xl border p-4 transition-all ${
                       isSelected
@@ -502,9 +509,7 @@ export default function CheckoutFormClient({
                 placeholder="Street, Building, Apt"
                 autoComplete="address-line1"
                 registration={register("line1")}
-                error={
-                  showErr("line1") ? (errors.line1?.message ?? null) : null
-                }
+                error={showErr("line1") ? (errors.line1?.message ?? null) : null}
               />
 
               <MinimalInput
@@ -520,9 +525,7 @@ export default function CheckoutFormClient({
                   placeholder="City"
                   autoComplete="address-level2"
                   registration={register("city")}
-                  error={
-                    showErr("city") ? (errors.city?.message ?? null) : null
-                  }
+                  error={showErr("city") ? (errors.city?.message ?? null) : null}
                 />
 
                 <div className="opacity-50 pointer-events-none">
@@ -542,9 +545,7 @@ export default function CheckoutFormClient({
           <div className="space-y-4 border-b border-gray-100 pb-6 mb-6">
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Subtotal</span>
-              <span className="font-medium">
-                {money(summary.subtotal, "GEL")}
-              </span>
+              <span className="font-medium">{money(summary.subtotal, "GEL")}</span>
             </div>
 
             {summary.discount_total > 0 ? (
@@ -558,9 +559,7 @@ export default function CheckoutFormClient({
 
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Shipping</span>
-              <span className="font-medium">
-                {money(summary.shipping_total, "GEL")}
-              </span>
+              <span className="font-medium">{money(summary.shipping_total, "GEL")}</span>
             </div>
           </div>
 
@@ -572,8 +571,32 @@ export default function CheckoutFormClient({
           </div>
 
           {bannerError ? (
-            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
-              {bannerError}
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 space-y-3">
+              <div>{bannerError}</div>
+
+              {oosItems && oosItems.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold text-red-800">
+                    {tErrorsSimple("OOS_DETAILS_TITLE")}
+                  </div>
+
+                  <ul className="space-y-2">
+                    {oosItems.map((it) => (
+                      <li key={`${it.fina_id}`} className="rounded-md bg-white/60 border border-red-100 p-2">
+                        <div className="font-semibold text-red-900 text-sm">
+                          {oosTitleFor(it)}
+                        </div>
+                        <div className="text-xs text-red-700">
+                          {tErrors("OOS_QTY_LINE", { requested: it.requested, available: it.available })}
+                        </div>
+                        <div className="text-xs text-red-700">
+                          {tErrorsSimple(reasonKey(it.reason))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
           ) : null}
 

@@ -239,7 +239,21 @@
     "addressLineMustContainLettersOrNumbers": "Please enter a valid address.",
     "regionTooLong": "Region is too long.",
     "regionMustContainLettersOrNumbers": "Please enter a valid region.",
-    "phoneInvalidCharacters": "Only digits  are allowed."
+    "phoneInvalidCharacters": "Only digits  are allowed.",
+
+    "AUTH_REQUIRED": "Please sign in to continue.",
+    "CART_EMPTY": "Your cart is empty.",
+    "CART_ITEM_INVALID_QTY": "One of the items has an invalid quantity. Please refresh your cart.",
+    "OUT_OF_STOCK": "Some items are not available right now.",
+    "CHECKOUT_FAILED": "Checkout failed. Please try again.",
+    "PAYMENT_INIT_FAILED": "Payment could not be started. Please try again.",
+
+    "OOS_DETAILS_TITLE": "Items that cannot be reserved",
+    "OOS_QTY_LINE": "Requested: {requested}, available now: {available}",
+
+    "oos_reserved_temporarily": "Temporarily unavailable because another customer is checking out. Please try again in a few minutes.",
+    "oos_no_stock": "Sold out.",
+    "oos_insufficient": "Not enough stock available right now."
   },
   "Login": {
     "meta": {
