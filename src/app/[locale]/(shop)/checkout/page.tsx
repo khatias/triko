@@ -1,8 +1,17 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import CheckoutFormClient from "./_components/CheckoutFormClient";
-
+import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
+  return generateLocalizedMetadata(ctx, {
+    namespace: "Checkout",
+    path: "/checkout",
+  });
+}
 
 export type AddressRow = {
   id: string;

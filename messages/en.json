@@ -488,6 +488,10 @@
     }
   },
   "Checkout": {
+    "meta": {
+      "title": "Checkout — Triko",
+      "description": "Complete your order securely. Add your contact and delivery details, review your items, and choose a payment method."
+    },
     "reviewTitle": "Review your products",
     "qtyLabel": "Qty:",
     "contactTitle": "Contact information",
