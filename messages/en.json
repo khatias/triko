@@ -221,7 +221,25 @@
     "server_error": "Server error. Please try again later.",
     "unknown": "Somthing Went Wron. Please try again.",
     "network": "Network error. Please try again.",
-    "timeout": "Request timed out. Please try again."
+    "timeout": "Request timed out. Please try again.",
+    "fullNameRequired": "This field is required.",
+    "fullNamePleaseFirstLast": "Please enter first and last name.",
+    "phoneRequired": "This field is required.",
+    "phoneMustHave9Digits": "Please enter a valid Georgian phone number.",
+    "phoneLooksInvalid": "Please enter a valid phone number.",
+    "phoneCannotStartWith0": "Please enter a valid phone number.",
+    "phoneMustBeMobile": "Please enter a valid mobile number.",
+    "cityRequired": "This field is required.",
+    "cityTooShort": "Please enter a valid city.",
+    "cityTooLong": "City is too long.",
+    "cityMustContainLetters": "City must contain letters.",
+    "addressLineRequired": "This field is required.",
+    "addressLineTooShort": "Address is too short",
+    "addressLineTooLong": "Address is too long.",
+    "addressLineMustContainLettersOrNumbers": "Please enter a valid address.",
+    "regionTooLong": "Region is too long.",
+    "regionMustContainLettersOrNumbers": "Please enter a valid region.",
+    "phoneInvalidCharacters": "Only digits  are allowed."
   },
   "Login": {
     "meta": {

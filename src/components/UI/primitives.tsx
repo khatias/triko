@@ -36,7 +36,7 @@ export const H2 = ({
 }: React.PropsWithChildren<{ id?: string }>) => (
   <h2
     id={id}
-    className="min-w-0 break-words text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 leading-snug"
+    className="min-w-0 wrap-break-word text-2xl lg:text-3xl font-semibold tracking-tight text-gray-900 leading-snug"
   >
     {children}
   </h2>
@@ -47,7 +47,7 @@ export const P = ({
   className = "",
 }: React.PropsWithChildren<{ className?: string }>) => (
   <p
-    className={`text-base leading-7 text-gray-700 whitespace-normal break-words ${className}`}
+    className={`text-base leading-7 text-gray-700 whitespace-normal wrap-break-word ${className}`}
   >
     {children}
   </p>
@@ -71,9 +71,10 @@ export const formHeading = [
   "relative mx-auto mb-6 max-w-2xl text-center text-3xl sm:text-4xl font-semibold leading-[1.15] tracking-wide text-zinc-900 [text-wrap:balance] selection:bg-[#fdd5a2]/30 before:content-[''] before:absolute before:inset-x-1/3 before:-bottom-1 before:h-6 before:rounded-full before:bg-[#fdd5a2]/20 before:blur-xl before:-z-10 after:content-[''] after:mt-4 after:block after:h-[3px] after:w-16 sm:after:w-24 after:rounded-full after:mx-auto after:bg-gradient-to-r after:from-[#fdd5a2] after:via-rose-300/70 after:to-[#fdd5a2]",
 ].join(" ");
 export const linkBase =
-"px-1.5 py-1 text-[14px] font-medium tracking-[0.08em] text-slate-700 rounded-md hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200";
+  "px-1.5 py-1 text-[14px] font-medium tracking-[0.08em] text-slate-700 rounded-md hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200";
 
-export  const wrap = "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
+export const wrap =
+  "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
 export function MenuButton({
   onClick,
   icon: Icon,
@@ -106,7 +107,7 @@ export function MenuButton({
 
 export function Separator() {
   return (
-    <div className="my-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-white/10" />
+    <div className="my-1 h-px bg-linear-to-r from-transparent via-slate-200 to-transparent dark:via-white/10" />
   );
 }
 export function MenuItem({
@@ -154,8 +155,8 @@ export function Button({
     variant === "primary"
       ? "bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-400"
       : variant === "outline"
-      ? "border border-slate-300 text-slate-800 bg-white hover:bg-slate-50 focus:ring-orange-300"
-      : "border border-transparent text-red-600 bg-white hover:bg-red-50 focus:ring-red-300";
+        ? "border border-slate-300 text-slate-800 bg-white hover:bg-slate-50 focus:ring-orange-300"
+        : "border border-transparent text-red-600 bg-white hover:bg-red-50 focus:ring-red-300";
 
   return (
     <button className={`${base} ${styles} ${className}`} {...props}>
@@ -170,12 +171,14 @@ export function Input({
   label,
   required,
   defaultValue,
+  placeholder,  
 }: {
   id: string;
   name: string;
   label: string;
   required?: boolean;
   defaultValue?: string;
+  placeholder?: string;
 }) {
   return (
     <div className="flex flex-col gap-1">
@@ -187,6 +190,7 @@ export function Input({
         name={name}
         required={required}
         defaultValue={defaultValue}
+        placeholder={placeholder}
         className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition duration-150"
       />
     </div>

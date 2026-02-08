@@ -225,3 +225,7 @@ export function getPhotoUrls(photos: unknown): string[] {
 
   return Array.from(new Set(collected.map((x) => x.url)));
 }
+
+export function cn(...xs: Array<string | false | null | undefined>) {
+  return xs.filter(Boolean).join(" ");
+}

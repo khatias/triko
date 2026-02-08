@@ -223,7 +223,28 @@
     "server_error": "სერვერის შეცდომა. სცადეთ მოგვიანებით.",
     "unknown": "მოთხოვნის დამუშავება ვერ მოხერხდა. სცადეთ ხელახლა.",
     "network": "ქსელის შეცდომა. სცადეთ ხელახლა.",
-    "timeout": "მოთხოვნის ვადა ამოიწურა. სცადეთ ხელახლა."
+    "timeout": "მოთხოვნის ვადა ამოიწურა. სცადეთ ხელახლა.",
+    "fullNameRequired": "ეს ველი სავალდებულოა.",
+    "fullNamePleaseFirstLast": "გთხოვთ მიუთითოთ სახელი და გვარი.",
+
+    "phoneRequired": "ეს ველი სავალდებულოა.",
+    "phoneMustHave9Digits": "გთხოვთ შეიყვანოთ სწორი ქართული ტელეფონის ნომერი.",
+    "phoneLooksInvalid": "გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი.",
+    "phoneCannotStartWith0": "გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი.",
+    "phoneMustBeMobile": "გთხოვთ შეიყვანოთ სწორი მობილურის ნომერი.",
+
+    "cityRequired": "ეს ველი სავალდებულოა.",
+    "cityTooShort": "გთხოვთ მიუთითოთ სწორი ქალაქი.",
+    "cityTooLong": "ქალაქის დასახელება ძალიან გრძელია.",
+    "cityMustContainLetters": "ქალაქის დასახელება უნდა შეიცავდეს ასოებს.",
+    "addressLineRequired": "ეს ველი სავალდებულოა.",
+    "addressLineTooLong": "მისამართი ძალიან გრძელია.",
+    "addressLineTooShort": "მისამართი ძალიან მოკლეა",
+    "addressLineMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი მისამართი.",
+
+    "regionTooLong": "რეგიონის დასახელება ძალიან გრძელია.",
+    "regionMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი რეგიონი.",
+    "phoneInvalidCharacters": "მობილურის ნომრის ველი უნდა შეიცავდეს მხოლოდ რიცხვით სიმბოლოებს."
   },
   "Login": {
     "meta": {

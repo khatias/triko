@@ -111,13 +111,22 @@ export function asBogCurrency(v: unknown): BogCurrency {
   return "GEL";
 }
 
-
-export function readBoolean(obj: Record<string, unknown>, key: string): boolean | null {
+export function readBoolean(
+  obj: Record<string, unknown>,
+  key: string,
+): boolean | null {
   const v = obj[key];
   return typeof v === "boolean" ? v : null;
 }
 
-export function readNumberStrict(obj: Record<string, unknown>, key: string): number | null {
+export function readNumberStrict(
+  obj: Record<string, unknown>,
+  key: string,
+): number | null {
   const v = obj[key];
   return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+export function hasImg(url: string | null | undefined): url is string {
+  return typeof url === "string" && url.trim().length > 0;
 }

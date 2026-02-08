@@ -1,302 +1,638 @@
-// src/app/[locale]/(shop)/checkout/CheckoutFormClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { Lock, Check, ShoppingBag } from "lucide-react";
+import { z } from "zod";
+import { useTranslations } from "next-intl";
+
+import { useForm, type UseFormRegisterReturn } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 import {
   createPendingOrder,
   type CreateOrderInput,
 } from "../actions/createPendingOrder";
+import type {
+  AddressRow,
+  CartItemRow,
+  ProfileInfo,
+  SummaryInfo,
+} from "../page";
+import { hasImg, toNumber } from "@/utils/type-guards";
+import { formatPrice } from "@/lib/helpers";
 
-type AddressPrefill = {
-  id: string;
-  line1: string;
-  line2: string | null;
-  city: string;
-  region: string | null;
-  is_default_shipping: boolean;
-  created_at: string;
-};
+import { addressSchema, fullNameSchema } from "@/lib/validation/profile";
+
+/* ---------------- helpers ---------------- */
+
+function itemTitle(item: CartItemRow, locale: string) {
+  const localized = locale === "ka" ? item.title_ka : item.title_en;
+  return (localized?.trim() || item.product_name || "Product").trim();
+}
+
+function money(v: number | null, currency: string | null): string | null {
+  if (v == null) return null;
+  return formatPrice(v, currency);
+}
+
+function normalizeGePhoneToNational9(raw: string): string | null {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("995") && digits.length === 12) return digits.slice(3);
+  if (digits.startsWith("0") && digits.length === 10) return digits.slice(1);
+  if (digits.length === 9) return digits;
+  return null;
+}
+
+function makeGeorgiaPhoneSchema(params: {
+  t: (k: string) => string;
+  output?: "national" | "e164";
+  allowLandline?: boolean;
+}) {
+  const { t, output = "e164", allowLandline = false } = params;
+
+  return z
+    .string()
+    .trim()
+    .min(1, { message: t("phoneRequired") })
+    .transform((raw, ctx) => {
+      const s = raw.trim();
+
+      // ✅ reject letters and random chars
+      if (!/^[0-9+\s()-]*$/.test(s)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("phoneInvalidCharacters"),
+        });
+        return z.NEVER;
+      }
+
+      const national9 = normalizeGePhoneToNational9(s);
+      if (!national9) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("phoneMustHave9Digits"),
+        });
+        return z.NEVER;
+      }
+
+      if (/^(\d)\1{8}$/.test(national9)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("phoneLooksInvalid"),
+        });
+        return z.NEVER;
+      }
+
+      if (!allowLandline && !national9.startsWith("5")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t("phoneMustBeMobile"),
+        });
+        return z.NEVER;
+      }
+
+      return output === "e164" ? `+995${national9}` : national9;
+    });
+}
+
+/* ---------------- schema ---------------- */
+
+function makeCheckoutSchema(t: (k: string) => string) {
+  const phone = makeGeorgiaPhoneSchema({
+    t,
+    output: "e164",
+    allowLandline: false,
+  });
+
+  const fullName = fullNameSchema(t);
+  const addr = addressSchema(t);
+
+  return z
+    .object({
+      fullName,
+      phone,
+      useSaved: z.boolean(),
+
+      selectedAddrId: z.string(),
+      line1: z.string(),
+      line2: z.string(),
+      city: z.string(),
+    })
+    .superRefine((val, ctx) => {
+      if (val.useSaved) {
+        if (!val.selectedAddrId.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["selectedAddrId"],
+            message: t("addressSelectionRequired"),
+          });
+        }
+        return;
+      }
+
+      const r = addr.safeParse({
+        line1: val.line1,
+        line2: val.line2,
+        city: val.city,
+        region: "",
+      });
+
+      if (!r.success) {
+        const flat = r.error.flatten().fieldErrors;
+        if (flat.line1?.[0]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["line1"],
+            message: flat.line1[0],
+          });
+        }
+        if (flat.city?.[0]) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["city"],
+            message: flat.city[0],
+          });
+        }
+      }
+    });
+}
+
+type CheckoutValues = z.infer<ReturnType<typeof makeCheckoutSchema>>;
+
+/* ---------------- component ---------------- */
 
 type Props = {
   locale: string;
-  savedAddresses: AddressPrefill[];
+  savedAddresses: AddressRow[];
+  cartItems: CartItemRow[];
+  profileInfo: ProfileInfo;
+  summary: SummaryInfo;
 };
 
-type SubmitLike = {
-  preventDefault: () => void;
-  currentTarget: HTMLFormElement;
-};
+export default function CheckoutFormClient({
+  locale,
+  savedAddresses,
+  cartItems,
+  profileInfo,
+  summary,
+}: Props) {
+  const tErrorsIntl = useTranslations("Errors");
+  const tErrors = useMemo(
+    () => (k: string) => tErrorsIntl(k as never),
+    [tErrorsIntl],
+  );
 
-function required(v: string) {
-  return v.trim().length > 0;
-}
+  const schema = useMemo(() => makeCheckoutSchema(tErrors), [tErrors]);
 
-export default function CheckoutFormClient({ locale, savedAddresses }: Props) {
-  const router = useRouter();
+  const [bannerError, setBannerError] = useState<string | null>(null);
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const defaultUseSaved = savedAddresses.length > 0;
+  const defaultAddrId = savedAddresses[0]?.id ?? "";
 
-  // Contact fields
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    setError,
+    formState: { errors, isSubmitting, isValid, dirtyFields, isSubmitted },
+  } = useForm<CheckoutValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    reValidateMode: "onChange",
+    defaultValues: {
+      fullName: profileInfo.full_name ?? "",
+      phone: profileInfo.phone ?? "",
+      useSaved: defaultUseSaved,
+      selectedAddrId: defaultAddrId,
+      line1: "",
+      line2: "",
+      city: "",
+    },
+  });
 
-  // Address mode
-  const hasSaved = savedAddresses.length > 0;
-  const [useSaved, setUseSaved] = useState(false);
-  const defaultId = useMemo(() => {
-    const def = savedAddresses.find((a) => a.is_default_shipping);
-    return def?.id ?? savedAddresses[0]?.id ?? "";
-  }, [savedAddresses]);
+  const useSaved = watch("useSaved");
+  const selectedAddrId = watch("selectedAddrId");
 
-  const [selectedAddressId, setSelectedAddressId] = useState(defaultId);
+  const selectedAddress = useMemo(() => {
+    if (!useSaved) return null;
+    return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
+  }, [useSaved, savedAddresses, selectedAddrId]);
 
-  // Address fields (controlled)
-  const [line1, setLine1] = useState("");
-  const [line2, setLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [region, setRegion] = useState("");
-
-  // Keep selectedAddressId in sync if addresses load / change
+  // keep selection valid if list changes
   useEffect(() => {
-    if (!hasSaved) return;
-    if (!selectedAddressId) setSelectedAddressId(defaultId);
-  }, [hasSaved, defaultId, selectedAddressId]);
+    if (!savedAddresses.length) {
+      setValue("useSaved", false, { shouldValidate: true });
+      setValue("selectedAddrId", "", { shouldValidate: true });
+      return;
+    }
 
-  // When user toggles "use saved"
+    if (useSaved) {
+      const stillExists = savedAddresses.some((a) => a.id === selectedAddrId);
+      if (!stillExists) {
+        setValue("selectedAddrId", savedAddresses[0]?.id ?? "", {
+          shouldValidate: true,
+        });
+      }
+    }
+  }, [savedAddresses, useSaved, selectedAddrId, setValue]);
+
+  // hydrate visible fields when saved selected (optional)
   useEffect(() => {
-    if (!useSaved) {
-      // You asked: when not using saved, keep it empty
-      setLine1("");
-      setLine2("");
-      setCity("");
-      setRegion("");
-      return;
+    if (!useSaved) return;
+    if (!selectedAddress) return;
+
+    setValue("line1", selectedAddress.line1 ?? "", { shouldValidate: false });
+    setValue("line2", selectedAddress.line2 ?? "", { shouldValidate: false });
+    setValue("city", selectedAddress.city ?? "", { shouldValidate: false });
+  }, [useSaved, selectedAddress, setValue]);
+
+  // show errors as soon as user changed a field OR after submit
+  const showErr = (name: keyof CheckoutValues) =>
+    Boolean(errors[name]?.message) &&
+    (Boolean(dirtyFields[name]) || isSubmitted);
+
+  const onSubmit = handleSubmit(async (values) => {
+    setBannerError(null);
+
+    // extra guard: ensure saved address id still exists
+    if (values.useSaved) {
+      const exists = savedAddresses.some((a) => a.id === values.selectedAddrId);
+      if (!exists) {
+        setError("selectedAddrId", {
+          type: "validate",
+          message: tErrors("addressSelectionRequired"),
+        });
+        return;
+      }
     }
 
-    // Using saved: apply selected (or default)
-    const found =
-      savedAddresses.find((a) => a.id === selectedAddressId) ??
-      savedAddresses.find((a) => a.id === defaultId) ??
-      savedAddresses[0];
+    const addr = values.useSaved
+      ? (savedAddresses.find((a) => a.id === values.selectedAddrId) ?? null)
+      : null;
 
-    if (!found) return;
-
-    setSelectedAddressId(found.id);
-    setLine1(found.line1);
-    setLine2(found.line2 ?? "");
-    setCity(found.city);
-    setRegion(found.region ?? "");
-  }, [useSaved, selectedAddressId, savedAddresses, defaultId]);
-
-  const savedOptions = useMemo(() => {
-    return savedAddresses.map((a) => {
-      const label =
-        (a.is_default_shipping ? "Default — " : "") +
-        [a.line1, a.city, a.region].filter(Boolean).join(", ");
-      return { id: a.id, label };
-    });
-  }, [savedAddresses]);
-
-  const onSubmit = async (e: SubmitLike) => {
-    e.preventDefault();
-    if (loading) return;
-
-    setError(null);
-
-    if (!required(fullName)) {
-      setError("Please enter your full name.");
-      return;
-    }
-    if (!required(phone)) {
-      setError("Please enter your phone number.");
-      return;
-    }
-    if (!required(line1) || !required(city)) {
-      setError(
-        "Please enter your delivery address (line1 and city are required).",
-      );
-      return;
-    }
-
-    const input: CreateOrderInput = {
-      full_name: fullName.trim(),
-      phone: phone.trim(),
-      line1: line1.trim(),
-      line2: line2.trim() || undefined,
-      city: city.trim(),
-      region: region.trim() || undefined,
-      shipping_address_id: useSaved ? selectedAddressId : undefined,
+    const payload: CreateOrderInput = {
+      full_name: values.fullName,
+      phone: values.phone, // ✅ e164 +995...
+      line1: values.useSaved ? (addr?.line1 ?? "") : values.line1,
+      line2: values.useSaved ? (addr?.line2 ?? "") : values.line2,
+      city: values.useSaved ? (addr?.city ?? "") : values.city,
+      shipping_address_id: values.useSaved ? values.selectedAddrId : undefined,
     };
 
-    setLoading(true);
     try {
-      const { orderId } = await createPendingOrder(input);
-      router.push(`/${locale}/orders/${orderId}`); // placeholder; we'll implement real page next
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+      const { orderId } = await createPendingOrder(payload);
+
+      const res = await fetch("/api/bog/create-order-for-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, locale }),
+      });
+
+      let data: unknown = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok) {
+        const msg =
+          typeof data === "object" &&
+          data !== null &&
+          "message" in data &&
+          typeof (data as { message: unknown }).message === "string"
+            ? (data as { message: string }).message
+            : "Payment initiation failed.";
+        throw new Error(msg);
+      }
+
+      const redirectUrl =
+        typeof data === "object" &&
+        data !== null &&
+        "redirectUrl" in data &&
+        typeof (data as { redirectUrl: unknown }).redirectUrl === "string"
+          ? (data as { redirectUrl: string }).redirectUrl
+          : null;
+
+      if (!redirectUrl) throw new Error("Payment initiation failed.");
+
+      window.location.assign(redirectUrl);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "An error occurred.";
+      setBannerError(msg);
     }
-  };
+  });
 
   return (
-    <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-      <section className="rounded-2xl border p-4">
-        <h2 className="text-lg font-medium">Contact</h2>
+    <form
+      onSubmit={onSubmit}
+      className="grid grid-cols-1 gap-12 lg:grid-cols-12"
+    >
+      {/* LEFT */}
+      <div className="lg:col-span-7 space-y-10">
+        {/* Products */}
+        <section>
+          <h2 className="text-lg font-semibold text-black mb-4">
+            Review Your Products
+          </h2>
 
-        <div className="mt-4 space-y-3">
-          <div>
-            <label className="block text-sm" htmlFor="full_name">
-              Full name
-            </label>
-            <input
-              id="full_name"
-              name="full_name"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+          <div className="space-y-4">
+            {cartItems.map((item) => {
+              const unit = toNumber(item.price_at_add);
+              const qty =
+                typeof item.qty === "number"
+                  ? item.qty
+                  : (toNumber(item.qty) ?? 0);
+
+              const safeUnit = Number.isFinite(unit) ? unit : 0;
+              const safeQty = Number.isFinite(qty) ? qty : 0;
+              const lineTotal = safeUnit * safeQty;
+
+              return (
+                <div
+                  key={item.id}
+                  className="group flex gap-4 p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
+                >
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gray-50 border border-gray-100 shadow-sm">
+                    {hasImg(item.image_url) ? (
+                      <Image
+                        src={item.image_url}
+                        alt={itemTitle(item, locale)}
+                        fill
+                        sizes="80px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-gray-300">
+                        <ShoppingBag size={24} />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-1 flex-col justify-center min-w-0">
+                    <div className="flex justify-between items-start gap-4 mb-1">
+                      <h4 className="text-sm font-bold text-gray-900 line-clamp-2">
+                        {itemTitle(item, locale)}
+                      </h4>
+                      <p className="text-sm font-bold text-red-600 whitespace-nowrap">
+                        {money(lineTotal, "GEL")}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-[10px] font-medium text-gray-600">
+                        Qty: {safeQty}
+                      </span>
+                      {item.variant_code ? (
+                        <span className="text-xs text-gray-400 truncate">
+                          {item.variant_code}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Contact */}
+        <section>
+          <h2 className="text-lg font-semibold text-black mb-6">
+            Contact Information
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <MinimalInput
+              label="Full Name"
+              placeholder="Name Surname"
               autoComplete="name"
-              disabled={loading}
+              registration={register("fullName")}
+              error={
+                showErr("fullName") ? (errors.fullName?.message ?? null) : null
+              }
             />
-          </div>
 
-          <div>
-            <label className="block text-sm" htmlFor="phone">
-              Phone
-            </label>
-            <input
-              id="phone"
-              name="phone"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+            <MinimalInput
+              label="Phone Number"
+              placeholder="+995 5XX XX XX XX"
+              inputMode="tel"
               autoComplete="tel"
-              disabled={loading}
+              registration={register("phone")}
+              error={showErr("phone") ? (errors.phone?.message ?? null) : null}
             />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="rounded-2xl border p-4">
-        <h2 className="text-lg font-medium">Delivery address</h2>
+        {/* Shipping */}
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-black">
+              Shipping Address
+            </h2>
 
-        {hasSaved ? (
-          <div className="mt-3 rounded-xl border p-3 space-y-3">
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={useSaved}
-                onChange={(e) => setUseSaved(e.target.checked)}
-                disabled={loading}
+            {savedAddresses.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setValue("useSaved", !useSaved, { shouldValidate: true });
+                  setBannerError(null);
+                }}
+                className="text-sm font-medium text-gray-500 hover:text-black underline decoration-gray-300 underline-offset-4"
+              >
+                {useSaved ? "Enter manually" : "Select saved address"}
+              </button>
+            )}
+          </div>
+
+          {useSaved ? (
+            <div className="space-y-3">
+              {showErr("selectedAddrId") && errors.selectedAddrId?.message ? (
+                <div className="mb-2 text-sm text-red-600">
+                  {errors.selectedAddrId.message}
+                </div>
+              ) : null}
+
+              {savedAddresses.map((addr) => {
+                const isSelected = selectedAddrId === addr.id;
+
+                return (
+                  <button
+                    key={addr.id}
+                    type="button"
+                    onClick={() =>
+                      setValue("selectedAddrId", addr.id, {
+                        shouldValidate: true,
+                      })
+                    }
+                    className={`w-full text-left relative rounded-xl border p-4 transition-all ${
+                      isSelected
+                        ? "border-black bg-white shadow-sm"
+                        : "border-gray-200 bg-transparent hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm text-black truncate">
+                          {addr.city}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {addr.line1}
+                        </p>
+                      </div>
+
+                      {isSelected ? (
+                        <div className="h-5 w-5 bg-black rounded-full flex items-center justify-center text-white shrink-0">
+                          <Check size={12} />
+                        </div>
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border border-gray-300 shrink-0" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-5 animate-in fade-in duration-300">
+              <MinimalInput
+                label="Address Line"
+                placeholder="Street, Building, Apt"
+                autoComplete="address-line1"
+                registration={register("line1")}
+                error={
+                  showErr("line1") ? (errors.line1?.message ?? null) : null
+                }
               />
-              <div>
-                <div className="font-medium">Use a saved address</div>
-                <div className="opacity-70">
-                  Choose from your saved shipping addresses
+
+              <MinimalInput
+                label="Address Line 2"
+                placeholder="Apartment, floor, etc."
+                autoComplete="address-line2"
+                registration={register("line2")}
+              />
+
+              <div className="grid grid-cols-2 gap-5">
+                <MinimalInput
+                  label="City"
+                  placeholder="City"
+                  autoComplete="address-level2"
+                  registration={register("city")}
+                  error={
+                    showErr("city") ? (errors.city?.message ?? null) : null
+                  }
+                />
+
+                <div className="opacity-50 pointer-events-none">
+                  <MinimalInput label="Country" value="Georgia" disabled />
                 </div>
               </div>
-            </label>
+            </div>
+          )}
+        </section>
+      </div>
 
-            {useSaved ? (
-              <select
-                className="w-full rounded-xl border p-2"
-                value={selectedAddressId}
-                onChange={(e) => setSelectedAddressId(e.target.value)}
-                disabled={loading}
-              >
-                {savedOptions.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+      {/* RIGHT */}
+      <div className="lg:col-span-5">
+        <div className="sticky top-10 rounded-2xl bg-white p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
+          <h2 className="text-lg font-semibold mb-6">Order Summary</h2>
+
+          <div className="space-y-4 border-b border-gray-100 pb-6 mb-6">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Subtotal</span>
+              <span className="font-medium">
+                {money(summary.subtotal, "GEL")}
+              </span>
+            </div>
+
+            {summary.discount_total > 0 ? (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Discount</span>
+                <span className="font-medium text-red-600">
+                  -{money(summary.discount_total, "GEL")}
+                </span>
+              </div>
             ) : null}
-          </div>
-        ) : (
-          <p className="mt-2 text-sm opacity-70">
-            No saved address found. Please enter a new one.
-          </p>
-        )}
 
-        <div className="mt-4 space-y-3">
-          <div>
-            <label className="block text-sm" htmlFor="line1">
-              Address line 1
-            </label>
-            <input
-              id="line1"
-              name="line1"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={line1}
-              onChange={(e) => setLine1(e.target.value)}
-              placeholder="Street, building, apartment"
-              disabled={loading}
-            />
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Shipping</span>
+              <span className="font-medium">
+                {money(summary.shipping_total, "GEL")}
+              </span>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm" htmlFor="line2">
-              Address line 2
-            </label>
-            <input
-              id="line2"
-              name="line2"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={line2}
-              onChange={(e) => setLine2(e.target.value)}
-              placeholder="Optional"
-              disabled={loading}
-            />
+          <div className="flex justify-between items-end mb-8">
+            <span className="text-base font-semibold">Total</span>
+            <span className="text-3xl font-bold tracking-tight">
+              {money(summary.total, "GEL")}
+            </span>
           </div>
 
-          <div>
-            <label className="block text-sm" htmlFor="city">
-              City
-            </label>
-            <input
-              id="city"
-              name="city"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm" htmlFor="region">
-              Region
-            </label>
-            <input
-              id="region"
-              name="region"
-              className="mt-1 w-full rounded-xl border p-2"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
-              placeholder="Optional"
-              disabled={loading}
-            />
-          </div>
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {bannerError ? (
+            <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
+              {bannerError}
+            </div>
+          ) : null}
 
           <button
             type="submit"
-            className="mt-2 w-full rounded-xl border px-4 py-2"
-            disabled={loading}
+            disabled={isSubmitting || !isValid}
+            className="w-full h-14 bg-black text-white rounded-xl font-medium text-base transition-all hover:bg-neutral-800 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? "Creating order..." : "Place order"}
+            {isSubmitting ? "Processing..." : "Pay Now"}
           </button>
 
-          <p className="text-xs opacity-70">
-            Next: implement real order creation (orders + order_items), then
-            connect Bank of Georgia hosted payment.
-          </p>
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
+            <Lock size={12} />
+            <span>Secure payment via Bank of Georgia</span>
+          </div>
         </div>
-      </section>
+      </div>
     </form>
+  );
+}
+
+/* ---------------- MinimalInput ---------------- */
+
+type MinimalInputProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "name" | "onChange" | "onBlur" | "ref"
+> & {
+  label: string;
+  error?: string | null;
+  registration?: UseFormRegisterReturn;
+};
+
+function MinimalInput({
+  label,
+  error,
+  registration,
+  className,
+  ...props
+}: MinimalInputProps) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+        {label}
+      </label>
+
+      <input
+        {...props}
+        {...registration}
+        aria-invalid={Boolean(error)}
+        className={[
+          "w-full h-12 rounded-xl border bg-white px-4 text-sm outline-none transition-all placeholder:text-gray-300 disabled:bg-gray-50",
+          error
+            ? "border-red-300 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            : "border-gray-200 focus:border-black focus:ring-1 focus:ring-black",
+          className ?? "",
+        ].join(" ")}
+      />
+
+      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+    </div>
   );
 }
