@@ -223,7 +223,42 @@
     "server_error": "სერვერის შეცდომა. სცადეთ მოგვიანებით.",
     "unknown": "მოთხოვნის დამუშავება ვერ მოხერხდა. სცადეთ ხელახლა.",
     "network": "ქსელის შეცდომა. სცადეთ ხელახლა.",
-    "timeout": "მოთხოვნის ვადა ამოიწურა. სცადეთ ხელახლა."
+    "timeout": "მოთხოვნის ვადა ამოიწურა. სცადეთ ხელახლა.",
+    "fullNameRequired": "ეს ველი სავალდებულოა.",
+    "fullNamePleaseFirstLast": "გთხოვთ მიუთითოთ სახელი და გვარი.",
+    "AUTH_REQUIRED": "გასაგრძელებლად გაიარეთ ავტორიზაცია.",
+    "CART_EMPTY": "თქვენი კალათი ცარიელია.",
+    "CART_ITEM_INVALID_QTY": "ერთ ერთ პროდუქტის რაოდენობა არასწორია, გთხოვთ განაახლოთ კალათი.",
+    "OUT_OF_STOCK": "ზოგი პროდუქტი ამ მომენტში ხელმისაწვდომი არ არის.",
+    "CHECKOUT_FAILED": "გადახდის პროცესი ვერ შესრულდა. სცადეთ ხელახლა.",
+    "PAYMENT_INIT_FAILED": "გადახდის დაწყება ვერ მოხერხდა. სცადეთ ხელახლა.",
+
+    "OOS_DETAILS_TITLE": "პროდუქტები, რომელთა დაჯავშნაც ვერ მოხერხდა",
+    "OOS_QTY_LINE": "მოთხოვნილი: {requested},  ახლა ხელმისაწვდომია: {available}",
+
+    "oos_reserved_temporarily": "დროებით არ არის ხელმისაწვდომი, რადგან სხვა მომხმარებელი ამ პროდუქტზე გადახდას ასრულებს. სცადეთ რამდენიმე წუთში.",
+    "oos_no_stock": "მარაგი ამოიწურა.",
+    "oos_insufficient": "ამ მომენტში საკმარისი მარაგი არ არის.",
+
+    "phoneRequired": "ეს ველი სავალდებულოა.",
+    "phoneMustHave9Digits": "გთხოვთ შეიყვანოთ სწორი ქართული ტელეფონის ნომერი.",
+    "phoneLooksInvalid": "გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი.",
+    "phoneCannotStartWith0": "გთხოვთ შეიყვანოთ სწორი ტელეფონის ნომერი.",
+    "phoneMustBeMobile": "გთხოვთ შეიყვანოთ სწორი მობილურის ნომერი.",
+
+    "cityRequired": "ეს ველი სავალდებულოა.",
+    "cityTooShort": "გთხოვთ მიუთითოთ სწორი ქალაქი.",
+    "cityTooLong": "ქალაქის დასახელება ძალიან გრძელია.",
+    "cityMustContainLetters": "ქალაქის დასახელება უნდა შეიცავდეს ასოებს.",
+    "addressLineRequired": "ეს ველი სავალდებულოა.",
+    "addressLineTooLong": "მისამართი ძალიან გრძელია.",
+    "addressLineTooShort": "მისამართი ძალიან მოკლეა",
+    "addressLineMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი მისამართი.",
+    "addressSelectionRequired": "გთხოვთ, აირჩიეთ შენახული მისამართი ან შეიყვანეთ ახალი.",
+    "selectedAddrId": "გთხოვთ, აირჩიეთ ვალიდური შენახული მისამართი.",
+    "regionTooLong": "რეგიონის დასახელება ძალიან გრძელია.",
+    "regionMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი რეგიონი.",
+    "phoneInvalidCharacters": "მობილურის ნომრის ველი უნდა შეიცავდეს მხოლოდ რიცხვით სიმბოლოებს."
   },
   "Login": {
     "meta": {
@@ -396,6 +431,68 @@
       "save": "შენახვა",
       "saving": "მიმდინარეობს შენახვა...",
       "cancel": "გაუქმება"
+    },
+    "orders": {
+      "title": "ჩემი შეკვეთები",
+      "subtitle": "იხილეთ თქვენი შეკვეთების ისტორია და სტატუსი.",
+      "totalOrders": "სულ :",
+      "pendingPayments": "დაუსრულებელი გადახდები:",
+      "noOrders": "თქვენ ჯერ არ დაგიფიქსირებიათ შეკვეთა.",
+      "continueShopping": "გაგრძელეთ შოპინგი",
+      "logintoView": "შეკვეთების სანახავად გთხოვთ გაიაროთ ავტორიზაცია.",
+      "failedToLoad": "შეკვეთების ჩატვირთვა ვერ მოხერხდა. სცადეთ მოგვიანებით.",
+      "activeOrders": "აქტიური",
+      "loginCta": "შესვლა",
+      "confirmedLabel": "შეკვეთა დადასტურდა",
+      "confirmedDesc": "შეკვეთა მიღებულია და დამუშავების პროცესშია.",
+      "inTransitLabel": "თქვენი შეკვეთა გზაშია",
+      "inTransitDesc": "შეკვეთა მიემართება მითითებულ მისამართზე.",
+      "deliveredLabel": "მიწოდებულია",
+      "deliveredDesc": "შეკვეთა ჩაბარებულია. გისურვებთ სასიამოვნო გამოყენებას!",
+      "paymentFailedLabel": "გადახდა ვერ შესრულდა",
+      "paymentFailedDesc": "გადაუხდელი შეკვეთებისთვის მიწოდება არ დაიწყება.",
+      "awaitingPaymentLabel": "გადახდის მოლოდინში",
+      "notStartedLabel": "არ დაწყებულა",
+      "notStartedDesc": "მიწოდება იწყება გადახდის შემდეგ.",
+      "completePaymentHint": "გაგრძელებისთვის დაასრულეთ გადახდა",
+      "failedPayments": "წარუმატებელი გადახდები",
+      "viewDetails": "დეტალების ნახვა",
+      "discountApplied": "ფასდაკლება გამოყენებულია",
+      "itemsCount": "{count, plural, one {# ნივთი} other {# ნივთი}}",
+      "back": "უკან",
+      "orderStatusLabel": "შეკვეთის სტატუსი",
+      "completePayment": "გადახდის დასრულება",
+      "awaitingPaymentTitle": "გადახდას ელოდება",
+      "awaitingPaymentDesc": "შეკვეთა შენახულია, თუმცა ჯერ არ დამუშავებულა.",
+      "payNow": "გადაიხადე ახლა",
+      "itemsTitle": "ნივთები",
+      "failedToLoadItems": "ნივთების ჩატვირთვა ვერ მოხერხდა",
+      "noItems": "ნივთების დეტალები ვერ მოიძებნა",
+      "summaryTitle": "შეჯამება",
+      "subtotalLabel": "ქვეჯამი",
+      "discountLabel": "ფასდაკლება",
+      "shippingLabel": "მიტანა",
+      "freeLabel": "უფასო",
+      "totalLabel": "ჯამი",
+      "returnToCart": "კალათაში დაბრუნება",
+      "needHelp": "დაგჭირდა დახმარება?",
+      "contactSupport": "დაგვიკავშირდი",
+      "variantLabel": "ზომა",
+      "productAlt": "პროდუქტი",
+      "orderTitle": "შეკვეთა",
+      "qtyLabel": "რაოდ: {qty}",
+      "supportDesc": "თუ შეკვეთასთან დაკავშირებით რაიმე კითხვა გაქვთ, გთხოვთ დაუკავშირდეთ ჩვენს მხარდაჭერის გუნდს.",
+      "shipping": {
+        "confirmedLabel": "დადასტურებულია",
+        "confirmedDesc": "შეკვეთა მიღებულია",
+        "inTransitLabel": "გზაშია",
+        "inTransitDesc": "კურიერი გზაშია და შეკვეთა მალე იქნება თქვენთან",
+        "deliveredLabel": "მიწოდებულია",
+        "deliveredDesc": "შეკვეთა წარმატებით მოგეწოდათ",
+        "confirmedShort": "დადასტურებულია",
+        "inTransitShort": "გზაშია",
+        "deliveredShort": "მიწოდებულია"
+      }
     }
   },
   "Helpers": {
@@ -457,5 +554,62 @@
       "onlyLeft": "მარაგში დარჩენილია მხოლოდ {available} ცალი.",
       "notEnoughStock": "არ არის საკმარისი მარაგი."
     }
+  },
+  "Checkout": {
+    "meta": {
+      "title": "გადახდა — Triko",
+      "description": "დაასრულეთ შეკვეთა უსაფრთხოდ. შეიყვანეთ საკონტაქტო და მიწოდების მონაცემები, გადაამოწმეთ ნივთები და აირჩიეთ გადახდის მეთოდი."
+    },
+    "reviewTitle": "შეკვეთაში არსებული პროდუქტები",
+    "qtyLabel": "რაოდენობა:",
+    "contactTitle": "საკონტაქტო ინფორმაცია",
+    "fullNameLabel": "სახელი და გვარი",
+    "fullNamePlaceholder": "სახელი გვარი",
+    "phoneLabel": "ტელეფონის ნომერი",
+    "phonePlaceholder": "+995 5XX XX XX XX",
+    "shippingTitle": "მიტანის მისამართი",
+    "toggleManual": "ხელით შეყვანა",
+    "toggleSaved": "შენახული მისამართის არჩევა",
+    "addressLine1Label": "მისამართი",
+    "addressLine1Placeholder": "ქუჩა, შენობა, ბინა",
+    "addressLine2Label": "მისამართი 2",
+    "addressLine2Placeholder": "ბინა, სართული და სხვა",
+    "cityLabel": "ქალაქი",
+    "cityPlaceholder": "ქალაქი",
+    "countryLabel": "ქვეყანა",
+    "countryValue": "საქართველო",
+    "orderSummaryTitle": "შეკვეთის შეჯამება",
+    "subtotal": "ქვეჯამი",
+    "discount": "ფასდაკლება",
+    "shipping": "მიტანა",
+    "total": "ჯამი",
+    "processing": "დამუშავება...",
+    "payNow": "გადახდა",
+    "sizeLabel": "ზომა",
+    "securePayment": "უსაფრთხო გადახდა საქართველოს ბანკით"
+  },
+  "PaymentReturn": {
+    "checking": {
+      "title": "გადახდის დადასტურება",
+      "desc": "გთხოვთ, მოითმინოთ სანამ ბანკთან ტრანზაქციას დავადასტურებთ."
+    },
+
+    "success": {
+      "title": "შეკვეთა დადასტურებულია",
+      "desc": "გმადლობთ, რომ აირჩიეთ Triko. გადახდა წარმატებით დასრულდა."
+    },
+
+    "error": {
+      "title": "გადახდა ვერ შესრულდა",
+      "desc": "ტრანზაქცია უარყოფილია ან გაუქმებულია."
+    },
+
+    "orderRefLabel": "შეკვეთის კოდი",
+    "copyOrderId": "შეკვეთის კოდის კოპირება",
+    "viewMyOrder": "ჩემი შეკვეთების ნახვა",
+    "tryAgain": "კიდევ სცადეთ",
+    "returnToStore": "მთავარ გვერდზე დაბრუნება",
+    "secureNote": "უსაფრთხო კავშირი დამყარებულია",
+    "brand": "ტრიკო"
   }
 }

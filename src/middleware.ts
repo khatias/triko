@@ -15,6 +15,13 @@ function getLocalePrefix(pathname: string) {
   return "";
 }
 
+function getFirstSegmentAfterLocale(pathname: string) {
+  const localePrefix = getLocalePrefix(pathname);
+  const pathAfterLocale = localePrefix ? pathname.slice(localePrefix.length) || "/" : pathname;
+  const firstSeg = pathAfterLocale.split("/").filter(Boolean)[0] ?? "";
+  return { localePrefix, firstSeg };
+}
+
 export async function middleware(req: NextRequest) {
   // Base response must be intl(req)
   const res = intl(req);
@@ -53,13 +60,17 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname;
 
-  // Protected routes (make sure to include locale prefix)
-  const isRestrictedPage = ["/profile", "/orders"].some((p) => pathname.includes(p));
+  // ✅ Safe restricted route check (segment-based, locale-aware)
+  const { localePrefix, firstSeg } = getFirstSegmentAfterLocale(pathname);
 
-  if (isRestrictedPage && !user) {
-    const localePrefix = getLocalePrefix(pathname);
+  const isRestrictedPage = ["profile", "orders", "checkout"].includes(firstSeg);
+  const isAuthPage = ["login", "signup", "forgot-password", "reset-password"].includes(firstSeg);
+
+  if (isRestrictedPage && !isAuthPage && !user) {
     const loginUrl = new URL(`${localePrefix}/login`, req.url);
-    loginUrl.searchParams.set("redirectedFrom", pathname);
+
+    // Use `next` for standard redirect handling after login
+    loginUrl.searchParams.set("next", pathname);
 
     const redirectRes = NextResponse.redirect(loginUrl);
 
