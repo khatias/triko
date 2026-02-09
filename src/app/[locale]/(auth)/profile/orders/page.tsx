@@ -1,7 +1,7 @@
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import OrdersClients from "./OrdersClients";
-import { toNumber } from "@/utils/type-guards";
+import { toNumber, isPaidStatus } from "@/utils/type-guards";
 
 export type ShippingStatus = "confirmed" | "in_transit" | "delivered";
 
@@ -58,7 +58,10 @@ export default async function Page() {
 
   const rows = (data ?? []) as OrderRow[];
 
-  const orders: OrderType[] = rows.map((o) => ({
+  // ✅ keep ONLY paid orders (status-based)
+  const paidRows = rows.filter((o) => isPaidStatus(o.status));
+
+  const orders: OrderType[] = paidRows.map((o) => ({
     id: o.id,
     status: o.status,
     shipping_status: isShippingStatus(o.shipping_status) ? o.shipping_status : null,

@@ -14,7 +14,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { formatDate, formatPrice } from "@/lib/helpers";
-import { isFailedStatus, isPaidStatus, isPendingStatus } from "@/utils/type-guards";
+import { isFailedStatus, isPaidStatus } from "@/utils/type-guards";
 import { StatusBadge } from "@/components/UI/ShippingStatus";
 import { CopyId } from "@/components/UI/CopyButton";
 
@@ -117,26 +117,27 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
   const t = useTranslations("Profile.orders");
   const locale = useLocale();
 
-  const orders = useMemo(
-    () => (Array.isArray(myOrders) ? myOrders : []),
-    [myOrders],
-  );
+  // ✅ ONLY PAID ORDERS reach the UI (even if server accidentally sends more)
+  const orders = useMemo(() => {
+    const arr = Array.isArray(myOrders) ? myOrders : [];
+    return arr.filter((o) => isPaidStatus(o.status));
+  }, [myOrders]);
 
-  const { pendingList, activeList, failedList } = useMemo(() => {
-    const pending: OrderType[] = [];
+  // ✅ keep failed only if you want to show them, but you're asking "only paid"
+  // so failed list will be empty. still safe if some "failed" statuses sneak in.
+  const { activeList, failedList } = useMemo(() => {
     const failed: OrderType[] = [];
     const active: OrderType[] = [];
 
     for (const o of orders) {
       if (isFailedStatus(o.status)) failed.push(o);
-      else if (isPendingStatus(o.status)) pending.push(o);
       else active.push(o);
     }
 
-    return { pendingList: pending, activeList: active, failedList: failed };
+    return { activeList: active, failedList: failed };
   }, [orders]);
 
-  const baseOrdersHref = `/${locale}/orders`;
+  const baseOrdersHref = `/${locale}/profile/orders`;
 
   const [showFailed, setShowFailed] = useState(false);
 
@@ -192,35 +193,15 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
       </div>
 
       <div className="space-y-10">
-        {pendingList.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 px-2">
-              <div className="w-2 h-2 rounded-full bg-amber-500" />
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                {t("pendingPayments")}
-              </h3>
-            </div>
-
-            {pendingList.map((order) => (
-              <OrderRow
-                key={order.id}
-                order={order}
-                href={`${baseOrdersHref}/${order.id}`}
-              />
-            ))}
-          </div>
-        )}
-
+        {/* ✅ ONLY PAID ORDERS: no pending section at all */}
         {activeList.length > 0 && (
           <div className="space-y-4">
-            {pendingList.length > 0 && (
-              <div className="flex items-center gap-2 px-2">
-                <div className="w-2 h-2 rounded-full bg-gray-900" />
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-                  {t("activeOrders")}
-                </h3>
-              </div>
-            )}
+            <div className="flex items-center gap-2 px-2">
+              <div className="w-2 h-2 rounded-full bg-gray-900" />
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+                {t("activeOrders")}
+              </h3>
+            </div>
 
             {activeList.map((order) => (
               <OrderRow
@@ -232,6 +213,8 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
           </div>
         )}
 
+        {/* Optional: if you still want failed toggle, leave this.
+           If you truly want ONLY paid, delete the whole block below. */}
         {failedList.length > 0 && (
           <div>
             <button
