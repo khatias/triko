@@ -605,5 +605,46 @@
     "returnToStore": "Return to store",
     "secureNote": "Secure connection established",
     "brand": "Triko"
+  },
+  "Admin": {
+    "Orders": {
+      "title": "Orders",
+      "subtitle": "Manage and track your store orders. Showing {count} results.",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "date": "Date",
+      "status": "Status",
+      "total": "Total",
+      "action": "Action",
+      "items": "Items",
+      "shipping": "Shipping ",
+      "view": "View ",
+      "noOrders": "No orders found.",
+
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search phone, UUID...",
+      "paymentLabel": "Payment",
+      "shippingLabel": "Shipping",
+      "rowsLabel": "Rows",
+      "apply": "Apply",
+      "loading": "Loading",
+      "resetTitle": "Reset to paid",
+
+      "paid": "Paid",
+      "all": "All ",
+      "pending": "Pending",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "fulfilled": "Fulfilled",
+
+      "confirmed": "Confirmed",
+      "inTransit": "In transit",
+      "delivered": "Delivered"
+    },
+
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "submit": "Sign In",
+    "invalidCredentials": "Email or password is incorrect."
   }
 }

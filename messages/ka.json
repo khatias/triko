@@ -445,7 +445,7 @@
       "loginCta": "შესვლა",
       "confirmedLabel": "შეკვეთა დადასტურდა",
       "confirmedDesc": "შეკვეთა მიღებულია და დამუშავების პროცესშია.",
-      "inTransitLabel": "თქვენი შეკვეთა გზაშია",
+      "inTransitLabel": " შეკვეთა გზაშია",
       "inTransitDesc": "შეკვეთა მიემართება მითითებულ მისამართზე.",
       "deliveredLabel": "მიწოდებულია",
       "deliveredDesc": "შეკვეთა ჩაბარებულია. გისურვებთ სასიამოვნო გამოყენებას!",
@@ -611,5 +611,47 @@
     "returnToStore": "მთავარ გვერდზე დაბრუნება",
     "secureNote": "უსაფრთხო კავშირი დამყარებულია",
     "brand": "ტრიკო"
+  },
+
+  "Admin": {
+    "Orders": {
+      "title": "შეკვეთები",
+      "subtitle": "მართეთ თქვენი მაღაზიის შეკვეთები. ნაჩვენებია {count} შედეგი.",
+      "orderId": "შეკვეთის ID",
+      "customer": "მომხმარებელი",
+      "date": "თარიღი",
+      "status": "სტატუსი",
+      "total": "ჯამი",
+      "action": " ქმედება",
+      "shipping": "მიტანა",
+      "items": "ნივთი",
+      "view": "ნახვა",
+      "noOrders": "შეკვეთები ვერ მოიძებნა.",
+      "searchLabel": "ძიება",
+      "searchPlaceholder": "მოძებნეთ ტელეფონით, UUID-ით...",
+      "paymentLabel": "გადახდა",
+      "shippingLabel": "მიწოდება",
+      "rowsLabel": "რაოდენობა",
+      "apply": "გამოყენება",
+      "loading": "იტვირთება",
+      "resetTitle": "დაბრუნება მხოლოდ გადახდილზე",
+
+      "paid": "გადახდილი",
+      "all": "ყველა ",
+      "pending": "მოლოდინში",
+      "failed": "ვერ შესრულდა",
+      "cancelled": "გაუქმებული",
+      "fulfilled": "შესრულებული",
+
+      "confirmed": "დადასტურებული",
+      "inTransit": "გზაშია",
+      "delivered": "მიწოდებულია"
+    },
+    "Login": {
+      "emailLabel": "ელფოსტა",
+      "passwordLabel": "პაროლი",
+      "submit": "შესვლა",
+      "invalidCredentials": "ელფოსტა ან პაროლი არასწორია."
+    }
   }
 }
