@@ -665,12 +665,24 @@
     },
     "actions": {
       "autoSave": "Auto save",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "save": "Save",
+      "saved": "Saved",
+      "normalized": "Normalized"
     },
-    "emailLabel": "Email",
-
-    "passwordLabel": "Password",
-    "submit": "Sign In",
-    "invalidCredentials": "Email or password is incorrect."
+    "groups": {
+      "title": "Groups",
+      "subtitle": "Manage categories, hide or show, change name.",
+      "searchLabel": "Search by category name, slug, or ID",
+      "visible": "Visible",
+      "nameEn": "Name En",
+      "nameKa": "Name Ka",
+      "slug": "Slug",
+      "sortOrder": "Sort Order",
+      "actions": "Actions",
+      "total": "Total",
+      "finaName": "Final name",
+      "noGroups": "No groups found."
+    }
   }
 }
