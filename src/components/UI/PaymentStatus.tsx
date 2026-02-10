@@ -1,3 +1,8 @@
+export type PaymentStatusType =
+  | "pending_payment"
+  | "paid"
+  | "failed"
+  | "cancelled";
 function getStatusColor(status: string) {
   switch (status) {
     case "paid":

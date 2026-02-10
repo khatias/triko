@@ -12,7 +12,7 @@ export type OrderType = {
   created_at: string;
   currency?: string | null;
 };
-export type ShippingStatus = "confirmed" | "in_transit" | "delivered";
+export type ShippingStatus = "confirmed" | "in_transit" | "delivered" | null;
 
 export function StatusBadge({
   order,

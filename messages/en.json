@@ -614,6 +614,7 @@
       "customer": "Customer",
       "date": "Date",
       "status": "Status",
+      "subtotal": "Subtotal",
       "total": "Total",
       "action": "Action",
       "items": "Items",
@@ -636,13 +637,38 @@
       "failed": "Failed",
       "cancelled": "Cancelled",
       "fulfilled": "Fulfilled",
-
+      "fulfillment": "Fulfilment",
       "confirmed": "Confirmed",
       "inTransit": "In transit",
-      "delivered": "Delivered"
+      "delivered": "Delivered",
+      "content": "Order Contents",
+      "itemDetails": "Item Details",
+      "price": "Price",
+      "quantity": "Quantity",
+      "technicalData": "Technical Data",
+      "userId": "User ID",
+      "customerDetails": "Customer Details",
+      "contact": "Contact",
+      "address": "Address",
+      "syncStatus": "Sync status",
+      "synced": "Synced",
+      "notSynced": "Not synced",
+      "gatewayData": "Gateway data",
+      "fulfilmentData": "Fulfilment data",
+      "shippingAddress": "Shipping address",
+      "paymentInfo": "Payment info",
+      "paymentId": "Payment ID",
+      "paidAt": "Paid at",
+      "none": "None",
+      "notStarted": "Not started",
+      "autoSave": "Auto save"
     },
-
+    "actions": {
+      "autoSave": "Auto save",
+      "saving": "Saving…"
+    },
     "emailLabel": "Email",
+
     "passwordLabel": "Password",
     "submit": "Sign In",
     "invalidCredentials": "Email or password is incorrect."
