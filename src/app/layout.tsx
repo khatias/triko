@@ -1,24 +1,5 @@
-import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Triko",
-  description:
-    "Triko is an online store offering a wide range of stylish clothing. Shop the latest trends and find your perfect fit!",
-      icons: {
-    icon: "./public/favicon.ico",        
-
-  },
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en"> 
-      <body>{children}</body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return children;
 }
