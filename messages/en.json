@@ -668,7 +668,16 @@
       "saving": "Saving…",
       "save": "Save",
       "saved": "Saved",
-      "normalized": "Normalized"
+      "normalized": "Normalized",
+      "logout": "Log out",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+   "items": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups"
     },
     "groups": {
       "title": "Groups",
@@ -683,6 +692,16 @@
       "total": "Total",
       "finaName": "Final name",
       "noGroups": "No groups found."
+    },
+    "sideBar": {
+      "title": "Admin Panel",
+      "overview": "Overview",
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups",
+      "name": "Admin User",
+      "email": "admin@store.com"
     }
   }
 }
