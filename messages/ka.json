@@ -695,7 +695,7 @@
       "finaName": "ფინას სახელი",
       "noGroups": "კატეგორიები ვერ მოიძებნა."
     },
-       "items": {
+    "items": {
       "dashboard": "დეშბორდი",
       "orders": "შეკვეთები",
       "products": "პროდუქტები",
@@ -711,6 +711,29 @@
       "settings": "პარამეტრები",
       "name": "ადმინი",
       "email": "admin@store.com"
+    },
+    "AdminDashboard": {
+      "title": "დეშბორდი",
+      "subtitle": "თქვენი მაღაზიის საერთო მიმოხილვა.",
+      "cards": {
+        "revenue": "შემოსავალი",
+        "orders": "შეკვეთები",
+        "products": "პროდუქტები",
+        "customers": "კლიენტები",
+        "last30Days": "ბოლო 30 დღე",
+        "total": "სულ",
+        "newCustomersLast30Days": "+{count} ახალი (30 დღე)"
+      },
+      "recentOrders": {
+        "title": "ბოლო შეკვეთები",
+        "viewAll": "ყველას ნახვა",
+        "empty": "ბოლო შეკვეთები არ არის.",
+        "order": "შეკვეთა"
+      },
+      "secondary": {
+        "title": "მალე",
+        "desc": "აქ შეგიძლია დაამატო ტოპ პროდუქტები, მარაგის ალერტები ან გაყიდვების გრაფიკები."
+      }
     }
   }
 }

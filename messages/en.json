@@ -673,7 +673,7 @@
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     },
-   "items": {
+    "items": {
       "dashboard": "Dashboard",
       "orders": "Orders",
       "products": "Products",
@@ -702,6 +702,29 @@
       "groups": "Groups",
       "name": "Admin User",
       "email": "admin@store.com"
+    },
+    "AdminDashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your store's performance.",
+      "cards": {
+        "revenue": "Revenue",
+        "orders": "Orders",
+        "products": "Products",
+        "customers": "Customers",
+        "last30Days": "Last 30 days",
+        "total": "Total",
+        "newCustomersLast30Days": "+{count} new (30d)"
+      },
+      "recentOrders": {
+     "title": "Recent orders",
+        "viewAll": "View all",
+        "empty": "No recent orders.",
+        "order": "Order"
+      },
+     "secondary": {
+        "title": "Coming soon",
+        "desc": "Add top products, inventory alerts, or sales charts here."
+      }
     }
   }
 }
