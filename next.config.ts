@@ -8,9 +8,15 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co", // allow your Supabase Storage images
+        hostname: "**.supabase.co",
       },
     ],
+  },
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb", 
+    },
   },
 };
 
