@@ -4,9 +4,7 @@ import SidebarNav from "../profile/_components/SidebarNav";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { createClient } from "@/utils/supabase/server";
 
-export async function generateMetadata(ctx: {
-  params: Promise<{ locale: string }>;
-}) {
+export async function generateMetadata(ctx: { params: Promise<{ locale: string }> }) {
   return generateLocalizedMetadata(ctx, {
     namespace: "Profile",
     path: "/profile",
@@ -16,24 +14,27 @@ export async function generateMetadata(ctx: {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function ProfileLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export default async function ProfileLayout({ children }: { children: React.ReactNode }) {
   let fullName = "Guest";
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("user_id", user.id)
-      .single();
-    fullName = profile?.full_name || "Guest";
+
+  try {
+    const supabase = await createClient();
+
+    const userRes = await supabase.auth.getUser();
+    const user = userRes.data?.user;
+
+    if (user) {
+      const { data: profile, error: profileErr } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle(); // ✅ safer than .single()
+
+      if (!profileErr && profile?.full_name) fullName = profile.full_name;
+    }
+  } catch (e) {
+    // ✅ do NOT throw from a layout
+    console.error("ProfileLayout: failed to load user/profile", e);
   }
 
   return (

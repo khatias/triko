@@ -19,6 +19,11 @@ function isUuid(value: string) {
   );
 }
 
+function inferLocaleFromPath(path: string) {
+  const seg = path.split("/")[1];
+  return seg === "en" ? "en" : "ka";
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
 
@@ -26,13 +31,15 @@ export async function GET(req: NextRequest) {
   const nextParam = url.searchParams.get("next");
   const redirectPath = isSafeNextPath(nextParam) ? nextParam! : "/";
 
+  const locale = inferLocaleFromPath(redirectPath);
+
   if (!code) {
     return NextResponse.redirect(new URL(`/login?error=missing_code`, req.url));
   }
 
+  // default redirect, we may override Location later if admin
   const res = NextResponse.redirect(new URL(redirectPath, req.url));
 
-  // IMPORTANT: bind supabase cookie writes to THIS response
   const supabase = await createClient();
 
   try {
@@ -55,10 +62,10 @@ export async function GET(req: NextRequest) {
 
     const userId = user.id;
 
-    // Create profile if missing (optional; consider trigger-based approach)
+    // Fetch role (and create profile if missing)
     const { data: profile, error: profileSelErr } = await supabase
       .from("profiles")
-      .select("user_id")
+      .select("user_id, role")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -74,13 +81,30 @@ export async function GET(req: NextRequest) {
           first_name: "",
           last_name: "",
           avatar_url: null,
+          role: "customer", // adjust default if you want
         },
       ]);
 
       if (insertProfileError) {
         console.error("Profile creation failed:", insertProfileError);
-        // keep going
       }
+    }
+
+    // Determine admin, if profile was missing we re-check role once
+    let role = profile?.role ?? null;
+
+    if (!role) {
+      const { data: p2 } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", userId)
+        .maybeSingle();
+      role = p2?.role ?? null;
+    }
+
+    const isAdmin = role === "admin";
+    if (isAdmin) {
+      res.headers.set("Location", new URL(`/${locale}/admin`, req.url).toString());
     }
 
     const token = req.cookies.get(CART_COOKIE)?.value ?? null;
@@ -96,7 +120,6 @@ export async function GET(req: NextRequest) {
         res.cookies.set(CART_COOKIE, "", {
           path: "/",
           maxAge: 0,
-          // match how you originally set it:
           httpOnly: true,
           sameSite: "lax",
           secure: process.env.NODE_ENV === "production",

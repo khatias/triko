@@ -1,4 +1,5 @@
 import { CODES } from "./codes";
+
 export type SignupPayload = {
   locale: string;
   email: string;
@@ -8,13 +9,14 @@ export type SignupPayload = {
 };
 
 export type AuthResult =
-  | { ok: true; message?: string; email?: string }
+  | { ok: true; message?: string; email?: string; redirectTo?: string }
   | { ok: false; message?: string; code?: string };
 
 type ApiResponse = {
   message?: string;
   email?: string;
   code?: string;
+  redirectTo?: string;
 };
 
 async function readApi(res: Response): Promise<ApiResponse> {
@@ -72,9 +74,10 @@ export async function loginRequest(
 
     const data = await readApi(res);
 
-    const message =
-      typeof data?.message === "string" ? data.message : undefined;
+    const message = typeof data?.message === "string" ? data.message : undefined;
     const code = typeof data?.code === "string" ? data.code : undefined;
+    const redirectTo =
+      typeof data?.redirectTo === "string" ? data.redirectTo : undefined;
 
     if (!res.ok) {
       return { ok: false, message, code };
@@ -84,6 +87,7 @@ export async function loginRequest(
       ok: true,
       message,
       email: typeof data?.email === "string" ? data.email : undefined,
+      redirectTo,
     };
   } catch {
     return { ok: false, code: "UNEXPECTED_ERROR" };
@@ -116,8 +120,7 @@ export async function forgotPasswordRequest(
 
     const data = await readApi(res);
 
-    const message =
-      typeof data?.message === "string" ? data.message : undefined;
+    const message = typeof data?.message === "string" ? data.message : undefined;
     const code = typeof data?.code === "string" ? data.code : undefined;
 
     if (!res.ok) {
@@ -160,8 +163,7 @@ export async function resetPasswordRequest(
 
     const data = await readApi(res);
 
-    const message =
-      typeof data?.message === "string" ? data.message : undefined;
+    const message = typeof data?.message === "string" ? data.message : undefined;
     const code = typeof data?.code === "string" ? data.code : undefined;
 
     if (!res.ok) return { ok: false, message, code };

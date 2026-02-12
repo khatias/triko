@@ -1,3 +1,4 @@
+// LoginForm.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -17,6 +18,12 @@ import { UserIcon, LockIcon, GoogleMark } from "../form/icons";
 import SubmitButton from "../form/SubmitButton";
 import { LegalNotice } from "./LegalNotice";
 import { formHeading } from "../UI/primitives";
+
+type LoginApiResp = {
+  ok: boolean;
+  message?: string;
+  redirectTo?: string;
+};
 
 export default function LoginForm() {
   const tForm = useTranslations("Form");
@@ -51,17 +58,17 @@ export default function LoginForm() {
     setPending(true);
 
     try {
-      const result = await loginRequest(
+      const result = (await loginRequest(
         locale,
         data.email,
         data.password,
         data.website,
-      );
+      )) as LoginApiResp;
 
       if (!result.ok) {
         setErrorMessage(result.message ?? tForm("errors.unknown"));
 
-        // ✅ keep email, clear only sensitive fields
+        // keep email, clear only sensitive fields
         reset(
           { email: data.email, password: "", website: "" },
           { keepErrors: true, keepTouched: true },
@@ -72,13 +79,14 @@ export default function LoginForm() {
       // success: clear everything
       reset({ email: "", password: "", website: "" });
 
-      // ✅ better UX than push: back button won't go back to login
-      router.replace(`/${locale}/profile`);
+      const redirectTo = result.redirectTo || `/${locale}/profile`;
+
+      // better UX than push: back button won't go back to login
+      router.replace(redirectTo);
       router.refresh();
     } catch {
       setErrorMessage(tForm("errors.unknown"));
 
-      // ✅ keep email on unexpected error too
       reset(
         { email: data.email, password: "", website: "" },
         { keepErrors: true, keepTouched: true },
@@ -90,7 +98,6 @@ export default function LoginForm() {
 
   return (
     <form noValidate aria-busy={pending} onSubmit={onSubmit}>
-      {/* Error */}
       {errorMessage && (
         <div
           role="alert"
@@ -169,7 +176,7 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* Honeypot (anti-bot) */}
+      {/* Honeypot */}
       <input
         type="text"
         tabIndex={-1}

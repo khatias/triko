@@ -432,7 +432,6 @@
       "subtitle": "Track your order history and status.",
       "totalOrders": "Total Orders: ",
       "pendingPayments": "Pending Payments",
-      "noOrders": "You have not placed any orders yet.",
       "continueShopping": "Continue Shopping",
       "logintoView": "please log in to view your orders.",
       "failedToLoad": "Failed to load orders. Please try again later.",
@@ -605,5 +604,267 @@
     "returnToStore": "Return to store",
     "secureNote": "Secure connection established",
     "brand": "Triko"
+  },
+  "Admin": {
+    "Orders": {
+      "title": "Orders",
+      "subtitle": "Manage and track your store orders. Showing {count} results.",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "date": "Date",
+      "status": "Status",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "action": "Action",
+      "items": "Items",
+      "shipping": "Shipping ",
+      "view": "View ",
+      "noOrders": "You have not placed any orders yet.",
+      "noOrdersHint": "When orders are created, they will appear here.",
+      "noOrdersHintFiltered": "No orders match your filters. Try clearing filters or changing the search.",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search phone, UUID...",
+      "paymentLabel": "Payment",
+      "shippingLabel": "Shipping",
+      "rowsLabel": "Rows",
+      "apply": "Apply",
+      "loading": "Loading",
+      "resetTitle": "Reset to paid",
+
+      "paid": "Paid",
+      "all": "All ",
+      "pending": "Pending",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "fulfilled": "Fulfilled",
+      "fulfillment": "Fulfilment",
+      "confirmed": "Confirmed",
+      "inTransit": "In transit",
+      "delivered": "Delivered",
+      "content": "Order Contents",
+      "itemDetails": "Item Details",
+      "price": "Price",
+      "quantity": "Quantity",
+      "technicalData": "Technical Data",
+      "userId": "User ID",
+      "customerDetails": "Customer Details",
+      "contact": "Contact",
+      "address": "Address",
+      "syncStatus": "Sync status",
+      "synced": "Synced",
+      "notSynced": "Not synced",
+      "gatewayData": "Gateway data",
+      "fulfilmentData": "Fulfilment data",
+      "shippingAddress": "Shipping address",
+      "paymentInfo": "Payment info",
+      "paymentId": "Payment ID",
+      "paidAt": "Paid at",
+      "none": "None",
+      "notStarted": "Not started",
+      "autoSave": "Auto save"
+    },
+    "actions": {
+      "autoSave": "Auto save",
+      "saving": "Saving…",
+      "save": "Save",
+      "saved": "Saved",
+      "normalized": "Normalized",
+      "logout": "Log out",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups"
+    },
+    "groups": {
+      "title": "Groups",
+      "subtitle": "Manage categories, hide or show, change name.",
+      "searchLabel": "Search by category name, slug, or ID",
+      "visible": "Visible",
+      "nameEn": "Name En",
+      "nameKa": "Name Ka",
+      "slug": "Slug",
+      "sortOrder": "Sort Order",
+      "actions": "Actions",
+      "total": "Total",
+      "finaName": "Final name",
+      "noGroups": "No groups found."
+    },
+    "sideBar": {
+      "title": "Admin Panel",
+      "overview": "Overview",
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups",
+      "name": "Admin User",
+      "email": "admin@store.com"
+    },
+    "AdminDashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your store's performance.",
+      "cards": {
+        "revenue": "Revenue",
+        "orders": "Orders",
+        "products": "Products",
+        "customers": "Customers",
+        "last30Days": "Last 30 days",
+        "total": "Total",
+        "newCustomersLast30Days": "+{count} new (30d)"
+      },
+      "recentOrders": {
+        "title": "Recent orders",
+        "viewAll": "View all",
+        "empty": "No recent orders.",
+        "order": "Order"
+      },
+      "secondary": {
+        "title": "Coming soon",
+        "desc": "Add top products, inventory alerts, or sales charts here."
+      }
+    },
+    "Products": {
+      "title": "Product Management",
+      "matching": "{count} matching products",
+      "needAttention": "{count} need attention",
+      "hiddenCount": "{count} hidden",
+      "liveCount": "{count} live",
+
+      "tabs": { "inbox": "Inbox", "hidden": "Hidden", "live": "Live" },
+
+      "filtersTitle": "Filters and Search",
+      "active": "Active",
+
+      "searchLabel": "Search products",
+      "searchPlaceholder": "Search by code, name, or group",
+      "groupLabel": "Product group",
+      "allGroups": "All groups",
+      "stockLabel": "Stock status",
+      "stock": {
+        "all": "All stock",
+        "in": "In stock",
+        "out": "Out of stock",
+        "low": "Low stock"
+      },
+
+      "sortLabel": "Sort by",
+      "sort": {
+        "group": "Group",
+        "stock": "Stock level",
+        "priceAsc": "Price low to high",
+        "priceDesc": "Price high to low"
+      },
+
+      "missingTitle": "Missing content",
+      "missing": {
+        "all": "All products",
+        "content": "Content",
+        "photos": "Photos",
+        "title": "Title",
+        "desc": "Description"
+      },
+
+      "reset": "Reset filters",
+
+      "empty": {
+        "title": "No products found",
+        "desc": "Try changing filters or search terms."
+      },
+
+      "table": {
+        "code": "Product code",
+        "name": "Product name",
+        "group": "Group",
+        "stock": "Stock",
+        "price": "Price range",
+        "noName": "No name set",
+        "nameMissing": "Product name missing",
+        "pricingSet": "Pricing set"
+      },
+
+      "status": {
+        "live": "Live",
+        "hidden": "Hidden",
+        "needsWork": "Needs work"
+      },
+
+      "hints": {
+        "noContent": "No content",
+        "noPhotos": "No photos",
+        "noTitle": "No title",
+        "noDesc": "No description",
+        "more": "+{count} more"
+      }
+    },
+    "ProductEdit": {
+      "breadcrumbs": { "products": "Products" },
+      "title": "Edit Product",
+      "subtitle": "Manage details, media, and publishing status.",
+      "back": "Back",
+      "meta": { "stock": "Stock:", "price": "Price:" },
+      "actions": {
+        "saveDraft": "Save Draft",
+        "publish": "Publish Live",
+        "unpublish": "Unpublish"
+      },
+      "toasts": {
+        "saving": "Saving changes...",
+        "saved": "Draft saved successfully",
+        "publishing": "Publishing product...",
+        "published": "Product is now live!",
+        "hiding": "Hiding product...",
+        "hidden": "Product is now hidden"
+      },
+      "checklist": {
+        "ready": "Ready for Publication",
+        "incomplete": "Draft Incomplete",
+        "photos": "Photos",
+        "titles": "Titles",
+        "descriptions": "Descriptions"
+      },
+      "fields": { "title": "Product Title", "description": "Description" },
+      "ka": {
+        "title": "Georgian Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "en": {
+        "title": "English Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "media": {
+        "title": "Media Gallery",
+        "upload": "Upload",
+        "or": "or",
+        "urlPh": "Paste image URL...",
+        "addUrl": "Add URL",
+        "empty": "No photos yet.",
+        "emptyHint": "Upload or paste a URL to get started.",
+        "uploaded": "Image uploaded successfully",
+        "uploadFailed": "Failed to upload image",
+        "badUrl": "Please enter a valid http(s) URL",
+        "urlAdded": "Image URL added",
+        "removed": "Image removed",
+        "coverUpdated": "Cover image updated",
+        "max": "You can upload up to {count} photos",
+        "imgAlt": "Product image {index}",
+        "broken": "Broken URL",
+        "cover": "Cover",
+        "moveLeft": "Move Left",
+        "moveRight": "Move Right",
+        "remove": "Remove Photo",
+        "setCover": "Set as Cover"
+      },
+      "variants": {
+        "title": "Available Variants",
+        "sku": "SKU",
+        "inStock": "In Stock",
+        "empty": "No variants found for this product."
+      }
+    }
   }
 }

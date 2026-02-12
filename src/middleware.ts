@@ -22,7 +22,25 @@ function getFirstSegmentAfterLocale(pathname: string) {
   return { localePrefix, firstSeg };
 }
 
+function isStaticOrPublicFile(pathname: string) {
+  // Covers: /favicon.ico AND /ka/favicon.ico, images, etc.
+  if (pathname === "/favicon.ico" || pathname.endsWith("/favicon.ico")) return true;
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml") return true;
+  if (pathname.startsWith("/_next/")) return true;
+  if (pathname.startsWith("/api/")) return true;
+  // Any file with an extension should bypass middleware
+  if (/\.[a-zA-Z0-9]+$/.test(pathname)) return true;
+  return false;
+}
+
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
+  // ✅ ABSOLUTE FIRST: never touch intl/supabase for static files
+  if (isStaticOrPublicFile(pathname)) {
+    return NextResponse.next();
+  }
+
   // Base response must be intl(req)
   const res = intl(req);
 
@@ -54,11 +72,19 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+type UserLike = { id: string } | null;
 
-  const pathname = req.nextUrl.pathname;
+let user: UserLike = null;
+
+try {
+  const { data, error } = await supabase.auth.getUser();
+  if (!error && data?.user?.id) {
+    user = { id: data.user.id };
+  }
+} catch {
+  user = null;
+}
+
 
   // ✅ Safe restricted route check (segment-based, locale-aware)
   const { localePrefix, firstSeg } = getFirstSegmentAfterLocale(pathname);
@@ -68,13 +94,11 @@ export async function middleware(req: NextRequest) {
 
   if (isRestrictedPage && !isAuthPage && !user) {
     const loginUrl = new URL(`${localePrefix}/login`, req.url);
-
-    // Use `next` for standard redirect handling after login
     loginUrl.searchParams.set("next", pathname);
 
     const redirectRes = NextResponse.redirect(loginUrl);
 
-    // Preserve any cookies already set on res (supabase + cart)
+    // Preserve cookies already set on res (supabase + cart)
     for (const c of res.cookies.getAll()) {
       redirectRes.cookies.set(c.name, c.value, {
         path: c.path,
@@ -95,6 +119,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|trpc|_next|_vercel|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)|.*\\..*).*)",
+    // simpler and safer: exclude api/_next/_vercel and any "file.ext"
+    "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
   ],
 };

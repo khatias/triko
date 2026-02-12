@@ -390,7 +390,7 @@ export default async function OrderPage({
             <span className="hidden text-xs font-bold uppercase tracking-wider text-gray-400 sm:inline">
               {t("orderStatusLabel")}
             </span>
-            <PaymentStatus status={order.status} />
+            <PaymentStatus label={order.status} />
           </div>
         </div>
       </div>

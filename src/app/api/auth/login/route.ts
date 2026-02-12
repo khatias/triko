@@ -26,7 +26,9 @@ type Resp = ApiResp<
   | typeof CODES.INVALID_CREDENTIALS
   | typeof CODES.RATE_LIMITED
   | typeof CODES.UNEXPECTED_ERROR
->;
+> & {
+  redirectTo?: string;
+};
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,8 +46,10 @@ function asString(v: unknown): string {
 }
 
 export async function POST(req: NextRequest) {
+  const locale = getLocale(req);
+
   const t = await getTranslations({
-    locale: getLocale(req),
+    locale,
     namespace: "Auth",
   });
 
@@ -73,7 +77,12 @@ export async function POST(req: NextRequest) {
 
   const honeypot = asString(body.website).trim();
   if (honeypot) {
-    const r: Resp = { ok: true, code: CODES.SIGNIN_OK, message: t("loginSuccess") };
+    const r: Resp = {
+      ok: true,
+      code: CODES.SIGNIN_OK,
+      message: t("loginSuccess"),
+      redirectTo: `/${locale}/profile`,
+    };
     const res = json(r, STATUS[CODES.SIGNIN_OK]);
     copyCookies(baseRes, res);
     return res;
@@ -137,44 +146,68 @@ export async function POST(req: NextRequest) {
     return res;
   }
 
-  // ✅ Important: make sure subsequent RPCs are authenticated in THIS request
+  // ✅ ensure subsequent queries use this user's JWT in THIS request
   await supabase.auth.setSession({
     access_token: data.session.access_token,
     refresh_token: data.session.refresh_token,
   });
 
-  // ✅ Merge guest cart into user cart
+  // ✅ Merge guest cart
   const token = req.cookies.get(CART_COOKIE)?.value ?? null;
   let merged = false;
 
   if (token) {
-    const { data: mergeData, error: mergeError } = await supabase.rpc(
-      "cart_merge_guest_into_user_v2",
-      {
-        // carts.cart_token is uuid, cookie value is a uuid string
-        p_cart_token: token,
-        p_currency: CURRENCY,
-      },
-    );
+    const { error: mergeError } = await supabase.rpc("cart_merge_guest_into_user_v2", {
+      p_cart_token: token,
+      p_currency: CURRENCY,
+    });
 
     if (mergeError) {
       console.error("cart merge failed:", mergeError);
     } else {
-      // if your function returns uuid, mergeData will be that uuid
       merged = true;
-      console.log("cart merge ok:", mergeData);
     }
   }
 
-  const r: Resp = { ok: true, code: CODES.SIGNIN_OK, message: t("loginSuccess"), email };
+  // ✅ Role based redirect (supports profiles.user_id OR profiles.id)
+  const userId = data.session.user.id;
+
+  const tryRoleByUserId = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  let role = tryRoleByUserId.data?.role ?? null;
+
+  if (!role) {
+    const tryRoleById = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    role = tryRoleById.data?.role ?? null;
+  }
+
+  const normalized = typeof role === "string" ? role.toLowerCase().trim() : "";
+  const isAdmin = normalized === "admin";
+  const redirectTo = isAdmin ? `/${locale}/admin` : `/${locale}/profile`;
+
+  const r: Resp = {
+    ok: true,
+    code: CODES.SIGNIN_OK,
+    message: t("loginSuccess"),
+    email,
+    redirectTo,
+  };
+
   const res = json(r, STATUS[CODES.SIGNIN_OK]);
   copyCookies(baseRes, res);
 
-  // ✅ Clear cookie only if merge truly succeeded
- if (token && merged) {
-  res.cookies.set(CART_COOKIE, "", { path: "/", maxAge: 0 });
-}
-
+  if (token && merged) {
+    res.cookies.set(CART_COOKIE, "", { path: "/", maxAge: 0 });
+  }
 
   return res;
 }
