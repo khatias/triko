@@ -798,6 +798,73 @@
         "noDesc": "No description",
         "more": "+{count} more"
       }
+    },
+    "ProductEdit": {
+      "breadcrumbs": { "products": "Products" },
+      "title": "Edit Product",
+      "subtitle": "Manage details, media, and publishing status.",
+      "back": "Back",
+      "meta": { "stock": "Stock:", "price": "Price:" },
+      "actions": {
+        "saveDraft": "Save Draft",
+        "publish": "Publish Live",
+        "unpublish": "Unpublish"
+      },
+      "toasts": {
+        "saving": "Saving changes...",
+        "saved": "Draft saved successfully",
+        "publishing": "Publishing product...",
+        "published": "Product is now live!",
+        "hiding": "Hiding product...",
+        "hidden": "Product is now hidden"
+      },
+      "checklist": {
+        "ready": "Ready for Publication",
+        "incomplete": "Draft Incomplete",
+        "photos": "Photos",
+        "titles": "Titles",
+        "descriptions": "Descriptions"
+      },
+      "fields": { "title": "Product Title", "description": "Description" },
+      "ka": {
+        "title": "Georgian Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "en": {
+        "title": "English Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "media": {
+        "title": "Media Gallery",
+        "upload": "Upload",
+        "or": "or",
+        "urlPh": "Paste image URL...",
+        "addUrl": "Add URL",
+        "empty": "No photos yet.",
+        "emptyHint": "Upload or paste a URL to get started.",
+        "uploaded": "Image uploaded successfully",
+        "uploadFailed": "Failed to upload image",
+        "badUrl": "Please enter a valid http(s) URL",
+        "urlAdded": "Image URL added",
+        "removed": "Image removed",
+        "coverUpdated": "Cover image updated",
+        "max": "You can upload up to {count} photos",
+        "imgAlt": "Product image {index}",
+        "broken": "Broken URL",
+        "cover": "Cover",
+        "moveLeft": "Move Left",
+        "moveRight": "Move Right",
+        "remove": "Remove Photo",
+        "setCover": "Set as Cover"
+      },
+      "variants": {
+        "title": "Available Variants",
+        "sku": "SKU",
+        "inStock": "In Stock",
+        "empty": "No variants found for this product."
+      }
     }
   }
 }
