@@ -1,7 +1,8 @@
-import "server-only"
-import { fetchAdminProductsList } from "./_queries/products"
-import ProductsTable from "./_components/ProductsTable"
-import ProductsFilters from "./_components/ProductsFilters"
+import "server-only";
+
+import { fetchAdminProductsList } from "./_queries/products";
+import ProductsTable from "./_components/ProductsTable";
+import ProductsFilters from "./_components/ProductsFilters";
 import {
   coerceQ,
   coerceTab,
@@ -11,39 +12,44 @@ import {
   coerceMissing,
   coerceSort,
   type ProductsFiltersState,
-} from "./types/admin-products"
-import { Section } from "@/components/UI/primitives"
+} from "./types/admin-products";
+import { Section } from "@/components/UI/primitives";
+
+type SearchParams = Record<string, string | string[] | undefined>;
+
+function pickOne(v: string | string[] | undefined) {
+  if (!v) return "";
+  return Array.isArray(v) ? v[0] : v;
+}
+
 export default async function Page({
   searchParams,
   params,
 }: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-  params: Promise<{ locale: string }>
+  searchParams: Promise<SearchParams>;
+  params: Promise<{ locale: string }>;
 }) {
-  const sp = await searchParams
-  const { locale } = await params
-
-  const tab = coerceTab(Array.isArray(sp.tab) ? sp.tab[0] : sp.tab)
-  const q = coerceQ(Array.isArray(sp.q) ? sp.q[0] : sp.q)
+  const sp = await searchParams;
+  const { locale } = await params;
 
   const filters: ProductsFiltersState = {
-    tab,
-    q,
-    group: coerceStr(Array.isArray(sp.group) ? sp.group[0] : sp.group),
-    stock: coerceStock(Array.isArray(sp.stock) ? sp.stock[0] : sp.stock),
-    discount: coerceDiscount(Array.isArray(sp.discount) ? sp.discount[0] : sp.discount),
-    missing: coerceMissing(Array.isArray(sp.missing) ? sp.missing[0] : sp.missing),
-    sort: coerceSort(Array.isArray(sp.sort) ? sp.sort[0] : sp.sort),
-  }
+    tab: coerceTab(pickOne(sp.tab)),
+    q: coerceQ(pickOne(sp.q)),
+    group: coerceStr(pickOne(sp.group)),
+    stock: coerceStock(pickOne(sp.stock)),
+    discount: coerceDiscount(pickOne(sp.discount)),
+    missing: coerceMissing(pickOne(sp.missing)),
+    sort: coerceSort(pickOne(sp.sort)),
+  };
 
-  const rows = await fetchAdminProductsList(locale)
+  const rows = await fetchAdminProductsList(locale);
 
   return (
     <Section className="min-h-screen py-10">
-      <div className="">
+      <div className="space-y-6">
         <ProductsFilters rows={rows} locale={locale} filters={filters} />
         <ProductsTable rows={rows} locale={locale} filters={filters} />
-      </div> 
+      </div>
     </Section>
-  )
+  );
 }

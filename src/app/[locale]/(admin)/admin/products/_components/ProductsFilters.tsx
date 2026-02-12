@@ -2,6 +2,7 @@
 
 import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   Filter,
@@ -12,6 +13,7 @@ import {
   FileText,
   AlignLeft,
 } from "lucide-react";
+
 import type {
   AdminProductListRow,
   ProductsFiltersState,
@@ -28,19 +30,17 @@ export default function ProductsFilters({
   locale: string;
   filters: ProductsFiltersState;
 }) {
+  const t = useTranslations("Admin.Products");
+
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
 
   const qFromUrl = sp.get("q") ?? "";
-  const [qInput, setQInput] = useState<string>(qFromUrl);
+  const [qInput, setQInput] = useState(qFromUrl);
 
   const isEditingRef = useRef(false);
-
-  // debounce handle
   const debounceRef = useRef<number | null>(null);
-
-  // ✅ NEW: skip the debounced url-sync exactly once after reset
   const skipNextDebounceRef = useRef(false);
 
   const spString = sp.toString();
@@ -51,7 +51,6 @@ export default function ProductsFilters({
   }, [qFromUrl]);
 
   useEffect(() => {
-    // ✅ if we just reset, do NOT schedule the debounce
     if (skipNextDebounceRef.current) {
       skipNextDebounceRef.current = false;
       return;
@@ -60,18 +59,15 @@ export default function ProductsFilters({
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
 
     debounceRef.current = window.setTimeout(() => {
-      const current = new URLSearchParams(spString);
       const next = new URLSearchParams(spString);
 
       const q = qInput.trim();
       if (!q) next.delete("q");
       else next.set("q", q);
 
-      if (next.toString() !== current.toString()) {
-        const qs = next.toString();
-        router.replace(qs ? `${pathname}?${qs}` : pathname);
-      }
-    }, 300);
+      const qs = next.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname);
+    }, 250);
 
     return () => {
       if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -121,27 +117,24 @@ export default function ProductsFilters({
   );
 
   const resetAll = useCallback(() => {
-    // cancel any pending debounce
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
-
-    // ✅ prevent the qInput effect from writing URL after this reset
     skipNextDebounceRef.current = true;
 
     isEditingRef.current = false;
     setQInput("");
 
     const next = new URLSearchParams();
-    next.set("tab", filters.tab);
-
+    next.set("tab", "inbox");
     router.replace(`/${locale}/admin/products?${next.toString()}`);
-  }, [filters.tab, locale, router]);
+  }, [locale, router]);
 
   const groups = useMemo(() => {
     const set = new Set<string>();
-    for (const r of rows) set.add(getGroupLabel(r));
+    for (const r of rows) set.add(getGroupLabel(r, locale));
     return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [rows]);
+  }, [rows, locale]);
 
+  // single source for counts, and UI stats
   const base = useMemo(() => {
     const qLower = (filters.q ?? "").trim().toLowerCase();
 
@@ -149,12 +142,12 @@ export default function ProductsFilters({
       .filter((r) => {
         if (!qLower) return true;
         const hay =
-          `${r.parent_code} ${r.name ?? ""} ${getGroupLabel(r)}`.toLowerCase();
+          `${r.parent_code} ${r.name ?? ""} ${getGroupLabel(r, locale)}`.toLowerCase();
         return hay.includes(qLower);
       })
       .filter((r) => {
         if (!filters.group) return true;
-        return getGroupLabel(r) === filters.group;
+        return getGroupLabel(r, locale) === filters.group;
       })
       .filter((r) => {
         const stock = r.total_stock ?? 0;
@@ -173,7 +166,7 @@ export default function ProductsFilters({
           return Boolean(r.has_content) && !Boolean(r.has_description);
         return true;
       });
-  }, [rows, filters.q, filters.group, filters.stock, filters.missing]);
+  }, [rows, filters.q, filters.group, filters.stock, filters.missing, locale]);
 
   const counts = useMemo(() => {
     return base.reduce(
@@ -204,41 +197,44 @@ export default function ProductsFilters({
           <div className="flex items-center gap-3">
             <Package className="h-6 w-6 text-slate-600" />
             <h1 className="text-2xl font-bold text-slate-900">
-              Product Management
+              {t("title")}
             </h1>
           </div>
+
           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
-            <span className="flex items-center gap-1">
-              {base.length} matching products
-            </span>
+            <span>{t("matching", { count: base.length })}</span>
             <span className="text-slate-300">•</span>
             <span className="text-amber-600">
-              {counts.needs_work} need attention
+              {t("needAttention", { count: counts.needs_work })}
             </span>
             <span className="text-slate-300">•</span>
-            <span className="text-slate-500">{counts.hidden} hidden</span>
+            <span className="text-slate-500">
+              {t("hiddenCount", { count: counts.hidden })}
+            </span>
             <span className="text-slate-300">•</span>
-            <span className="text-emerald-600">{counts.live} live</span>
+            <span className="text-emerald-600">
+              {t("liveCount", { count: counts.live })}
+            </span>
           </div>
         </div>
 
         <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
           <TabButton
-            tab="inbox"
+            label={t("tabs.inbox")}
             active={filters.tab === "inbox"}
             count={counts.needs_work}
             onClick={() => setTab("inbox")}
             variant="warning"
           />
           <TabButton
-            tab="hidden"
+            label={t("tabs.hidden")}
             active={filters.tab === "hidden"}
             count={counts.hidden}
             onClick={() => setTab("hidden")}
             variant="neutral"
           />
           <TabButton
-            tab="live"
+            label={t("tabs.live")}
             active={filters.tab === "live"}
             count={counts.live}
             onClick={() => setTab("live")}
@@ -251,10 +247,10 @@ export default function ProductsFilters({
         <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-slate-500" />
-            <h3 className="font-semibold text-slate-900">Filters & Search</h3>
+            <h3 className="font-semibold text-slate-900">{t("filtersTitle")}</h3>
             {hasActiveFilters && (
               <span className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700">
-                Active
+                {t("active")}
               </span>
             )}
           </div>
@@ -264,7 +260,7 @@ export default function ProductsFilters({
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <div className="lg:col-span-5">
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                Search Products
+                {t("searchLabel")}
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -278,7 +274,7 @@ export default function ProductsFilters({
                     isEditingRef.current = false;
                     setQInput((v) => v.trim());
                   }}
-                  placeholder="Search by code, name, or group..."
+                  placeholder={t("searchPlaceholder")}
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm placeholder:text-slate-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 />
               </div>
@@ -286,7 +282,7 @@ export default function ProductsFilters({
 
             <div className="lg:col-span-3">
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                Product Group
+                {t("groupLabel")}
               </label>
               <select
                 value={filters.group || "all"}
@@ -295,7 +291,7 @@ export default function ProductsFilters({
                 }
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
-                <option value="all">All Groups</option>
+                <option value="all">{t("allGroups")}</option>
                 {groups.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -306,7 +302,7 @@ export default function ProductsFilters({
 
             <div className="lg:col-span-2">
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                Stock Status
+                {t("stockLabel")}
               </label>
               <select
                 value={filters.stock}
@@ -315,15 +311,15 @@ export default function ProductsFilters({
                 }
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
-                <option value="all">All Stock</option>
-                <option value="in">In Stock</option>
-                <option value="out">Out of Stock</option>
+                <option value="all">{t("stock.all")}</option>
+                <option value="in">{t("stock.in")}</option>
+                <option value="out">{t("stock.out")}</option>
               </select>
             </div>
 
             <div className="lg:col-span-2">
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                Sort By
+                {t("sortLabel")}
               </label>
               <select
                 value={filters.sort}
@@ -332,10 +328,10 @@ export default function ProductsFilters({
                 }
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
               >
-                <option value="group">Group</option>
-                <option value="stock_desc">Stock Level</option>
-                <option value="price_asc">Price (Low to High)</option>
-                <option value="price_desc">Price (High to Low)</option>
+                <option value="group">{t("sort.group")}</option>
+                <option value="stock_desc">{t("sort.stock")}</option>
+                <option value="price_asc">{t("sort.priceAsc")}</option>
+                <option value="price_desc">{t("sort.priceDesc")}</option>
               </select>
             </div>
           </div>
@@ -344,7 +340,7 @@ export default function ProductsFilters({
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                 <AlertCircle className="h-4 w-4" />
-                Missing Content
+                {t("missingTitle")}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -355,7 +351,7 @@ export default function ProductsFilters({
                   }
                   icon={null}
                 >
-                  All Products
+                  {t("missing.all")}
                 </FilterPill>
 
                 <FilterPill
@@ -365,7 +361,7 @@ export default function ProductsFilters({
                   }
                   icon={<FileText className="h-3 w-3" />}
                 >
-                  Content
+                  {t("missing.content")}
                 </FilterPill>
 
                 <FilterPill
@@ -375,7 +371,7 @@ export default function ProductsFilters({
                   }
                   icon={<ImageIcon className="h-3 w-3" />}
                 >
-                  Photos
+                  {t("missing.photos")}
                 </FilterPill>
 
                 <FilterPill
@@ -385,7 +381,7 @@ export default function ProductsFilters({
                   }
                   icon={<FileText className="h-3 w-3" />}
                 >
-                  Title
+                  {t("missing.title")}
                 </FilterPill>
 
                 <FilterPill
@@ -395,7 +391,7 @@ export default function ProductsFilters({
                   }
                   icon={<AlignLeft className="h-3 w-3" />}
                 >
-                  Description
+                  {t("missing.desc")}
                 </FilterPill>
               </div>
 
@@ -406,7 +402,7 @@ export default function ProductsFilters({
                   className="flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-200"
                 >
                   <RotateCcw className="h-4 w-4" />
-                  Reset Filters
+                  {t("reset")}
                 </button>
               </div>
             </div>
@@ -418,21 +414,18 @@ export default function ProductsFilters({
 }
 
 function TabButton({
-  tab,
+  label,
   active,
   count,
   onClick,
   variant = "neutral",
 }: {
-  tab: "inbox" | "hidden" | "live";
+  label: string;
   active: boolean;
   count: number;
   onClick: () => void;
   variant?: "warning" | "neutral" | "success";
 }) {
-  const label =
-    tab === "inbox" ? "Inbox" : tab === "hidden" ? "Hidden" : "Live";
-
   const variantStyles = {
     warning: active
       ? "bg-amber-500 text-white shadow-lg shadow-amber-200"

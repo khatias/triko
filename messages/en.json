@@ -725,6 +725,79 @@
         "title": "Coming soon",
         "desc": "Add top products, inventory alerts, or sales charts here."
       }
+    },
+    "Products": {
+      "title": "Product Management",
+      "matching": "{count} matching products",
+      "needAttention": "{count} need attention",
+      "hiddenCount": "{count} hidden",
+      "liveCount": "{count} live",
+
+      "tabs": { "inbox": "Inbox", "hidden": "Hidden", "live": "Live" },
+
+      "filtersTitle": "Filters and Search",
+      "active": "Active",
+
+      "searchLabel": "Search products",
+      "searchPlaceholder": "Search by code, name, or group",
+      "groupLabel": "Product group",
+      "allGroups": "All groups",
+      "stockLabel": "Stock status",
+      "stock": {
+        "all": "All stock",
+        "in": "In stock",
+        "out": "Out of stock",
+        "low": "Low stock"
+      },
+
+      "sortLabel": "Sort by",
+      "sort": {
+        "group": "Group",
+        "stock": "Stock level",
+        "priceAsc": "Price low to high",
+        "priceDesc": "Price high to low"
+      },
+
+      "missingTitle": "Missing content",
+      "missing": {
+        "all": "All products",
+        "content": "Content",
+        "photos": "Photos",
+        "title": "Title",
+        "desc": "Description"
+      },
+
+      "reset": "Reset filters",
+
+      "empty": {
+        "title": "No products found",
+        "desc": "Try changing filters or search terms."
+      },
+
+      "table": {
+        "code": "Product code",
+        "name": "Product name",
+        "group": "Group",
+        "stock": "Stock",
+        "price": "Price range",
+        "noName": "No name set",
+        "nameMissing": "Product name missing",
+        "pricingSet": "Pricing set"
+      },
+
+      "status": {
+        "live": "Live",
+        "hidden": "Hidden",
+        "needsWork": "Needs work"
+      },
+
+      "hints": {
+        "noContent": "No content",
+        "noPhotos": "No photos",
+        "noTitle": "No title",
+        "noDesc": "No description",
+        "more": "+{count} more"
+      }
     }
   }
 }
