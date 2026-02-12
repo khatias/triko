@@ -432,7 +432,6 @@
       "subtitle": "Track your order history and status.",
       "totalOrders": "Total Orders: ",
       "pendingPayments": "Pending Payments",
-      "noOrders": "You have not placed any orders yet.",
       "continueShopping": "Continue Shopping",
       "logintoView": "please log in to view your orders.",
       "failedToLoad": "Failed to load orders. Please try again later.",
@@ -620,8 +619,9 @@
       "items": "Items",
       "shipping": "Shipping ",
       "view": "View ",
-      "noOrders": "No orders found.",
-
+      "noOrders": "You have not placed any orders yet.",
+      "noOrdersHint": "When orders are created, they will appear here.",
+      "noOrdersHintFiltered": "No orders match your filters. Try clearing filters or changing the search.",
       "searchLabel": "Search",
       "searchPlaceholder": "Search phone, UUID...",
       "paymentLabel": "Payment",
@@ -716,12 +716,12 @@
         "newCustomersLast30Days": "+{count} new (30d)"
       },
       "recentOrders": {
-     "title": "Recent orders",
+        "title": "Recent orders",
         "viewAll": "View all",
         "empty": "No recent orders.",
         "order": "Order"
       },
-     "secondary": {
+      "secondary": {
         "title": "Coming soon",
         "desc": "Add top products, inventory alerts, or sales charts here."
       }
