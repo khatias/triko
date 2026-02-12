@@ -299,45 +299,54 @@
       "description": "Discover Triko: our story, mission, values, and store locations."
     },
     "hero": {
-      "kicker": "Our story",
-      "title": "Comfort-first essentials designed in Tbilisi",
-      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again.",
-      "imageAlt": "Lifestyle composition of Triko garments"
+      "title": "TRIKO",
+      "detail": "First and only",
+      "exploreMore": "Explore Studio",
+      "description": "Triko is the first and only Georgian brand creating underwear, pajama sets, and unisex kimonos for women and men. What started as a local brand in Tbilisi is now expanding internationally, sharing our vision of comfort and individuality with a wider audience.",
+      "underwear": "Underwear",
+      "kimano": "Kimono",
+      "pajamas": "Pajamas",
+      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again."
     },
-    "story": {
-      "title": "Where we began",
-      "paragraph1": "Founded in Tbilisi, Triko started with a simple goal: make comfortable, durable, and beautifully minimal pieces that feel great from morning to night.",
-      "paragraph2": "Today, we keep production nimble, materials carefully sourced, and designs focused on what matters: fit, comfort, and longevity."
+    "whoIsTrikoFor": {
+      "title": "Who is Triko for?",
+      "desc": "Our unisex designs are created for all genders and lifestyles, allowing freedom of movement, self-expression, and ease in everyday life.",
+      "isTrikoFor1": "For people who value comfort just as much as style.",
+      "isTrikoFor2": "For those who love color, simplicity, and feeling good in what they wear.",
+      "isTrikoFor3": "Triko is for everyone."
     },
-    "mission": {
-      "title": "Our mission",
-      "desc": "Build a reliable wardrobe of everyday basics—crafted with care, priced fairly, and made to last. We design for movement, softness, and simplicity."
+    "goal": {
+      "title": "Our Goal",
+      "slogan1": "Our goal is to create products for",
+      "slogan2": "everyone",
+      "slogan3": "without sacrificing quality ethics, or",
+      "slogan4": "aesthetics"
     },
-    "values": {
-      "title": "What we value",
-      "items": {
-        "quality": {
-          "title": "Quality",
-          "desc": "We source comfortable fabrics and use careful stitching for durability."
-        },
-        "comfort": {
-          "title": "Comfort",
-          "desc": "Every pattern is tested to move with you throughout the day."
-        },
-        "design": {
-          "title": "Timeless Design",
-          "desc": "Clean silhouettes, neutral palettes, and subtle details."
-        },
-        "service": {
-          "title": "Service",
-          "desc": "Fast responses and friendly support across channels."
-        }
-      }
+    "philosophy": {
+      "title": "Our philosophy",
+      "desc": "We believe that quality should be accessible. Triko is a budget-oriented brand with high standards—proving that good materials, thoughtful design, and comfort do not have to come at a high price.",
+      "discoverCollection": "Discover our collection"
+    },
+    "WhatWeCreate": {
+      "concept": "Concept",
+      "title1": "What We",
+      "title2": "Create",
+      "desc": "We design and produce underwear, pajama sets, and unisex kimonos that are meant to be worn every day. Our collections are modern, functional, and expressive—created to feel natural on the body while still standing out visually."
+    },
+    "FabricsAndQuality": {
+      "title": "Fabrics & Quality",
+      "desc": "Fabric is the foundation of Triko. We work very delicately with materials, carefully choosing natural, breathable, and skin-friendly textiles. Every product is made to be comfortable, soft, and long-lasting, so you can truly feel the difference when wearing it.",
+      "seeMore": "See our Products"
+    },
+    "Georgia": {
+      "title": "From Georgia to the World",
+      "desc": "Proudly founded in Georgia, Triko began as a local brand and is now growing internationally. While our roots remain in Tbilisi, our vision is global—bringing Georgian creativity, care, and craftsmanship to customers around the world."
     },
     "locations": {
-      "title": "Our stores",
-      "subtitle": "Visit us in person—try on styles, feel fabrics, and get fit advice.",
+      "title": "Visit Us",
+      "subtitle": "Directory & Showrooms",
       "openInMaps": "Open in Maps",
+      "viewOnMap": "View on map",
       "items": {
         "store1": {
           "title": "Tbilisi · Galleria Tbilisi",
