@@ -1105,5 +1105,117 @@
       "title": "Note",
       "body": "This is a high quality template. For best accuracy, tailor returns, shipping, legal entity details, and consumer rights for your jurisdiction."
     }
+  },
+  "ExchangePolicy": {
+    "meta": {
+      "title": "Exchange Policy",
+      "description": "Triko exchange rules and how to request an exchange."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Exchange Policy",
+      "description": "Triko does not accept returns. We offer exchanges for selected items under the conditions below.",
+      "windowLabel": "Window:",
+      "windowDays": "5 days from delivery",
+      "notePills": "Underwear is not exchangeable"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Exchange policy contents",
+      "items": {
+        "overview": "Overview",
+        "eligible": "Eligible items",
+        "conditions": "Conditions",
+        "how": "How to request"
+      }
+    },
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "p1": "We do not accept returns. Exchanges are available only for specific categories within the allowed window.",
+        "calloutTitle": "Important",
+        "calloutBody": "For hygiene reasons, underwear cannot be exchanged."
+      },
+      "eligible": {
+        "title": "Eligible items",
+        "items": [
+          "Pajamas can be exchanged within 5 days of delivery",
+          "Kimonos can be exchanged within 5 days of delivery"
+        ]
+      },
+      "conditions": {
+        "title": "Exchange conditions",
+        "items": [
+          "Item must be in original condition",
+          "Item must be unused and undamaged",
+          "Underwear is not eligible for exchange"
+        ]
+      },
+      "how": {
+        "title": "How to request an exchange",
+        "steps": [
+          "Visit our store or email us",
+          "Include your order number and the item you want to exchange",
+          "After confirmation, we will share the next steps"
+        ]
+      }
+    },
+    "cta": {
+      "email": "Email:",
+      "terms": "View Terms"
+    },
+    "footer": {
+      "noteTitle": "Note",
+      "noteBody": "The exchange window starts from the delivery date. Used or damaged items are not eligible."
+    }
+  },
+  "ShippingPolicy": {
+    "meta": {
+      "title": "Shipping Policy",
+      "description": "Delivery timelines for Tbilisi, regions, and international orders."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Shipping Policy",
+      "description": "Estimated delivery timelines for Tbilisi, regions, and international orders.",
+      "tbilisiPill": "Tbilisi: before 15:00 — next day",
+      "regionsPill": "Regions: 3–4 business days",
+      "internationalPill": "International: depends on local post"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Shipping policy contents",
+      "items": {
+        "tbilisi": "Tbilisi",
+        "regions": "Regions",
+        "international": "International orders",
+        "support": "Questions and contact"
+      }
+    },
+    "sections": {
+      "tbilisi": {
+        "title": "Tbilisi",
+        "body": "For orders placed before 15:00 in Tbilisi, delivery is made the next day.",
+        "calloutTitle": "Note",
+        "calloutBody": "Orders placed after 15:00 may be delivered on the next business day."
+      },
+      "regions": {
+        "title": "Regions",
+        "body": "For regions, delivery typically takes 3–4 business days."
+      },
+      "international": {
+        "title": "International orders",
+        "body": "International delivery timelines depend on your local postal service."
+      },
+      "support": {
+        "title": "Questions and contact",
+        "body": "If you have any questions about your order or delivery, contact us at:"
+      }
+    },
+    "cta": {
+      "terms": "View Terms"
+    }
   }
 }
