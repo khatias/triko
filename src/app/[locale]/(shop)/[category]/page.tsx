@@ -8,6 +8,8 @@ import { wrap } from "@/components/UI/primitives";
 import { RESERVED_TOP_LEVEL_SLUGS } from "@/lib/helpers";
 import { pickGroupName } from "@/lib/helpers";
 import { getTranslations } from "next-intl/server";
+import EmptyState from "@/components/UI/EmptyState";
+
 type Props = {
   params: Promise<{ locale: Locale; category: string }>;
 };
@@ -16,7 +18,6 @@ export default async function CategorySlugPage({ params }: Props) {
   const { locale, category } = await params;
   const h = await getTranslations({ locale, namespace: "Helpers" });
 
-  // Prevent the [category] route from catching non-category routes (e.g. /products, /cart).
   if (RESERVED_TOP_LEVEL_SLUGS.has(category)) notFound();
 
   const group = await getGroupBySlug(category);
@@ -38,7 +39,7 @@ export default async function CategorySlugPage({ params }: Props) {
             href={`/${locale}`}
             className="hover:text-stone-900 transition-colors"
           >
-             {h("home")}
+            {h("home")}
           </Link>
           <span className="mx-3">/</span>
           <span className="text-stone-900">{groupName}</span>
@@ -49,9 +50,7 @@ export default async function CategorySlugPage({ params }: Props) {
         </h1>
 
         {products.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-stone-100 bg-white p-10 text-stone-600">
-            {h("noProductsFound")}
-          </div>
+          <EmptyState title={h("noProductsFound")} className="mt-20" />
         ) : (
           <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((p, idx) => (

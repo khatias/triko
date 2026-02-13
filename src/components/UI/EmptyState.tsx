@@ -1,20 +1,18 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+type ActionType = {
+  label: string;
+  href?: string;
+  onClick?: () => void;
+};
+
 type Props = {
   title: string;
   description?: string;
-  variant?: "neutral" | "warning";
-  primaryAction?: {
-    label: string;
-    href?: string; // link action
-    onClick?: () => void; // button action
-  };
-  secondaryAction?: {
-    label: string;
-    href?: string;
-    onClick?: () => void;
-  };
+  variant?: "neutral" | "warning"; // "neutral" = gray, "warning" = orange/alert tint
+  primaryAction?: ActionType;
+  secondaryAction?: ActionType;
   icon?: ReactNode;
   className?: string;
 };
@@ -28,72 +26,80 @@ export default function EmptyState({
   icon,
   className = "",
 }: Props) {
-  const tone =
+  // Styles based on variant
+  const containerStyles =
     variant === "warning"
-      ? "border-orange-200 bg-orange-50 text-orange-900"
-      : "border-gray-200 bg-gray-50 text-gray-900";
+      ? "bg-orange-50/50 border-orange-100"
+      : "bg-white border-gray-200";
 
-  function Action({
-    action,
-    kind,
-  }: {
-    action: NonNullable<Props["primaryAction"]>;
-    kind: "primary" | "secondary";
-  }) {
-    const base =
-      kind === "primary"
-        ? "bg-orange-600 text-white hover:bg-orange-700 shadow-sm"
-        : "bg-white text-gray-700 border border-gray-200 hover:border-orange-500 hover:text-orange-600";
+  const iconWrapperStyles =
+    variant === "warning"
+      ? "bg-orange-100 text-orange-600 ring-orange-200"
+      : "bg-gray-50 text-gray-500 ring-gray-100";
 
-    const common =
-      "inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold transition-all active:scale-95";
+  return (
+    <div
+      className={`flex w-full flex-col items-center justify-center rounded-3xl border border-dashed px-4 py-16 text-center sm:px-10 ${containerStyles} ${className}`}
+    >
+      {icon && (
+        <div
+          className={`mb-6 flex h-16 w-16 items-center justify-center rounded-full ring-4 ${iconWrapperStyles}`}
+        >
+          <div className="h-8 w-8">{icon}</div>
+        </div>
+      )}
 
-    if (action.href) {
-      return (
-        <Link href={action.href} className={`${common} ${base}`}>
-          {action.label}
-        </Link>
-      );
-    }
+      {/* --- Text Content --- */}
+      <div className="max-w-md space-y-2">
+        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        {description && (
+          <p className="text-sm leading-relaxed text-gray-500">{description}</p>
+        )}
+      </div>
 
+      {/* --- Actions --- */}
+      {(primaryAction || secondaryAction) && (
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {primaryAction && (
+            <ActionButton action={primaryAction} variant="primary" />
+          )}
+          {secondaryAction && (
+            <ActionButton action={secondaryAction} variant="secondary" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActionButton({
+  action,
+  variant,
+}: {
+  action: ActionType;
+  variant: "primary" | "secondary";
+}) {
+  const baseStyles =
+    "inline-flex h-10 items-center justify-center rounded-xl px-5 text-sm font-semibold transition-all active:scale-95";
+
+  const variantStyles =
+    variant === "primary"
+      ? "bg-orange-600 text-white shadow-sm hover:bg-orange-700 hover:shadow-md"
+      : "bg-white text-gray-700 border border-gray-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700";
+
+  const className = `${baseStyles} ${variantStyles}`;
+
+  if (action.href) {
     return (
-      <button onClick={action.onClick} className={`${common} ${base}`}>
+      <Link href={action.href} className={className}>
         {action.label}
-      </button>
+      </Link>
     );
   }
 
   return (
-    <div
-      className={`w-full rounded-3xl border p-8 sm:p-10 ${tone} ${className}`}
-    >
-      <div className="flex flex-col items-center gap-5 text-center">
-        {icon ? (
-          <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/70">
-            {icon}
-          </div>
-        ) : null}
-
-        <div className="space-y-2">
-          <h3 className="text-xl font-extrabold tracking-tight">{title}</h3>
-          {description ? (
-            <p className="max-w-md text-sm leading-relaxed text-gray-600">
-              {description}
-            </p>
-          ) : null}
-        </div>
-
-        {(primaryAction || secondaryAction) && (
-          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            {primaryAction ? (
-              <Action action={primaryAction} kind="primary" />
-            ) : null}
-            {secondaryAction ? (
-              <Action action={secondaryAction} kind="secondary" />
-            ) : null}
-          </div>
-        )}
-      </div>
-    </div>
+    <button onClick={action.onClick} className={className} type="button">
+      {action.label}
+    </button>
   );
 }
