@@ -6,7 +6,7 @@ import Link from "next/link";
 import CartItemRowClient from "@/components/cart/CartItemRowClient";
 import { getTranslations } from "next-intl/server";
 import CartAutoRefresh from "@/components/cart/CartAutoRefresh";
-
+import EmptyState from "@/components/UI/EmptyState";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -54,7 +54,14 @@ export default async function CartPage(props: {
         </h1>
 
         {state.items.length === 0 ? (
-          <EmptyState locale={locale} />
+          <EmptyState
+            title={t("empty")}
+            primaryAction={{
+              label: t("continueShopping"),
+              href: `/${locale}/products`,
+            }}
+            icon={<ShoppingBag className="h-8 w-8" />}
+          />
         ) : (
           <div className="grid gap-8 lg:grid-cols-12 lg:items-start xl:gap-12">
             {/* --- Cart Items List --- */}
@@ -205,25 +212,6 @@ export default async function CartPage(props: {
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-async function EmptyState({ locale }: { locale: "en" | "ka" }) {
-  const t = await getTranslations("Cart");
-  return (
-    <div className="flex min-h-100 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center shadow-sm">
-      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-zinc-50 shadow-inner ring-1 ring-zinc-100">
-        <ShoppingBag className="h-8 w-8 text-zinc-300" />
-      </div>
-      <h3 className="text-xl font-bold text-zinc-900 mb-2"> {t("empty")} </h3>
-
-      <Link
-        href={`/${locale}/products`}
-        className="rounded-full bg-zinc-900 px-8 py-3 text-sm font-bold text-white shadow-lg transition-transform hover:bg-zinc-800 hover:scale-105"
-      >
-        {t("continueShopping")}
-      </Link>
     </div>
   );
 }
