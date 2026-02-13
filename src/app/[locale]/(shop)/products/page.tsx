@@ -3,14 +3,16 @@ import { getCatalogProductsGrouped } from "@/lib/db/products";
 import { wrap } from "@/components/UI/primitives";
 import { clampPositiveInt } from "@/lib/helpers";
 import ProductCard from "@/components/products/ProductCard";
-import { CatalogPageResult } from "@/lib/db/products";
+import type { CatalogPageResult } from "@/lib/db/products";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { getTranslations } from "next-intl/server";
+import EmptyState from "@/components/UI/EmptyState";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{ page?: string }>;
 };
+
 export async function generateMetadata(ctx: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
@@ -31,7 +33,10 @@ export default async function ProductsPage({
 
   const pageSize = 12;
   const currentPage = clampPositiveInt(sp.page ?? "1", 1);
+
   const h = await getTranslations({ locale, namespace: "Helpers" });
+  const p = await getTranslations({ locale, namespace: "Products" });
+
   const data = (await getCatalogProductsGrouped({
     page: currentPage,
     pageSize,
@@ -43,9 +48,41 @@ export default async function ProductsPage({
   const prevHref = `?page=${Math.max(1, currentPage - 1)}`;
   const nextHref = `?page=${Math.min(totalPages, currentPage + 1)}`;
 
+  if (items.length === 0) {
+    const base = `/${locale}`;
+
+    return (
+      <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
+        <header className="w-full border-b border-stone-100 py-10">
+          <div className={`${wrap} flex flex-col items-center gap-10`}>
+            <div className="w-full text-center">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
+                {h("page")} {currentPage}
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <main className={`${wrap} py-20`}>
+          <EmptyState
+            title={p("empty.title")}
+            description={p("empty.description")}
+            primaryAction={{
+              label: p("empty.primary"),
+              href: "?page=1",
+            }}
+            secondaryAction={{
+              label: p("empty.secondary"),
+              href: `${base}/products`,
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
-      {/* SECTION 1: THE ARCHITECTURAL HEADER */}
       <header className="w-full border-b border-stone-100 py-10">
         <div className={`${wrap} flex flex-col items-center gap-10`}>
           <nav className="flex w-full items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]">
@@ -82,32 +119,38 @@ export default async function ProductsPage({
         </div>
       </header>
 
-      {/* SECTION 2: THE SYMMETRIC GRID */}
       <main className={`${wrap} py-20`}>
         <div className="grid grid-cols-1 gap-x-10 gap-y-24 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((p, idx) => (
+          {items.map((pRow, idx) => (
             <ProductCard
-              key={p.parent_code || idx}
-              product={p}
+              key={pRow.parent_code || idx}
+              product={pRow}
               locale={locale}
               revealDelay={idx % 3}
             />
           ))}
         </div>
 
-        {/* SECTION 3: MINIMALIST PAGINATION */}
         <footer className="mt-40 flex flex-col items-center py-20 border-t border-stone-100">
           <div className="flex items-center gap-16">
             <Link
               href={prevHref}
-              className={`text-[10px] uppercase tracking-[0.4em] ${currentPage === 1 ? "opacity-20 pointer-events-none" : "hover:underline underline-offset-8"}`}
+              className={`text-[10px] uppercase tracking-[0.4em] ${
+                currentPage === 1
+                  ? "opacity-20 pointer-events-none"
+                  : "hover:underline underline-offset-8"
+              }`}
             >
               {h("backToStart")}
             </Link>
-            <div className="h-[1px] w-20 bg-stone-100" />
+            <div className="h-px w-20 bg-stone-100" />
             <Link
               href={nextHref}
-              className={`text-[10px] uppercase tracking-[0.4em] ${currentPage === totalPages ? "opacity-20 pointer-events-none" : "hover:underline underline-offset-8"}`}
+              className={`text-[10px] uppercase tracking-[0.4em] ${
+                currentPage === totalPages
+                  ? "opacity-20 pointer-events-none"
+                  : "hover:underline underline-offset-8"
+              }`}
             >
               {h("loadMore")}
             </Link>

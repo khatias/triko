@@ -519,6 +519,12 @@
       "title": "Products — Triko",
       "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
     },
+       "empty": {
+      "title": "No products found",
+      "description": "There are no products on this page. Try going back to page one or continue browsing the catalog.",
+      "primary": "Back to page 1",
+      "secondary": "Shop"
+    },
     "sizes": "Sizes",
     "sale": "SALE",
     "selectedSize": "Selected size:",
