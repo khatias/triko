@@ -995,5 +995,115 @@
       "title": "Note",
       "body": "This page is a high quality template. For best accuracy, update payment providers, shipping partners, your company legal name, address, and jurisdiction specific rights."
     }
+  },
+  "Terms": {
+    "meta": {
+      "title": "Terms and Conditions",
+      "description": "The rules and conditions for using Triko’s website and services."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Terms",
+      "title": "Terms and Conditions",
+      "description": "These Terms explain the rules for using Triko’s website and purchasing from our online store.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Terms contents",
+      "items": {
+        "about": "About these Terms",
+        "eligibility": "Eligibility",
+        "accounts": "Accounts",
+        "orders": "Orders",
+        "pricing": "Pricing",
+        "shipping": "Shipping",
+        "returns": "Returns",
+        "payments": "Payments",
+        "content": "Content and IP",
+        "acceptable-use": "Acceptable use",
+        "warranties": "Disclaimers",
+        "liability": "Limitation of liability",
+        "changes": "Changes to these Terms",
+        "law": "Governing law",
+        "contact": "Contact"
+      }
+    },
+    "sections": {
+      "about": {
+        "title": "About these Terms",
+        "body": "By accessing or using our website and services, you agree to these Terms. If you do not agree, do not use the website."
+      },
+      "eligibility": {
+        "title": "Eligibility",
+        "body": "You must be able to form a binding contract under applicable law to use our services. If you are using the website on behalf of a business, you confirm you are authorized to do so."
+      },
+      "accounts": {
+        "title": "Accounts",
+        "body": "If you create an account, you are responsible for keeping your login details secure and for activity under your account. Tell us promptly if you suspect unauthorized access."
+      },
+      "orders": {
+        "title": "Orders",
+        "body": "Placing an order is an offer to purchase. We may refuse or cancel an order in limited cases, including suspected fraud, incorrect pricing, or inventory issues. If we cancel after payment, we will refund according to the payment method."
+      },
+      "pricing": {
+        "title": "Pricing",
+        "body": "Prices are shown in the currency displayed at checkout and may change at any time. Taxes, shipping, and fees (if any) are shown before you confirm payment."
+      },
+      "shipping": {
+        "title": "Shipping",
+        "body": "Delivery times are estimates and can vary by location and carrier. Risk of loss transfers to you upon delivery, where allowed by law."
+      },
+      "returns": {
+        "title": "Returns",
+        "body": "Return and exchange rules depend on product type and condition. See our returns guidance (or contact support) for steps, time limits, and eligibility."
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party providers. We may receive limited payment data such as status and reference identifiers."
+      },
+      "content": {
+        "title": "Content and intellectual property",
+        "body": "All website content, including designs, text, images, logos, and code, is owned by Triko or its licensors and protected by applicable laws. You may not copy, modify, distribute, or use it without permission."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "items": [
+          "Do not misuse the website or attempt to disrupt it",
+          "Do not access accounts or data without authorization",
+          "Do not upload malicious code or perform automated scraping without permission",
+          "Do not use the website for unlawful or harmful activities"
+        ]
+      },
+      "warranties": {
+        "title": "Disclaimers",
+        "body": "The website and services are provided “as is” and “as available,” to the fullest extent permitted by law. We do not guarantee uninterrupted or error free operation."
+      },
+      "liability": {
+        "title": "Limitation of liability",
+        "body": "To the fullest extent permitted by law, Triko will not be liable for indirect, incidental, special, or consequential damages. Where liability cannot be excluded, it will be limited to the minimum extent permitted by law."
+      },
+      "changes": {
+        "title": "Changes to these Terms",
+        "body": "We may update these Terms from time to time. The updated date at the top shows when changes were last made. Continued use after changes means you accept the updated Terms."
+      },
+      "law": {
+        "title": "Governing law",
+        "body": "These Terms are governed by the laws applicable to the entity operating the Triko website, without regard to conflict of law rules."
+      },
+      "contact": {
+        "title": "Contact",
+        "p1": "For questions about these Terms, contact us at",
+        "p2": "For privacy information, see our",
+        "privacyLink": "Privacy Policy",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This is a high quality template. For best accuracy, tailor returns, shipping, legal entity details, and consumer rights for your jurisdiction."
+    }
   }
 }
