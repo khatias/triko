@@ -64,7 +64,7 @@ export default async function NotFound() {
                 {/* Secondary: Gray Border -> Orange on Hover */}
                 {/* This looks much cleaner than a permanent orange border */}
                 <Link
-                  href={`${base}/shop`}
+                  href={`${base}/products`}
                   className="group inline-flex h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-8 text-sm font-semibold text-gray-700 transition-all hover:border-orange-500 hover:text-orange-600 active:scale-95"
                 >
                   {isKa ? "მაღაზია" : "Visit Shop"}
