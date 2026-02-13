@@ -79,7 +79,7 @@ export default async function Footer() {
   return (
     <footer
       role="contentinfo"
-      className="mt-20  bg-gradient-to-b from-[#fafafa] to-white text-zinc-700"
+      className="  bg-linear-to-b from-[#fafafa] to-white text-zinc-700"
     >
       <div />
 
@@ -172,7 +172,7 @@ export default async function Footer() {
 
             <ul
               aria-label={footerNav.legal.title}
-              className="order-3 sm:order-none flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[12px] leading-5 text-zinc-500"
+              className="order-3 sm:order-0 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[12px] leading-5 text-zinc-500"
             >
               {footerNav.legal.links.map(({ label, href }, i) => (
                 <li key={href} className="flex items-center">
