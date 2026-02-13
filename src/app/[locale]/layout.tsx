@@ -66,7 +66,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PublicOnly>
             <Banner />
-            {/* <Header locale={locale} /> */}
+            <Header locale={locale} />
           </PublicOnly>
 
           {children}

@@ -875,5 +875,125 @@
         "empty": "No variants found for this product."
       }
     }
+  },
+  "PrivacyPolicy": {
+    "meta": {
+      "title": "Privacy Policy",
+      "description": "How Triko collects, uses, shares, and protects your information."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Privacy Policy",
+      "title": "Your privacy matters",
+      "description": "This Privacy Policy explains how Triko collects, uses, shares, and protects your information when you use our website and services.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Privacy policy contents",
+      "items": {
+        "who-we-are": "Who we are",
+        "info-we-collect": "Information we collect",
+        "how-we-use": "How we use information",
+        "cookies": "Cookies and analytics",
+        "sharing": "Sharing and disclosures",
+        "payments": "Payments",
+        "security": "Security",
+        "retention": "Data retention",
+        "your-rights": "Your rights and choices",
+        "children": "Children",
+        "international": "International transfers",
+        "contact": "Contact us"
+      }
+    },
+    "sections": {
+      "whoWeAre": {
+        "title": "Who we are",
+        "body": "Triko is a brand and online store. In this policy, “Triko,” “we,” “us,” and “our” refer to the entity operating this website and providing our services."
+      },
+      "collect": {
+        "title": "Information we collect",
+        "lead": "We may collect the following categories of information:",
+        "items": [
+          "Contact details, such as name, email address, phone number, and delivery address",
+          "Account details, such as login identifiers and preferences if you create an account",
+          "Order information, such as items purchased, size, color, order total, and order history",
+          "Payment related data handled by our payment providers (we do not store full card numbers)",
+          "Device and usage data, such as IP address, browser type, pages viewed, and approximate location derived from IP",
+          "Customer support content, such as messages you send us and our replies"
+        ]
+      },
+      "use": {
+        "title": "How we use information",
+        "lead": "We use information to:",
+        "items": [
+          "Provide and operate the website and store",
+          "Process orders, deliveries, returns, and customer support",
+          "Send transactional messages about your orders",
+          "Detect, prevent, and investigate fraud and abuse",
+          "Improve our products, site performance, and user experience",
+          "Send marketing communications if you opt in, and allow you to opt out at any time"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies and analytics",
+        "p1": "We use cookies and similar technologies to keep the site working, remember your preferences, and understand usage. You can control cookies through your browser settings. If you disable cookies, some features may not work as intended.",
+        "p2": "If we use analytics tools, they help us measure traffic and site performance. Where required, we will request consent before setting non essential cookies."
+      },
+      "sharing": {
+        "title": "Sharing and disclosures",
+        "lead": "We may share information in these situations:",
+        "items": [
+          "Service providers who help us run the business, such as hosting, email delivery, customer support tools, and analytics",
+          "Delivery and logistics partners to ship your order and provide tracking",
+          "Payment providers to process payments and prevent fraud",
+          "Legal and safety reasons, such as complying with law, responding to lawful requests, or protecting rights and safety",
+          "Business changes, such as a merger, acquisition, or sale of assets (information may be transferred as part of that deal)"
+        ],
+        "note": "We do not sell your personal information in the ordinary meaning of “sell.”"
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party payment providers. Your payment information is handled according to their policies. We typically receive limited payment details, such as payment status and a token or reference, not full card numbers."
+      },
+      "security": {
+        "title": "Security",
+        "body": "We use reasonable technical and organizational measures to protect information. No method of transmission or storage is completely secure, so we cannot guarantee absolute security."
+      },
+      "retention": {
+        "title": "Data retention",
+        "body": "We keep personal information only as long as necessary for the purposes described in this policy, including legal, accounting, and operational requirements. Retention periods may vary depending on the type of data and the purpose."
+      },
+      "rights": {
+        "title": "Your rights and choices",
+        "lead": "Depending on where you live, you may have rights to access, correct, delete, or receive a copy of your personal information, and to object or restrict certain processing.",
+        "items": [
+          "Marketing emails: you can unsubscribe using the link in the message",
+          "Account: you can update certain details in your account settings if available",
+          "Requests: you can contact us to request access, correction, or deletion where applicable"
+        ]
+      },
+      "children": {
+        "title": "Children",
+        "body": "Our services are not intended for children. If you believe a child has provided personal information, contact us so we can take appropriate steps."
+      },
+      "international": {
+        "title": "International transfers",
+        "body": "Your information may be processed in countries other than your own, for example where our service providers operate. Where required, we take steps to provide appropriate safeguards for transfers."
+      },
+      "contact": {
+        "title": "Contact us",
+        "p1": "For privacy questions or requests, contact us at",
+        "p2": "You can also visit our",
+        "termsLink": "Terms",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This page is a high quality template. For best accuracy, update payment providers, shipping partners, your company legal name, address, and jurisdiction specific rights."
+    }
   }
 }
