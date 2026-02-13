@@ -17,6 +17,7 @@ import { formatDate, formatPrice } from "@/lib/helpers";
 import { isFailedStatus, isPaidStatus } from "@/utils/type-guards";
 import { StatusBadge } from "@/components/UI/ShippingStatus";
 import { CopyId } from "@/components/UI/CopyButton";
+import EmptyState from "@/components/UI/EmptyState";
 
 type Props = {
   myOrders?: OrderType[] | null;
@@ -85,34 +86,6 @@ function OrderRow({ order, href }: { order: OrderType; href: string }) {
   );
 }
 
-function EmptyState(props: {
-  icon: React.ElementType;
-  title: string;
-  cta?: { href: string; label: string };
-}) {
-  const Icon = props.icon;
-
-  return (
-    <section className="max-w-xl mx-auto py-16 px-4">
-      <div className="text-center p-10 rounded-3xl border border-gray-200 bg-white">
-        <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <Icon className="w-5 h-5 text-gray-600" />
-        </div>
-        <p className="font-semibold text-gray-900">{props.title}</p>
-
-        {props.cta && (
-          <Link
-            href={props.cta.href}
-            className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-black px-8 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            {props.cta.label}
-          </Link>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export default function OrdersClients({ myOrders, view = "ok" }: Props) {
   const t = useTranslations("Profile.orders");
   const locale = useLocale();
@@ -144,9 +117,12 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
   if (view === "unauth") {
     return (
       <EmptyState
-        icon={LogIn}
+        icon={<LogIn className="h-8 w-8" />}
         title={t("logintoView")}
-        cta={{ href: `/${locale}/login`, label: t("loginCta") }}
+        primaryAction={{
+          label: t("logintoView"),
+          href: `/${locale}/login`,
+        }}
       />
     );
   }
@@ -165,9 +141,12 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
   if (view === "ok" && orders.length === 0) {
     return (
       <EmptyState
-        icon={ShoppingBag}
         title={t("noOrders")}
-        cta={{ href: `/${locale}`, label: t("continueShopping") }}
+        icon={<ShoppingBag className="h-8 w-8" />}
+        primaryAction={{
+          label: t("continueShopping"),
+          href: `/${locale}/products`,
+        }}
       />
     );
   }
