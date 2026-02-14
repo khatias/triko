@@ -47,6 +47,7 @@ export default function OrdersFilters({
   const SHIPPING_OPTIONS = useMemo(
     () => [
       { value: "", label: t("all") },
+      { value: "not_started", label: t("notStarted") },
       { value: "confirmed", label: t("confirmed") },
       { value: "in_transit", label: t("inTransit") },
       { value: "delivered", label: t("delivered") },

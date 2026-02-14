@@ -28,7 +28,7 @@ import Image from "next/image";
 export const dynamic = "force-dynamic";
 
 // --- TYPES ---
-export type ShippingStatus = "confirmed" | "in_transit" | "delivered";
+export type ShippingStatus =| "not_started" | "confirmed" | "in_transit" | "delivered";
 
 type OrderRow = {
   id: string;

@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import OrdersClients from "./OrdersClients";
 import { toNumber, isPaidStatus } from "@/utils/type-guards";
 
-export type ShippingStatus = "confirmed" | "in_transit" | "delivered";
+export type ShippingStatus = "not_started" | "confirmed" | "in_transit" | "delivered";
 
 export type OrderType = {
   id: string;
@@ -30,7 +30,7 @@ type OrderRow = {
 };
 
 function isShippingStatus(v: unknown): v is ShippingStatus {
-  return v === "confirmed" || v === "in_transit" || v === "delivered";
+  return v === "not_started" || v === "confirmed" || v === "in_transit" || v === "delivered";
 }
 
 export default async function Page() {
