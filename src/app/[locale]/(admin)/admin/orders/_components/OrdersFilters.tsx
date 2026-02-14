@@ -40,7 +40,6 @@ export default function OrdersFilters({
       { value: "pending_payment", label: t("pending") },
       { value: "failed", label: t("failed") },
       { value: "cancelled", label: t("cancelled") },
-      { value: "fulfilled", label: t("fulfilled") },
     ],
     [t],
   );
