@@ -1,7 +1,9 @@
+// src/app/[locale]/(shop)/checkout/page.tsx
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import CheckoutFormClient from "./_components/CheckoutFormClient";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(ctx: {
@@ -13,6 +15,8 @@ export async function generateMetadata(ctx: {
   });
 }
 
+export type ShippingZone = "tbilisi" | "region_city" | "region_village";
+
 export type AddressRow = {
   id: string;
   line1: string;
@@ -21,6 +25,7 @@ export type AddressRow = {
   region: string | null;
   is_default_shipping: boolean;
   created_at: string;
+  shipping_zone: ShippingZone;
 };
 
 export type CartItemRow = {
@@ -34,6 +39,7 @@ export type CartItemRow = {
   price_at_add: number;
   image_url: string | null;
 };
+
 export type ProfileInfo = {
   full_name?: string | null;
   phone?: string | null;
@@ -66,7 +72,7 @@ export default async function CheckoutPage({
 
   const { data: addresses, error: addrError } = await supabase
     .from("addresses")
-    .select("id,line1,line2,city,region,is_default_shipping,created_at")
+    .select("id,line1,line2,city,region,is_default_shipping,created_at,shipping_zone")
     .eq("user_id", user.id)
     .eq("kind", "shipping")
     .order("is_default_shipping", { ascending: false });
@@ -88,13 +94,14 @@ export default async function CheckoutPage({
     ? await supabase
         .from("cart_items")
         .select(
-          "id,qty,variant_code, variant_name, product_name,title_ka,title_en,price_at_add,image_url",
+          "id,qty,variant_code,variant_name,product_name,title_ka,title_en,price_at_add,image_url",
         )
         .eq("cart_id", cart.id)
         .order("created_at", { ascending: true })
     : { data: [] as CartItemRow[], error: null as null };
 
   if (cartItemsError) throw cartItemsError;
+
   if (!cartItems || cartItems.length === 0) {
     redirect(`/${locale}/cart`);
   }
@@ -106,9 +113,8 @@ export default async function CheckoutPage({
     .maybeSingle();
 
   if (profileError) throw profileError;
-  
+
   return (
-    // Changed bg to slate-50 for a softer look, improved padding
     <div className="min-h-screen bg-slate-50 py-12 lg:py-20 px-4 md:px-6 font-sans text-slate-900">
       <div className="mx-auto max-w-7xl">
         <CheckoutFormClient
@@ -120,10 +126,10 @@ export default async function CheckoutPage({
             phone: profile?.phone ?? null,
           }}
           summary={{
-            subtotal: cart?.subtotal ?? 0,
-            discount_total: cart?.discount_total ?? 0,
-            shipping_total: cart?.shipping_total ?? 0,
-            total: cart?.total ?? 0,
+            subtotal: Number(cart?.subtotal ?? 0),
+            discount_total: Number(cart?.discount_total ?? 0),
+            shipping_total: Number(cart?.shipping_total ?? 0),
+            total: Number(cart?.total ?? 0),
           }}
         />
       </div>

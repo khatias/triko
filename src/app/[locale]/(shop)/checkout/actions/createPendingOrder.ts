@@ -37,10 +37,7 @@ function req(v: string, field: string) {
   return s;
 }
 
-export type OutOfStockReason =
-  | "reserved_temporarily"
-  | "no_stock"
-  | "insufficient";
+export type OutOfStockReason = "reserved_temporarily" | "no_stock" | "insufficient";
 
 export type OutOfStockItem = {
   fina_id: number;
@@ -87,12 +84,10 @@ const OutOfStockListSchema = z.array(OutOfStockItemSchema);
 
 function normalizeSupabaseErrorMessage(msg: string) {
   const m = msg.toUpperCase();
-
   if (m.includes("AUTH_REQUIRED")) return "AUTH_REQUIRED" as const;
   if (m.includes("CART_EMPTY")) return "CART_EMPTY" as const;
   if (m.includes("OUT_OF_STOCK")) return "OUT_OF_STOCK" as const;
   if (m.includes("CART_ITEM_INVALID_QTY")) return "CART_ITEM_INVALID_QTY" as const;
-
   return "CHECKOUT_FAILED" as const;
 }
 
@@ -124,12 +119,10 @@ export async function createPendingOrder(
   const args: RpcArgs = {
     p_full_name: req(input.full_name, "full_name"),
     p_phone: req(input.phone, "phone"),
-
     p_line1: req(input.line1, "line1"),
     p_line2: norm(input.line2 ?? ""),
     p_city: req(input.city, "city"),
     p_region: norm(input.region ?? ""),
-
     p_shipping_address_id: input.shipping_address_id ?? null,
     p_reserve_minutes: 15,
   };

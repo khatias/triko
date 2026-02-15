@@ -1,6 +1,7 @@
+// src/app/[locale]/(shop)/checkout/_components/CheckoutFormClient.tsx
 "use client";
-import { useTranslations } from "next-intl";
 
+import { useTranslations } from "next-intl";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -23,6 +24,11 @@ import {
   type OutOfStockReason,
 } from "../actions/createPendingOrder";
 
+import {
+  setShippingZoneAction,
+  type ShippingZone,
+} from "../actions/setShippingZone";
+
 import type {
   AddressRow,
   CartItemRow,
@@ -38,7 +44,7 @@ import {
 } from "@/lib/validation/profile";
 import { InputField } from "@/components/form/Field";
 
-/* ---------------- helpers ---------------- */
+/* helpers */
 
 function itemTitle(item: CartItemRow, locale: string) {
   const localized = locale === "ka" ? item.title_ka : item.title_en;
@@ -77,7 +83,9 @@ async function initBogPayment(
   return parsed.data.redirectUrl;
 }
 
-/* ---------------- schema ---------------- */
+/* schema */
+
+const shippingZoneSchema = z.enum(["tbilisi", "region_city", "region_village"]);
 
 function makeCheckoutSchema(tErr: (k: string) => string) {
   const phone = makeGeorgiaPhoneSchema({
@@ -95,6 +103,7 @@ function makeCheckoutSchema(tErr: (k: string) => string) {
       phone,
       useSaved: z.boolean(),
       selectedAddrId: z.string(),
+      shippingZone: shippingZoneSchema,
       line1: z.string(),
       line2: z.string(),
       city: z.string(),
@@ -142,8 +151,6 @@ function makeCheckoutSchema(tErr: (k: string) => string) {
 type CheckoutValues = z.infer<ReturnType<typeof makeCheckoutSchema>>;
 type TValues = Record<string, string | number>;
 
-/* ---------------- component ---------------- */
-
 type Props = {
   locale: string;
   savedAddresses: AddressRow[];
@@ -160,7 +167,6 @@ export default function CheckoutFormClient({
   summary,
 }: Props) {
   const router = useRouter();
-
   const t = useTranslations("Checkout");
   const eIntl = useTranslations("Errors");
 
@@ -174,6 +180,8 @@ export default function CheckoutFormClient({
 
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [oosItems, setOosItems] = useState<OutOfStockItem[] | null>(null);
+  const [liveSummary, setLiveSummary] = useState<SummaryInfo>(summary);
+  const [shippingUpdating, setShippingUpdating] = useState(false);
 
   const clearBanner = useCallback(() => {
     setBannerError(null);
@@ -204,6 +212,7 @@ export default function CheckoutFormClient({
       phone: profileInfo.phone ?? "",
       useSaved: canUseSaved,
       selectedAddrId: firstAddrId,
+      shippingZone: "tbilisi",
       line1: "",
       line2: "",
       city: "",
@@ -212,7 +221,7 @@ export default function CheckoutFormClient({
 
   const useSavedRaw = watch("useSaved");
   const selectedAddrId = watch("selectedAddrId");
-
+  const shippingZone = watch("shippingZone") as ShippingZone;
   const useSaved = canUseSaved && useSavedRaw;
 
   useEffect(() => {
@@ -269,6 +278,7 @@ export default function CheckoutFormClient({
   const regLine2 = register("line2", { onChange: clearBanner });
   const regCity = register("city", { onChange: clearBanner });
 
+  const { ref: shippingRef, name: shippingName } = register("shippingZone");
   const toggleAddressMode = useCallback(() => {
     clearBanner();
     if (!canUseSaved) return;
@@ -300,8 +310,30 @@ export default function CheckoutFormClient({
     firstAddrId,
   ]);
 
+  const applyZone = useCallback(
+    async (zone: ShippingZone) => {
+      clearBanner();
+      setShippingUpdating(true);
+      const r = await setShippingZoneAction(locale, zone);
+      setShippingUpdating(false);
+
+      if (!r.ok) {
+        setBannerError("Shipping update failed");
+        return;
+      }
+
+      setLiveSummary(r.summary);
+      router.refresh();
+    },
+    [clearBanner, locale, router],
+  );
+
   const onSubmit = handleSubmit(async (values) => {
     clearBanner();
+
+    if (values.shippingZone) {
+      await applyZone(values.shippingZone as ShippingZone);
+    }
 
     const normalizedUseSaved = canUseSaved && values.useSaved;
 
@@ -326,6 +358,7 @@ export default function CheckoutFormClient({
       line1: normalizedUseSaved ? (addr?.line1 ?? "") : values.line1,
       line2: normalizedUseSaved ? (addr?.line2 ?? "") : values.line2,
       city: normalizedUseSaved ? (addr?.city ?? "") : values.city,
+      region: normalizedUseSaved ? (addr?.region ?? undefined) : undefined,
       shipping_address_id: normalizedUseSaved
         ? values.selectedAddrId
         : undefined,
@@ -335,9 +368,8 @@ export default function CheckoutFormClient({
 
     if (!r.ok) {
       setBannerError(e(r.code));
-      if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length) {
+      if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length)
         setOosItems(r.outOfStock);
-      }
       return;
     }
 
@@ -352,15 +384,20 @@ export default function CheckoutFormClient({
 
   if (cartIsEmpty) return null;
 
+  const zoneHint =
+    shippingZone === "tbilisi"
+      ? "თბილისი"
+      : shippingZone === "region_city"
+        ? "რეგიონი ქალაქი"
+        : "რეგიონი სოფელი";
+
   return (
     <form
       onSubmit={onSubmit}
       className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8"
     >
       <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
-        {/* LEFT COLUMN */}
         <div className="lg:col-span-7 space-y-12">
-          {/* Contact */}
           <section
             aria-labelledby="contact-heading"
             className="animate-in fade-in slide-in-from-bottom-4 duration-700"
@@ -383,7 +420,6 @@ export default function CheckoutFormClient({
                 error={errors.fullName?.message ?? null}
                 {...regFullName}
               />
-
               <InputField
                 id="phone"
                 label={t("phoneLabel")}
@@ -395,7 +431,6 @@ export default function CheckoutFormClient({
             </div>
           </section>
 
-          {/* Shipping */}
           <section
             aria-labelledby="shipping-heading"
             className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100"
@@ -422,6 +457,45 @@ export default function CheckoutFormClient({
               )}
             </div>
 
+            <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-5">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Shipping zone
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Current: <span className="font-medium">{zoneHint}</span>
+                  </p>
+                  {shippingUpdating ? (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Updating shipping…
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="w-64 max-w-full">
+                  <select
+                    ref={shippingRef}
+                    name={shippingName}
+                    value={shippingZone}
+                    onChange={async (ev) => {
+                      const nextZone = ev.target.value as ShippingZone;
+                      setValue("shippingZone", nextZone, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                      await applyZone(nextZone);
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none focus:border-black focus:ring-2 focus:ring-black/10"
+                  >
+                    <option value="tbilisi">თბილისი</option>
+                    <option value="region_city">რეგიონი ქალაქი</option>
+                    <option value="region_village">რეგიონი სოფელი</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {useSaved ? (
               <div className="space-y-4">
                 {showErr("selectedAddrId") && errors.selectedAddrId?.message ? (
@@ -438,13 +512,20 @@ export default function CheckoutFormClient({
                       <button
                         key={addr.id}
                         type="button"
-                        onClick={() => {
+                        onClick={async () => {
                           clearBanner();
                           setValue("selectedAddrId", addr.id, {
                             shouldValidate: true,
                             shouldDirty: true,
                             shouldTouch: true,
                           });
+
+                          setValue("shippingZone", addr.shipping_zone, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          });
+
+                          await applyZone(addr.shipping_zone);
                         }}
                         className={`relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
                           isSelected
@@ -527,7 +608,6 @@ export default function CheckoutFormClient({
             )}
           </section>
 
-          {/* Product Review */}
           <section
             aria-labelledby="review-heading"
             className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
@@ -580,16 +660,16 @@ export default function CheckoutFormClient({
                           <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
                             {itemTitle(item, locale)}
                           </h3>
-                          {item.variant_code && (
+                          {item.variant_code ? (
                             <p className="text-xs text-gray-500 font-medium font-mono">
                               {item.variant_code}
                             </p>
-                          )}
-                          {item.variant_name && (
+                          ) : null}
+                          {item.variant_name ? (
                             <p className="text-xs text-gray-500 font-medium">
                               {t("sizeLabel")} {item.variant_name}
                             </p>
-                          )}
+                          ) : null}
                         </div>
                         <p className="text-sm font-bold text-gray-900 whitespace-nowrap">
                           {money(lineTotal, "GEL")}
@@ -614,7 +694,6 @@ export default function CheckoutFormClient({
           </section>
         </div>
 
-        {/* RIGHT COLUMN */}
         <div className="mt-16 lg:col-span-5 lg:mt-0">
           <div className="sticky top-10 overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] ring-1 ring-gray-900/5">
             <div className="p-8">
@@ -626,18 +705,18 @@ export default function CheckoutFormClient({
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-500">{t("subtotal")}</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {money(summary.subtotal, "GEL")}
+                    {money(liveSummary.subtotal, "GEL")}
                   </dd>
                 </div>
 
-                {summary.discount_total > 0 && (
+                {liveSummary.discount_total > 0 ? (
                   <div className="flex items-center justify-between">
                     <dt className="text-sm text-gray-500">{t("discount")}</dt>
                     <dd className="text-sm font-medium text-emerald-600">
-                      -{money(summary.discount_total, "GEL")}
+                      -{money(liveSummary.discount_total, "GEL")}
                     </dd>
                   </div>
-                )}
+                ) : null}
 
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-500 flex items-center gap-2">
@@ -645,7 +724,7 @@ export default function CheckoutFormClient({
                     <Truck size={14} className="text-gray-300" />
                   </dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {money(summary.shipping_total, "GEL")}
+                    {money(liveSummary.shipping_total, "GEL")}
                   </dd>
                 </div>
 
@@ -654,7 +733,7 @@ export default function CheckoutFormClient({
                     {t("total")}
                   </dt>
                   <dd className="text-2xl font-bold tracking-tight text-gray-900">
-                    {money(summary.total, "GEL")}
+                    {money(liveSummary.total, "GEL")}
                   </dd>
                 </div>
               </dl>
@@ -668,7 +747,7 @@ export default function CheckoutFormClient({
                         {bannerError}
                       </h3>
 
-                      {oosItems && oosItems.length > 0 && (
+                      {oosItems && oosItems.length > 0 ? (
                         <div className="mt-2 space-y-2">
                           <p className="text-xs font-semibold text-red-700 uppercase tracking-wide opacity-80">
                             {e("OOS_DETAILS_TITLE")}
@@ -696,7 +775,7 @@ export default function CheckoutFormClient({
                             ))}
                           </ul>
                         </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -704,7 +783,7 @@ export default function CheckoutFormClient({
 
               <button
                 type="submit"
-                disabled={isSubmitting || !isValid}
+                disabled={isSubmitting || !isValid || shippingUpdating}
                 className="group relative w-full overflow-hidden rounded-xl bg-black px-4 py-4 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-neutral-800 hover:shadow-lg hover:shadow-neutral-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
