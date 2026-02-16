@@ -174,7 +174,7 @@ export default function CheckoutFormClient({
     return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
   }, [savedAddresses, selectedAddrId]);
 
-  // If address list changes (e.g. user added a new address) and selected is missing, fallback safely.
+  // If address list changes and selected is missing, fallback safely.
   useEffect(() => {
     if (!savedAddresses.length) return;
 
@@ -187,7 +187,7 @@ export default function CheckoutFormClient({
     }
   }, [savedAddresses, selectedAddrId, safeInitialSelectedAddrId, setValue]);
 
-  // Prevent duplicate shipping RPC calls on mount + React strict mode dev double-invoke
+  // Prevent duplicate shipping RPC calls on mount (and dev strict-mode double invoke)
   const didInit = useRef(false);
 
   const updateShipping = useCallback(
@@ -205,30 +205,34 @@ export default function CheckoutFormClient({
         setLiveSummary(res.summary);
         router.refresh();
       } else {
-        // If you want debug, change this line to include res.debug.message
         setBannerError("Failed to calculate shipping price");
       }
     },
     [locale, router, shippingUpdating],
   );
 
-  // On first render, if we have a selected address and cart zone differs, sync it.
+  // ✅ IMPORTANT FIX:
+  // If user already has a selected address, we MUST ensure shipping is calculated.
+  // Previously validation passed but shipping_total stayed 0 because no RPC call happened.
   useEffect(() => {
     if (didInit.current) return;
     if (!selectedAddr) return;
 
     didInit.current = true;
 
-    // Only call if needed:
-    // - zone differs from cart initial zone OR
-    // - cart didn't have selected address persisted (initialSelectedAddrId empty)
+    const shippingMissing = Number(liveSummary.shipping_total ?? 0) <= 0;
+
     const needsSync =
-      selectedAddr.shipping_zone !== initialZone || !initialSelectedAddrId;
+      shippingMissing ||
+      selectedAddr.shipping_zone !== initialZone ||
+      !initialSelectedAddrId;
 
     if (needsSync) {
       updateShipping(selectedAddr.shipping_zone, selectedAddr.id);
     }
-  }, [selectedAddr, initialZone, initialSelectedAddrId, updateShipping]);
+    // Intentionally run once per mount with the selectedAddr
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAddr]);
 
   const handleSelectAddress = useCallback(
     async (addr: AddressRow) => {
@@ -286,16 +290,18 @@ export default function CheckoutFormClient({
   return (
     <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
       <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
+        {/* LEFT */}
         <div className="lg:col-span-7 space-y-12">
+          {/* 1. Contact */}
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
                 1
               </span>
               {t("contactTitle")}
             </h2>
 
-            <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
               <InputField
                 id="fullName"
                 label={t("fullNameLabel")}
@@ -312,8 +318,9 @@ export default function CheckoutFormClient({
             </div>
           </section>
 
+          {/* 2. Shipping */}
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
                 2
               </span>
@@ -343,13 +350,13 @@ export default function CheckoutFormClient({
                     onClick={() => handleSelectAddress(addr)}
                     disabled={shippingUpdating}
                     className={clsx(
-                      "relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left transition-all duration-200 outline-none disabled:opacity-60 disabled:cursor-not-allowed",
+                      "relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left outline-none transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60",
                       isSelected
-                        ? "bg-slate-50 border-black ring-1 ring-black shadow-sm z-10"
-                        : "bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50/50",
+                        ? "z-10 border-black bg-slate-50 shadow-sm ring-1 ring-black"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50",
                     )}
                   >
-                    <div className="flex w-full justify-between items-start mb-1">
+                    <div className="mb-1 flex w-full items-start justify-between">
                       <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                         <MapPin
                           size={16}
@@ -366,7 +373,7 @@ export default function CheckoutFormClient({
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-600 line-clamp-2 pl-6 mb-2">
+                    <p className="mb-2 line-clamp-2 pl-6 text-sm text-gray-600">
                       {addr.line1}
                     </p>
 
@@ -377,28 +384,29 @@ export default function CheckoutFormClient({
                 );
               })}
 
-              <div className="min-h-35 flex items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-orange-300 transition-all">
+              <div className="flex min-h-35 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-orange-300 hover:bg-slate-50">
                 <AddAddressCard action={addAddressAction} />
               </div>
             </div>
 
             {errors.selectedAddrId && (
-              <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+              <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
                 <AlertCircle size={16} />
                 {errors.selectedAddrId.message}
               </div>
             )}
           </section>
 
+          {/* 3. Review */}
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <h2 className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
                 3
               </span>
               {t("reviewTitle")}
             </h2>
 
-            <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+            <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
               {cartItems.map((item) => (
                 <div
                   key={item.id}
@@ -417,10 +425,10 @@ export default function CheckoutFormClient({
                     )}
                   </div>
                   <div>
-                    <div className="font-semibold text-sm line-clamp-2">
+                    <div className="line-clamp-2 text-sm font-semibold">
                       {displayTitle(item, locale as "en" | "ka")}
                     </div>
-                    <div className="text-sm font-bold mt-1 text-gray-900">
+                    <div className="mt-1 text-sm font-bold text-gray-900">
                       {formatPrice(
                         toNumber(item.price_at_add) * item.qty,
                         "GEL",
@@ -432,17 +440,18 @@ export default function CheckoutFormClient({
             </div>
 
             {oosItems?.length ? (
-              <div className="mt-4 rounded-xl bg-amber-50 p-4 border border-amber-100 text-sm text-amber-900">
+              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
                 Some items are out of stock.
               </div>
             ) : null}
           </section>
         </div>
 
+        {/* RIGHT */}
         <div className="mt-16 lg:col-span-5 lg:mt-0">
           <div className="sticky top-10 overflow-hidden rounded-3xl bg-white shadow-xl shadow-gray-200/50 ring-1 ring-gray-900/5">
             <div className="p-8">
-              <h2 className="text-lg font-bold tracking-tight text-gray-900 mb-6">
+              <h2 className="mb-6 text-lg font-bold tracking-tight text-gray-900">
                 {t("orderSummaryTitle")}
               </h2>
 
@@ -464,7 +473,7 @@ export default function CheckoutFormClient({
                 )}
 
                 <div className="flex items-center justify-between">
-                  <dt className="text-sm text-gray-500 flex items-center gap-2">
+                  <dt className="flex items-center gap-2 text-sm text-gray-500">
                     {t("shipping")}{" "}
                     <Truck size={14} className="text-gray-300" />
                   </dt>
@@ -480,7 +489,7 @@ export default function CheckoutFormClient({
                   </dd>
                 </div>
 
-                <div className="my-6 border-t border-gray-100 pt-6 flex items-center justify-between">
+                <div className="my-6 flex items-center justify-between border-t border-gray-100 pt-6">
                   <dt className="text-base font-bold text-gray-900">
                     {t("total")}
                   </dt>
@@ -498,7 +507,7 @@ export default function CheckoutFormClient({
               </dl>
 
               {bannerError && (
-                <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-100 text-sm text-red-800 flex items-center gap-2">
+                <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-800">
                   <AlertCircle className="h-5 w-5 shrink-0" /> {bannerError}
                 </div>
               )}
