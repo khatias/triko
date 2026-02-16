@@ -155,10 +155,13 @@ export default async function CartPage(props: {
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-500">{t("deliveryFee")}</span>
-                      <span className="font-semibold text-zinc-900">
-                        {state.cart.shipping_total} ₾
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm text-zinc-600">
+                        {t("deliveryFee")}
+                      </span>
+
+                      <span className="max-w-[70%] text-right text-xs leading-5 text-slate-500">
+                        {t("shippingPriceText")}
                       </span>
                     </div>
 
