@@ -72,16 +72,21 @@ export default async function CheckoutPage({
 
   const { data: addresses, error: addrError } = await supabase
     .from("addresses")
-    .select("id,line1,line2,city,region,is_default_shipping,created_at,shipping_zone")
+    .select(
+      "id,line1,line2,city,region,is_default_shipping,created_at,shipping_zone",
+    )
     .eq("user_id", user.id)
     .eq("kind", "shipping")
-    .order("is_default_shipping", { ascending: false });
+    .order("is_default_shipping", { ascending: false })
+    .order("created_at", { ascending: false });
 
   if (addrError) throw addrError;
 
   const { data: cart, error: cartError } = await supabase
     .from("carts")
-    .select("id, subtotal, discount_total, shipping_total, total")
+    .select(
+      "id, subtotal, discount_total, shipping_total, total, shipping_zone, shipping_address_id",
+    )
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -114,6 +119,14 @@ export default async function CheckoutPage({
 
   if (profileError) throw profileError;
 
+  const initialZone: ShippingZone =
+    (cart?.shipping_zone as ShippingZone | null) ??
+    ((addresses?.[0]?.shipping_zone as ShippingZone | undefined) ?? "tbilisi");
+
+  const initialSelectedAddrId =
+    (cart?.shipping_address_id as string | null) ??
+    (addresses?.[0]?.id ?? "");
+
   return (
     <div className="min-h-screen bg-slate-50 py-12 lg:py-20 px-4 md:px-6 font-sans text-slate-900">
       <div className="mx-auto max-w-7xl">
@@ -131,6 +144,8 @@ export default async function CheckoutPage({
             shipping_total: Number(cart?.shipping_total ?? 0),
             total: Number(cart?.total ?? 0),
           }}
+          initialZone={initialZone}
+          initialSelectedAddrId={initialSelectedAddrId}
         />
       </div>
     </div>

@@ -10,6 +10,7 @@ export type ShippingZone = "tbilisi" | "region_city" | "region_village";
 const RpcRowSchema = z.object({
   cart_id: z.string().uuid(),
   shipping_zone: z.string(),
+  shipping_address_id: z.string().uuid().nullable(),
   subtotal: z.coerce.number(),
   discount_total: z.coerce.number(),
   shipping_total: z.coerce.number(),
@@ -27,6 +28,11 @@ export type SetShippingZoneResult =
         shipping_total: number;
         total: number;
       };
+      cart: {
+        cart_id: string;
+        shipping_zone: ShippingZone;
+        shipping_address_id: string | null;
+      };
     }
   | {
       ok: false;
@@ -42,12 +48,17 @@ export type SetShippingZoneResult =
 export async function setShippingZoneAction(
   locale: string,
   zone: ShippingZone,
+  shippingAddressId?: string | null,
 ): Promise<SetShippingZoneResult> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("cart_set_shipping_zone_and_recalc", {
-    p_shipping_zone: zone,
-  });
+  const { data, error } = await supabase.rpc(
+    "cart_set_shipping_zone_and_recalc",
+    {
+      p_shipping_zone: zone,
+      p_shipping_address_id: shippingAddressId ?? null,
+    },
+  );
 
   if (error) {
     return {
@@ -62,9 +73,11 @@ export async function setShippingZoneAction(
     };
   }
 
-  // ✅ data შეიძლება იყოს: row[] | row | null
-  const maybeRow: unknown =
-    Array.isArray(data) ? (data.length > 0 ? data[0] : null) : data;
+  const maybeRow: unknown = Array.isArray(data)
+    ? data.length > 0
+      ? data[0]
+      : null
+    : data;
 
   const parsed = RpcRowSchema.safeParse(maybeRow);
   if (!parsed.success) {
@@ -92,6 +105,11 @@ export async function setShippingZoneAction(
       discount_total: row.discount_total,
       shipping_total: row.shipping_total,
       total: row.total,
+    },
+    cart: {
+      cart_id: row.cart_id,
+      shipping_zone: zone,
+      shipping_address_id: row.shipping_address_id,
     },
   };
 }

@@ -428,13 +428,19 @@
       "default": "Default",
       "setDefault": "Set as default",
       "delete": "Delete",
-      "address1": "Address Line 1",
-      "address2": "Address Line 2 (optional)",
+      "address1": "Address",
+      "address2": "Comppent(optional)",
       "city": "City",
       "region": "Region",
       "save": "Save Address",
       "saving": "Saving…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "shippingZone": "Choose Shipping zone",
+      "regionCity": "Region - City",
+      "regionVillage": "Region - Village",
+      "regionTbilisi": "Tbilisi",
+      "municipality": "Municipality",
+      "viiage": "Village"
     },
     "orders": {
       "title": "My Orders",
