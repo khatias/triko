@@ -161,7 +161,9 @@ export default async function CartPage(props: {
                       </span>
 
                       <span className="max-w-[70%] text-right text-xs leading-5 text-slate-500">
-                        {t("shippingPriceText")}
+                        {state.cart.shipping_total === "0.00"
+                          ? t("shippingPriceText")
+                          : `${state.cart.shipping_total} ₾`}{" "}
                       </span>
                     </div>
 
