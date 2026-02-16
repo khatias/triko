@@ -394,6 +394,12 @@
     "timeout": "Request timed out. Please try again."
   },
   "Profile": {
+    "hello": "Hello, {name}!",
+    "subtitle": "Welcome back! Manage your account, view orders, and update your information.",
+    "email": "Email",
+    "registeredOn": "Registered on",
+    "lastActivity": "Last Activity",
+    "unknown": "Unknown",
     "meta": {
       "title": "Profile — Triko",
       "description": "Manage your Triko account details, including your name, email, phone number, and preferences. Update your profile information securely."
@@ -402,7 +408,8 @@
       "orders": "My Orders",
       "account": "My Account",
       "addresses": "My Addresses",
-      "title": "My Profile"
+      "title": "My Profile",
+      "signOut": "Sign out"
     },
     "actions": {
       "save": "Save changes",
