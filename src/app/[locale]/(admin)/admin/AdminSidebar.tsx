@@ -30,6 +30,7 @@ export function AdminSidebar() {
     { key: "orders", href: `/admin/orders`, icon: ShoppingBag, exact: false },
     { key: "products", href: `/admin/products`, icon: Package, exact: false },
     { key: "groups", href: `/admin/groups`, icon: Layers, exact: false },
+    { key: "site", href: `/admin/site`, icon: LayoutDashboard, exact: false },
   ] as const;
 
   const isActive = (href: string, exact: boolean) =>
