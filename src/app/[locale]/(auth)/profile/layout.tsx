@@ -4,7 +4,9 @@ import SidebarNav from "../profile/_components/SidebarNav";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { createClient } from "@/utils/supabase/server";
 
-export async function generateMetadata(ctx: { params: Promise<{ locale: string }> }) {
+export async function generateMetadata(ctx: {
+  params: Promise<{ locale: string }>;
+}) {
   return generateLocalizedMetadata(ctx, {
     namespace: "Profile",
     path: "/profile",
@@ -14,7 +16,11 @@ export async function generateMetadata(ctx: { params: Promise<{ locale: string }
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function ProfileLayout({ children }: { children: React.ReactNode }) {
+export default async function ProfileLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   let fullName = "Guest";
 
   try {
@@ -28,19 +34,18 @@ export default async function ProfileLayout({ children }: { children: React.Reac
         .from("profiles")
         .select("full_name")
         .eq("user_id", user.id)
-        .maybeSingle(); // ✅ safer than .single()
+        .maybeSingle();
 
       if (!profileErr && profile?.full_name) fullName = profile.full_name;
     }
   } catch (e) {
-    // ✅ do NOT throw from a layout
     console.error("ProfileLayout: failed to load user/profile", e);
   }
 
   return (
-    <main className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10">
+    <main className="min-h-[60vh] container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10 mb-40">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <aside className="lg:col-span-3">
+        <aside className="hidden lg:block lg:col-span-3">
           <SidebarNav fullName={fullName} />
         </aside>
         <section className="lg:col-span-9">{children}</section>
