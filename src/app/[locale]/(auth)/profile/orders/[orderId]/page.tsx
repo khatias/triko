@@ -1,10 +1,11 @@
+import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { getTranslations } from "next-intl/server";
 import type { TranslationValues } from "next-intl";
 import {
-  ArrowLeft,
   Package,
   CalendarDays,
   ShoppingBag,
@@ -16,19 +17,20 @@ import {
   CheckCircle2,
   CreditCard,
   Receipt,
-  HelpCircle,
 } from "lucide-react";
 
 import { formatDate, formatPrice } from "@/lib/helpers";
-import { PaymentStatus } from "@/components/UI/PaymentStatus";
 import { CopyId } from "@/components/UI/CopyButton";
 import { toNumber, isPaidStatus } from "@/utils/type-guards";
-import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
 // --- TYPES ---
-export type ShippingStatus =| "not_started" | "confirmed" | "in_transit" | "delivered";
+export type ShippingStatus =
+  | "not_started"
+  | "confirmed"
+  | "in_transit"
+  | "delivered";
 
 type OrderRow = {
   id: string;
@@ -97,21 +99,19 @@ function SectionCard({
   className?: string;
 }) {
   return (
-    <section
-      className={cx(
-        "overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm",
-        className,
-      )}
-    >
+    <section className={cx("overflow-hidden rounded-2xl bg-white", className)}>
       {(title || right) && (
-        <header className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/50 px-5 py-4">
-          {title ? (
-            <h2 className="text-base font-bold text-gray-900">{title}</h2>
-          ) : (
-            <div />
-          )}
-          {right}
-        </header>
+        <>
+          <header className="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
+            {title ? (
+              <h2 className="text-sm font-bold text-gray-900">{title}</h2>
+            ) : (
+              <div />
+            )}
+            {right}
+          </header>
+          <div className="h-px bg-gray-100" />
+        </>
       )}
       <div className="p-5 sm:p-6">{children}</div>
     </section>
@@ -125,15 +125,12 @@ function ShippingMiniTracker({
   status: ShippingStatus;
   t: (key: string, values?: TranslationValues) => string;
 }) {
-  const steps: Array<{
-    key: ShippingStatus;
-    label: string;
-    icon: typeof Box;
-  }> = [
-    { key: "confirmed", icon: Box, label: t("shipping.confirmedShort") },
-    { key: "in_transit", icon: Truck, label: t("shipping.inTransitShort") },
-    { key: "delivered", icon: MapPin, label: t("shipping.deliveredShort") },
-  ];
+  const steps: Array<{ key: ShippingStatus; label: string; icon: typeof Box }> =
+    [
+      { key: "confirmed", icon: Box, label: t("shipping.confirmedShort") },
+      { key: "in_transit", icon: Truck, label: t("shipping.inTransitShort") },
+      { key: "delivered", icon: MapPin, label: t("shipping.deliveredShort") },
+    ];
 
   const idx = Math.max(
     0,
@@ -146,51 +143,42 @@ function ShippingMiniTracker({
           label: t("shipping.confirmedLabel"),
           desc: t("shipping.confirmedDesc"),
           Icon: Box,
-          color: "bg-blue-600",
         }
       : status === "in_transit"
         ? {
             label: t("shipping.inTransitLabel"),
             desc: t("shipping.inTransitDesc"),
             Icon: Truck,
-            color: "bg-indigo-600",
           }
         : {
             label: t("shipping.deliveredLabel"),
             desc: t("shipping.deliveredDesc"),
             Icon: CheckCircle2,
-            color: "bg-emerald-600",
           };
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <section className="overflow-hidden  bg-white border-b border-gray-300 ">
       <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
         <div className="flex items-start gap-4">
-          <div
-            className={cx(
-              "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-white shadow-sm",
-              header.color,
-            )}
-          >
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#172a3e] text-white">
             <header.Icon className="h-6 w-6" />
           </div>
           <div>
             <p className="text-base font-bold text-gray-900">{header.label}</p>
-            <p className="mt-1 text-sm text-gray-500 leading-relaxed">
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">
               {header.desc}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-gray-50/50 px-5 py-6 sm:px-8">
-        <div className="relative">
-          {/* Progress Bar Background */}
-          <div className="absolute left-0 top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-gray-200" />
+      <div className="h-px bg-gray-100" />
 
-          {/* Active Progress */}
+      <div className="bg-gray-50/60 px-5 py-6 sm:px-8">
+        <div className="relative">
+          <div className="absolute left-0 top-1/2 h-1.5 w-full -translate-y-1/2 rounded-full bg-gray-200" />
           <div
-            className="absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-gray-900 transition-all duration-700 ease-out"
+            className="absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-[#172a3e] transition-all duration-700 ease-out"
             style={{ width: `${(idx / (steps.length - 1)) * 100}%` }}
           />
 
@@ -198,21 +186,23 @@ function ShippingMiniTracker({
             {steps.map((s, i) => {
               const active = i <= idx;
               const Icon = s.icon;
+
               return (
-                <div key={s.key} className="flex flex-col items-center gap-3">
+                <div key={s.key} className="flex flex-col items-center gap-2">
                   <div
                     className={cx(
-                      "z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-300",
+                      "z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors",
                       active
-                        ? "border-gray-900 bg-gray-900 text-white shadow-md"
-                        : "border-gray-300 bg-white text-gray-300",
+                        ? "border-[#172a3e] bg-[#172a3e] text-white"
+                        : "border-gray-300 bg-white text-gray-400",
                     )}
                   >
                     <Icon className="h-4 w-4" />
                   </div>
+
                   <span
                     className={cx(
-                      "absolute -bottom-6 text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 w-24 text-center",
+                      "text-[10px] font-bold uppercase tracking-wider",
                       active ? "text-gray-900" : "text-gray-400",
                     )}
                   >
@@ -223,9 +213,8 @@ function ShippingMiniTracker({
             })}
           </div>
         </div>
-        <div className="h-4" />
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -245,20 +234,19 @@ export default async function OrderPage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // --- Auth Guard ---
   if (!user) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center p-6">
-        <div className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-lg">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50 text-gray-900">
-            <AlertTriangle className="h-7 w-7" />
+      <div className="flex min-h-[70vh] items-center justify-center px-4 py-10">
+        <div className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-8 text-center">
+          <div className="mx-auto mb-6 grid h-14 w-14 place-items-center rounded-full bg-gray-100 text-gray-900">
+            <AlertTriangle className="h-6 w-6" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-lg font-bold text-gray-900">
             {t("logintoView")}
           </h2>
           <Link
             href={`/${locale}/login`}
-            className="mt-8 flex w-full items-center justify-center rounded-xl bg-gray-900 py-4 text-sm font-bold text-white transition-transform active:scale-95"
+            className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-gray-900 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
           >
             {t("loginCta")}
           </Link>
@@ -267,7 +255,6 @@ export default async function OrderPage({
     );
   }
 
-  // --- Fetch Order ---
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select(
@@ -280,9 +267,9 @@ export default async function OrderPage({
   if (orderError) {
     return (
       <div className="mx-auto max-w-5xl px-4 py-12">
-        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-8 text-center text-rose-900">
-          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-rose-400" />
-          <h1 className="font-bold text-lg">{t("failedToLoad")}</h1>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center text-rose-900">
+          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-rose-500" />
+          <h1 className="text-lg font-bold">{t("failedToLoad")}</h1>
           <p className="mt-1 text-sm opacity-80">{orderError.message}</p>
         </div>
       </div>
@@ -291,7 +278,6 @@ export default async function OrderPage({
 
   if (!order) notFound();
 
-  // --- Fetch Items ---
   const { data: itemsRaw, error: itemsError } = await supabase
     .from("order_items")
     .select(
@@ -318,7 +304,7 @@ export default async function OrderPage({
   const SummaryContent = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-gray-500">{t("subtotalLabel")}</span>
+        <span className="font-medium text-gray-600">{t("subtotalLabel")}</span>
         <span className="font-bold text-gray-900">
           {formatPrice(subtotal, currency)}
         </span>
@@ -336,13 +322,13 @@ export default async function OrderPage({
       )}
 
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-gray-500">{t("shippingLabel")}</span>
+        <span className="font-medium text-gray-600">{t("shippingLabel")}</span>
         {shippingTotal > 0 ? (
           <span className="font-bold text-gray-900">
             {formatPrice(shippingTotal, currency)}
           </span>
         ) : (
-          <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+          <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
             {t("freeLabel")}
           </span>
         )}
@@ -362,9 +348,9 @@ export default async function OrderPage({
       <div className="pt-2">
         <Link
           href={`/${locale}/cart`}
-          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 transition-all hover:border-gray-300 hover:shadow-sm"
+          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-800 transition-colors hover:border-gray-300"
         >
-          <Receipt className="h-4 w-4 text-gray-400 transition-colors group-hover:text-gray-600" />
+          <Receipt className="h-4 w-4 text-gray-500 transition-colors group-hover:text-gray-700" />
           {t("returnToCart")}
         </Link>
       </div>
@@ -372,52 +358,17 @@ export default async function OrderPage({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link
-            href={`/${locale}/profile/orders`}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-gray-600 transition-colors hover:text-gray-900"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors group-hover:border-gray-300 group-hover:bg-gray-50">
-              <ArrowLeft className="h-4 w-4" />
-            </span>
-            <span className="hidden sm:inline">{t("back")}</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs font-bold uppercase tracking-wider text-gray-400 sm:inline">
-              {t("orderStatusLabel")}
-            </span>
-            <PaymentStatus label={order.status} />
-          </div>
-        </div>
-      </div>
-
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className=" bg-slate-50/70 rounded-2xl  pb-20">
+      <main className="mx-auto w-full  px-4 ">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-4 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="min-w-0">
-            <div className="flex items-center gap-3 text-gray-400 mb-2">
-              <Package className="h-5 w-5" />
-              <span className="text-sm font-semibold uppercase tracking-wide">
-                Physical Order
-              </span>
-            </div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-              {t("orderTitle")} <span className="text-gray-300">#</span>
-              <span className="font-mono text-gray-900">
-                {order.id.slice(0, 8).toUpperCase()}
-              </span>
-            </h1>
-
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 shadow-sm">
-                <CalendarDays className="h-4 w-4 text-gray-400" />
+              <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700">
+                <CalendarDays className="h-4 w-4 text-gray-500" />
                 {formatDate(order.created_at)}
               </span>
-              <div className="h-4 w-px bg-gray-300 hidden sm:block" />
+              <div className="hidden h-4 w-px bg-gray-300 sm:block" />
               <CopyId id={order.id} />
             </div>
           </div>
@@ -426,7 +377,7 @@ export default async function OrderPage({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href={payHref}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-8 py-3.5 text-sm font-bold text-white shadow-xl shadow-gray-900/10 transition-transform active:scale-95"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-8 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
               >
                 <CreditCard className="h-4 w-4" />
                 {t("completePayment")}
@@ -435,32 +386,33 @@ export default async function OrderPage({
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_380px]">
-          {/* LEFT COLUMN */}
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
+          {/* LEFT */}
+          <div className="space-y-6 lg:col-span-8">
             {shippingStatus && (
               <ShippingMiniTracker status={shippingStatus} t={t} />
             )}
 
             {!paid && (
-              <div className="relative overflow-hidden rounded-2xl border border-amber-200 bg-amber-50 p-6">
-                <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-800">
                       <Clock className="h-6 w-6" />
                     </div>
                     <div>
                       <p className="text-base font-bold text-amber-900">
                         {t("awaitingPaymentTitle")}
                       </p>
-                      <p className="mt-1 text-sm text-amber-800/80 max-w-md">
+                      <p className="mt-1 max-w-md text-sm text-amber-900/80">
                         {t("awaitingPaymentDesc")}
                       </p>
                     </div>
                   </div>
+
                   <Link
                     href={payHref}
-                    className="whitespace-nowrap rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-amber-700"
+                    className="whitespace-nowrap rounded-lg bg-amber-700 px-5 py-2.5 text-sm font-bold text-white active:scale-[0.99]"
                   >
                     {t("payNow")}
                   </Link>
@@ -471,7 +423,7 @@ export default async function OrderPage({
             <SectionCard
               title={t("itemsTitle")}
               right={
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-extrabold text-gray-600">
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-extrabold text-gray-700">
                   {t("itemsCount", {
                     count: order.items_count ?? items.length,
                   })}
@@ -479,15 +431,15 @@ export default async function OrderPage({
               }
             >
               {itemsError && (
-                <div className="rounded-xl bg-rose-50 p-4 text-center text-sm text-rose-700">
+                <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-center text-sm text-rose-800">
                   {t("failedToLoadItems")}
                 </div>
               )}
 
               {items.length === 0 && !itemsError ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-gray-400">
+                <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
                   <ShoppingBag
-                    className="mb-4 h-12 w-12 opacity-20"
+                    className="mb-4 h-12 w-12 opacity-30"
                     strokeWidth={1}
                   />
                   <p className="font-medium">{t("noItems")}</p>
@@ -525,7 +477,7 @@ export default async function OrderPage({
                                 className="object-contain p-1"
                               />
                             ) : (
-                              <div className="flex h-full w-full items-center justify-center text-gray-300">
+                              <div className="grid h-full w-full place-items-center text-gray-300">
                                 <Package className="h-8 w-8" />
                               </div>
                             )}
@@ -544,15 +496,15 @@ export default async function OrderPage({
 
                               <div className="mt-1 flex flex-wrap gap-2 text-xs">
                                 {variant && (
-                                  <span className="font-medium text-gray-500">
+                                  <span className="font-medium text-gray-600">
                                     {t("variantLabel")}:{" "}
-                                    <span className="text-gray-700">
+                                    <span className="text-gray-900">
                                       {variant}
                                     </span>
                                   </span>
                                 )}
                                 {code && (
-                                  <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-500">
+                                  <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-600">
                                     {code}
                                   </span>
                                 )}
@@ -561,7 +513,7 @@ export default async function OrderPage({
 
                             <div className="mt-3 flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700">
+                                <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-800">
                                   {qty} × {formatPrice(unitPrice, currency)}
                                 </span>
                                 {unitListPrice > 0 &&
@@ -571,7 +523,7 @@ export default async function OrderPage({
                                     </span>
                                   )}
                               </div>
-                              {/* Mobile Price */}
+
                               <p className="block text-sm font-extrabold text-gray-900 sm:hidden">
                                 {formatPrice(lineTotal, currency)}
                               </p>
@@ -585,38 +537,19 @@ export default async function OrderPage({
               )}
             </SectionCard>
 
-            <div className="xl:hidden">
+            <div className="lg:hidden">
               <SectionCard title={t("summaryTitle")}>
                 <SummaryContent />
               </SectionCard>
             </div>
           </div>
 
-          <aside className="hidden xl:block">
+          {/* RIGHT */}
+          <aside className="hidden lg:block lg:col-span-4">
             <div className="sticky top-24 space-y-6">
               <SectionCard title={t("summaryTitle")}>
                 <SummaryContent />
               </SectionCard>
-
-              <div className="rounded-xl bg-gray-100 p-4">
-                <div className="flex gap-3">
-                  <HelpCircle className="h-5 w-5 shrink-0 text-gray-400" />
-                  <div className="text-xs text-gray-500">
-                    <p className="font-bold text-gray-900 mb-1">
-                      {t("needHelp")}
-                    </p>
-                    <p>
-                      {t("supportDesc")}{" "}
-                      <Link
-                        href={`/${locale}/contact`}
-                        className="underline decoration-gray-400 underline-offset-2 hover:text-gray-900"
-                      >
-                        {t("contactSupport")}
-                      </Link>
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </aside>
         </div>

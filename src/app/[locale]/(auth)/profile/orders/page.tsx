@@ -3,7 +3,11 @@ import { createClient } from "@/utils/supabase/server";
 import OrdersClients from "./OrdersClients";
 import { toNumber, isPaidStatus } from "@/utils/type-guards";
 
-export type ShippingStatus = "not_started" | "confirmed" | "in_transit" | "delivered";
+export type ShippingStatus =
+  | "not_started"
+  | "confirmed"
+  | "in_transit"
+  | "delivered";
 
 export type OrderType = {
   id: string;
@@ -15,10 +19,12 @@ export type OrderType = {
   total: number;
   created_at: string;
   currency?: string | null;
+  order_code: string;
 };
 
 type OrderRow = {
   id: string;
+  order_code: string;
   status: string;
   shipping_status: ShippingStatus | string | null;
   items_count: number;
@@ -30,7 +36,12 @@ type OrderRow = {
 };
 
 function isShippingStatus(v: unknown): v is ShippingStatus {
-  return v === "not_started" || v === "confirmed" || v === "in_transit" || v === "delivered";
+  return (
+    v === "not_started" ||
+    v === "confirmed" ||
+    v === "in_transit" ||
+    v === "delivered"
+  );
 }
 
 export default async function Page() {
@@ -47,7 +58,7 @@ export default async function Page() {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id,status,shipping_status,items_count,subtotal,discount_total,total,created_at,currency",
+      "id,status,shipping_status,items_count,subtotal,discount_total,total,created_at,currency, order_code",
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -63,8 +74,11 @@ export default async function Page() {
 
   const orders: OrderType[] = paidRows.map((o) => ({
     id: o.id,
+    order_code: o.order_code,
     status: o.status,
-    shipping_status: isShippingStatus(o.shipping_status) ? o.shipping_status : null,
+    shipping_status: isShippingStatus(o.shipping_status)
+      ? o.shipping_status
+      : null,
     items_count: o.items_count ?? 0,
     subtotal: toNumber(o.subtotal ?? 0),
     discount_total: toNumber(o.discount_total ?? 0),
@@ -73,5 +87,9 @@ export default async function Page() {
     currency: o.currency ?? null,
   }));
 
-  return <OrdersClients myOrders={orders} view="ok" />;
+  return (
+    <div className="min-h-full rounded-2xl border border-slate-200 bg-white p-5 transition-colors hover:border-slate-300">
+      <OrdersClients myOrders={orders} view="ok" />
+    </div>
+  );
 }

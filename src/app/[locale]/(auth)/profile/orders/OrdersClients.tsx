@@ -45,7 +45,7 @@ function OrderRow({ order, href }: { order: OrderType; href: string }) {
               e.stopPropagation();
             }}
           >
-            <CopyId id={order.id} />
+            <CopyId id={order.order_code} />
           </span>
 
           <span className="text-gray-300">|</span>
@@ -155,9 +155,9 @@ export default function OrdersClients({ myOrders, view = "ok" }: Props) {
     <section>
       <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900">
             {t("title")}
-          </h1>
+          </h2>
           <p className="mt-2 text-gray-500">{t("subtitle")}</p>
         </div>
 
