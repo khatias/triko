@@ -13,7 +13,7 @@ export const Section = ({
   <section
     {...(id ? { id } : {})}
     {...(labelledBy ? { "aria-labelledby": labelledBy } : {})}
-    className={`container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 ${className}`}
+    className={`container mx-auto px-4 md:px-8 lg:px-16 xl:px-20  ${className}`}
   >
     {children}
   </section>
@@ -74,7 +74,7 @@ export const linkBase =
   "px-1.5 py-1 text-[14px] font-medium tracking-[0.08em] text-slate-700 rounded-md hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200";
 
 export const wrap =
-  "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32";
+  "container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 ";
 export function MenuButton({
   onClick,
   icon: Icon,

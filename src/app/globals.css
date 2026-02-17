@@ -41,8 +41,14 @@ body {
 }
 /* add to global css once */
 @keyframes revealUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-reveal {
@@ -50,21 +56,34 @@ body {
   animation: revealUp 0.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
 }
 
-.reveal-delay-0 { animation-delay: 0ms; }
-.reveal-delay-1 { animation-delay: 140ms; }
-.reveal-delay-2 { animation-delay: 280ms; }
+.reveal-delay-0 {
+  animation-delay: 0ms;
+}
+.reveal-delay-1 {
+  animation-delay: 140ms;
+}
+.reveal-delay-2 {
+  animation-delay: 280ms;
+}
 
 @keyframes shineSweep {
-  from { transform: translateX(-140%) rotate(12deg); opacity: 0; }
-  25% { opacity: 0.9; }
-  to { transform: translateX(240%) rotate(12deg); opacity: 0; }
+  from {
+    transform: translateX(-140%) rotate(12deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(240%) rotate(12deg);
+    opacity: 0;
+  }
 }
 
 /* paused by default, only runs on hover via group-hover play state */
 .animate-shine {
   animation: shineSweep 1.6s cubic-bezier(0.2, 1, 0.3, 1) paused;
 }
-
 
 .lds-ring {
   display: inline-block;
@@ -98,5 +117,22 @@ body {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+@layer utilities {
+  .animate-marquee {
+    /* 60s makes it feel steady and luxury. 
+       Use 'linear' to prevent it from speeding up or slowing down. */
+    animation: marquee 60s linear infinite;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* We slide exactly half because we rendered the list twice */
+    transform: translateX(-50%);
   }
 }

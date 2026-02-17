@@ -13,6 +13,16 @@
       "imgAlt": "Triko-ს ლაუნჯვერი მოდელზე, რბილ განათებაში"
     },
 
+    "StatusStrip": {
+      "seasonValue": "ყოველდღიური კომფორტი",
+      "featureLeft": "პრემიუმ ხარისხი",
+      "featureRight": "მიწოდება საქართველოს მასშტაბით",
+      "locationCode": "[ TBS / GEO ]",
+      "scarcity": "ლიმიტირებული მარაგი",
+      "mobileLeft": "ბამბის ნაზავი",
+      "mobileRight": "მიწოდება საქართველოში"
+    },
+
     "Categories": {
       "title": "აირჩიეთ პოპულარული კატეგორია",
       "items": {

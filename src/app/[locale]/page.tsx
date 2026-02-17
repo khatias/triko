@@ -1,7 +1,8 @@
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import Hero from "@/components/home/Hero";
 import StorySlice from "@/components/home/StorySlice";
-
+import FeaturedCollection from "@/components/home/FeaturedSection";
+import StatusStrip from "@/components/home/StatusStrip";
 import { wrap } from "@/components/UI/primitives";
 
 export async function generateMetadata(ctx: {
@@ -20,6 +21,8 @@ export default async function Home({
   return (
     <div className=" bg-[#FDFBF9] overflow-hidden">
       <Hero locale={locale} />
+      <StatusStrip />
+      <FeaturedCollection />
       <StorySlice />
       <div className={`${wrap} py-8`}></div>
     </div>

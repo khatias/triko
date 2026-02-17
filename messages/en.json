@@ -12,6 +12,17 @@
       "imgAlt": "Triko loungewear on a model in a soft-lit studio"
     },
 
+    "StatusStrip": {
+
+      "seasonValue": "Everyday Comfort",
+      "featureLeft": "Premium quality",
+      "featureRight": "Ships Across Georgia",
+      "locationCode": "[ TBS / GEO ]",
+      "scarcity": "Limited Stock",
+      "mobileLeft": "Cotton Blend",
+      "mobileRight": "Delivery in Georgia"
+    },
+
     "Categories": {
       "title": "Shop by popular category",
       "items": {
