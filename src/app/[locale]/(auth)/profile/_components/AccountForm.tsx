@@ -37,7 +37,7 @@ const AccountForm: React.FC<AccountFormProps> = ({
     return (
       <button
         type="submit"
-        className="inline-flex items-center rounded-xl bg-orange-600 px-4 py-2 text-white shadow-sm hover:bg-orange-700 disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
+        className="inline-flex items-center rounded-xl bg-[#172a3e] px-4 py-2 text-white shadow-sm hover:bg-[#1c3b57] disabled:opacity-60 cursor-pointer disabled:pointer-events-none transition"
         disabled={pending}
       >
         {pending ? t("actions.saving") : t("actions.save")}

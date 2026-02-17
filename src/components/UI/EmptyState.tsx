@@ -84,8 +84,8 @@ function ActionButton({
 
   const variantStyles =
     variant === "primary"
-      ? "bg-orange-600 text-white shadow-sm hover:bg-orange-700 hover:shadow-md"
-      : "bg-white text-gray-700 border border-gray-200 hover:border-orange-200 hover:bg-orange-50 hover:text-orange-700";
+      ? "bg-[#172a3e] text-white shadow-sm hover:bg-[#1c3b57] hover:shadow-md"
+      : "bg-white text-gray-700 border border-gray-200 hover:border-[#1c3b57] hover:bg-[#1c3b57] hover:text-white";
 
   const className = `${baseStyles} ${variantStyles}`;
 

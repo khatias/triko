@@ -36,8 +36,11 @@ export default async function AccountPage() {
   const marketing = !!profile?.marketing_opt_in;
 
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white p-6 ">
-      <h2 className="mb-4 lg:mb-6 text-lg lg:text-xl font-medium"> {t("account.title")}</h2>
+    <div className="rounded-2xl border border-slate-200/70 bg-white p-6 min-h-full ">
+      <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-8">
+        {" "}
+        {t("account.title")}
+      </h2>
 
       <AccountForm
         updateProfileAction={updateProfileAction}
