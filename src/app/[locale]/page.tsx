@@ -2,7 +2,6 @@ import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import Hero from "@/components/home/Hero";
 import StorySlice from "@/components/home/StorySlice";
 
-
 import { wrap } from "@/components/UI/primitives";
 
 export async function generateMetadata(ctx: {
@@ -17,15 +16,12 @@ export default async function Home({
   params: Promise<{ locale: "en" | "ka" }>;
 }) {
   const { locale } = await params;
-console.log("Locale in home page:", locale);
+  console.log("Locale in home page:", locale);
   return (
     <div className=" bg-[#FDFBF9] overflow-hidden">
-      <Hero />
+      <Hero locale={locale} />
       <StorySlice />
-      <div className={`${wrap} py-8`}>
- 
-      </div>
- 
+      <div className={`${wrap} py-8`}></div>
     </div>
   );
 }
