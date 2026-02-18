@@ -142,8 +142,9 @@ const ContactForm: FC = () => {
         />
 
         <div className="relative">
-          <SubmitButton loading={isSubmitting} disabled={!isValid}>
-            {isSubmitting ? tForm("actions.sending") : tForm("actions.submit")}
+          <SubmitButton loading={isSubmitting} disabled={!isValid} >
+            
+            {isSubmitting ? tForm("actions.sending") : tForm("actions.send")}
           </SubmitButton>
           <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500 ">
             {/* trust hint icon */}

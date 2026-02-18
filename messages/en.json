@@ -171,6 +171,7 @@
     },
     "actions": {
       "submit": "Sign in",
+      "send": "Send Message",
       "sending": "Sending…",
       "signIn": "Sign in",
       "signUp": "Create account",
