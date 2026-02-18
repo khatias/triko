@@ -14,6 +14,7 @@ export type FormData = {
   email: string;
   message: string;
   hp?: string;
+  ts?: string;
 };
 
 const ContactForm: FC = () => {
@@ -69,6 +70,11 @@ const ContactForm: FC = () => {
           aria-hidden
           {...register("hp")}
         />
+        <input
+          type="hidden"
+          value={Date.now().toString()}
+          {...register("ts")}
+        />
 
         <InputField
           id="name"
@@ -88,7 +94,6 @@ const ContactForm: FC = () => {
               value: 100,
               message: tErrors("tooLongName", { max: 100 }),
             },
-            
           })}
           error={errors.name?.message}
         />
