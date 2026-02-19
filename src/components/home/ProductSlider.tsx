@@ -47,7 +47,7 @@ export default function ProductSlider({
   if (!catalog?.length) return null;
 
   return (
-    <Section className="py-16 sm:py-24">
+    <Section className="pt-12 sm:pt-24">
       <div className="mb-10 flex items-end justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-1">
           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#FF5C5C]">

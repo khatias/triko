@@ -25,6 +25,11 @@
       "subTitle": "New Season",
       "title": "Latest Drops"
     },
+    "Groups": {
+      "title": "The Collection",
+      "subTitle": "Select a category",
+      "explore": "Explore"
+    },
     "Categories": {
       "title": "Shop by popular category",
       "items": {
