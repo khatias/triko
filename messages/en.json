@@ -13,7 +13,6 @@
     },
 
     "StatusStrip": {
-
       "seasonValue": "Everyday Comfort",
       "featureLeft": "Premium quality",
       "featureRight": "Ships Across Georgia",
@@ -22,7 +21,10 @@
       "mobileLeft": "Cotton Blend",
       "mobileRight": "Delivery in Georgia"
     },
-
+    "Slider": {
+      "subTitle": "New Season",
+      "title": "Latest Drops"
+    },
     "Categories": {
       "title": "Shop by popular category",
       "items": {
