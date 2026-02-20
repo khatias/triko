@@ -150,10 +150,24 @@ export async function getCatalogProductsGrouped(
     query = query.eq("group_id", args.groupId);
   }
 
-  const q = (args.q ?? "").trim();
-  if (q) {
+  const rawQ = (args.q ?? "").trim();
+  if (rawQ) {
+    const q = rawQ
+      .replace(/[%_]/g, "\\$&") // escape ILIKE wildcards
+      .replace(/,/g, " ") // commas break .or() list
+      .replace(/\s+/g, " ")
+      .slice(0, 80);
+
     query = query.or(
-      `name.ilike.%${q}%,title_en.ilike.%${q}%,title_ka.ilike.%${q}%`,
+      [
+        `name.ilike.%${q}%`,
+        `title_en.ilike.%${q}%`,
+        `title_ka.ilike.%${q}%`,
+        `group_name.ilike.%${q}%`,
+        `group_name_en.ilike.%${q}%`,
+        `group_name_ka.ilike.%${q}%`,
+        `parent_code.ilike.%${q}%`,
+      ].join(","),
     );
   }
 

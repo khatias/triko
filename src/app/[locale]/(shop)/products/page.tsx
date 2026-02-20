@@ -10,7 +10,7 @@ import EmptyState from "@/components/UI/EmptyState";
 
 type PageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; q?: string }>;
 };
 
 export async function generateMetadata(ctx: {
@@ -24,15 +24,25 @@ export async function generateMetadata(ctx: {
   });
 }
 
-export default async function ProductsPage({
-  params,
-  searchParams,
-}: PageProps) {
+function clampQuery(v: string) {
+  return v.replace(/\s+/g, " ").trim().slice(0, 80);
+}
+
+function buildHref(sp: URLSearchParams, nextPage: number) {
+  const next = new URLSearchParams(sp.toString());
+  next.set("page", String(nextPage));
+  const qs = next.toString();
+  return qs ? `?${qs}` : "?page=1";
+}
+
+export default async function ProductsPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
-  const sp = await searchParams;
+  const spRaw = await searchParams;
 
   const pageSize = 12;
-  const currentPage = clampPositiveInt(sp.page ?? "1", 1);
+  const currentPage = clampPositiveInt(spRaw.page ?? "1", 1);
+
+  const q = clampQuery(spRaw.q ?? "");
 
   const h = await getTranslations({ locale, namespace: "Helpers" });
   const p = await getTranslations({ locale, namespace: "Products" });
@@ -40,16 +50,21 @@ export default async function ProductsPage({
   const data = (await getCatalogProductsGrouped({
     page: currentPage,
     pageSize,
+    q: q.length ? q : null,
   })) as CatalogPageResult;
 
   const items = data.items?.filter(Boolean) ?? [];
   const totalPages = Math.max(1, data.totalPages ?? 1);
 
-  const prevHref = `?page=${Math.max(1, currentPage - 1)}`;
-  const nextHref = `?page=${Math.min(totalPages, currentPage + 1)}`;
+  const sp = new URLSearchParams();
+  if (q) sp.set("q", q);
+
+  const prevHref = buildHref(sp, Math.max(1, currentPage - 1));
+  const nextHref = buildHref(sp, Math.min(totalPages, currentPage + 1));
 
   if (items.length === 0) {
     const base = `/${locale}`;
+    const primaryHref = buildHref(sp, 1);
 
     return (
       <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
@@ -69,7 +84,7 @@ export default async function ProductsPage({
             description={p("empty.description")}
             primaryAction={{
               label: p("empty.primary"),
-              href: "?page=1",
+              href: primaryHref,
             }}
             secondaryAction={{
               label: p("empty.secondary"),
@@ -110,8 +125,8 @@ export default async function ProductsPage({
             </div>
 
             <div className="hidden md:block font-medium">
-              {h("page")} {currentPage}{" "}
-              <span className="text-stone-200 mx-2">/</span> {totalPages}
+              {h("page")} {currentPage} <span className="text-stone-200 mx-2">/</span>{" "}
+              {totalPages}
             </div>
 
             <button className="hover:line-through">{h("filters")}</button>

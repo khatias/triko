@@ -11,7 +11,7 @@ import {
   XMarkIcon,
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import logo from "../../assets/logo.png";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
@@ -21,7 +21,8 @@ import { useTranslations } from "next-intl";
 import type { SafeUser } from "@/types/auth";
 import type { ShopGroup } from "@/lib/db/groups";
 import { pickGroupName } from "@/lib/helpers";
-
+import HeaderSearchToggle from "./HeaderSearch";
+import SocialMedia from "../socialMedia/SocialMedia";
 const CART_BADGE_MAX = 99;
 const ROOT_PARENT_ID = 11;
 
@@ -199,16 +200,7 @@ export default function Navbar({
           {/* Content (Scrollable) */}
           <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 flex flex-col gap-8">
             {/* Search - Sleeker solid background */}
-            <div className="flex items-center gap-3 rounded-xl bg-neutral-100 px-4 py-3.5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-rose-600 focus-within:shadow-sm">
-              <Search className="h-5 w-5 text-neutral-500" />
-              <input
-                placeholder="search products..."
-                className="w-full bg-transparent text-base text-neutral-900 outline-none placeholder:text-neutral-500"
-                tabIndex={isMobileOpen ? 0 : -1}
-                inputMode="search"
-                autoComplete="off"
-              />
-            </div>
+            <HeaderSearchToggle variant="mobile" />
 
             {/* Navigation List */}
             <nav className="flex flex-col gap-1">
@@ -323,9 +315,14 @@ export default function Navbar({
               })}
             </nav>
           </div>
+       <div className="pb-6">
+              {" "}
+              <SocialMedia />
+            </div>
 
           {/* Footer App-like Bottom Bar */}
           <div className="bg-neutral-50 px-6 py-6 border-t border-neutral-100 flex flex-col gap-4 shrink-0">
+     
             <Link
               href={`/${locale}/aboutUs`}
               onClick={closeMobile}
@@ -429,13 +426,9 @@ export default function Navbar({
         </ul>
 
         <div className="flex-1 flex justify-end items-center gap-6">
-          <button
-            aria-label="Search"
-            className="text-neutral-500 hover:text-neutral-900 transition-colors p-1"
-            type="button"
-          >
-            <Search className="h-5 w-5 stroke-2" />
-          </button>
+          <div className="pl-8">
+            <HeaderSearchToggle variant="desktop" />
+          </div>
 
           <AccountMenu user={user} />
 
