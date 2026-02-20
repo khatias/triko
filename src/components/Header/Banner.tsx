@@ -30,7 +30,7 @@ export default async function Banner({ locale }: Props) {
   return (
     <div className="w-full bg-[#fcf5e8] py-2 text-center">
       <Section className="flex items-center justify-between ">
-        <div className="flex flex-1 flex-wrap items-center justify-center text-xs font-medium tracking-wide ">
+        <div className="flex flex-1 flex-wrap items-center justify-center lg:justify-start text-xs font-medium tracking-wide ">
           <span>
             {text}
             {showCta && (
