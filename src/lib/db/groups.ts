@@ -1,13 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 
-export type ShopGroup = {
-  group_id: number;
-  fina_name: string | null;
-  name_en: string | null;
-  name_ka: string | null;
-  slug_en: string | null;
-  sort_order: number | null;
-};
 export type FeaturedGroup = {
   group_id: number;
   name_en: string | null;
@@ -20,6 +12,22 @@ export type FeaturedGroup = {
   featured_home_alt_ka: string | null;
 };
 
+// src/lib/db/groups.ts
+
+export type ShopGroup = {
+  idx: number;
+  group_id: number;
+  parent_group_id: number | null;
+  fina_name: string | null;
+  name_en: string | null;
+  name_ka: string | null;
+  slug_en: string | null;
+  sort_order: number | null;
+  is_visible: boolean;
+  raw: unknown;
+  updated_at: string;
+};
+
 const GROUPS_VIEW = "shop_visible_groups_v2";
 
 export async function getVisibleGroups(): Promise<ShopGroup[]> {
@@ -27,7 +35,11 @@ export async function getVisibleGroups(): Promise<ShopGroup[]> {
 
   const { data, error } = await supabase
     .from(GROUPS_VIEW)
-    .select("group_id, fina_name, name_en, name_ka, slug_en, sort_order")
+    .select(
+      "group_id, parent_group_id, fina_name, name_en, name_ka, slug_en, sort_order",
+    )
+    .eq("is_visible", true)
+
     .order("sort_order", { ascending: true });
 
   if (error) {
