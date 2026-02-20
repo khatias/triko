@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useMemo } from "react";
 import type { CatalogGroupedProductCard } from "@/lib/db/products";
@@ -85,7 +85,7 @@ export default function ProductCard({
     product.max_list_price,
     product.currency,
   );
-
+  console.log(product);
   return (
     <div className={`group animate-reveal ${delayClass}`}>
       <div className="relative">
@@ -95,10 +95,7 @@ export default function ProductCard({
           </div>
         ) : null}
 
-        <Link
-          href={`/${locale}/products/${product.parent_code}`}
-          className="block"
-        >
+        <Link href={`/products/${product.parent_code}`} className="block">
           {/* IMAGE BOX */}
           <div className="relative aspect-4/5 overflow-hidden bg-[#F7F7F7] ring-1 ring-stone-100 transition-all duration-700 group-hover:ring-stone-200">
             {photo ? (
@@ -180,7 +177,9 @@ export default function ProductCard({
                               : "ring-black/5 text-stone-900 hover:bg-stone-900 hover:text-white",
                           ].join(" ")}
                           aria-label={`Add size ${row.label} to bag`}
-                          title={disabled ? "Not available" : `Add ${row.label}`}
+                          title={
+                            disabled ? "Not available" : `Add ${row.label}`
+                          }
                         >
                           {isThisPending ? "…" : row.label}
                         </button>

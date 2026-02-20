@@ -8,7 +8,7 @@ import type { CatalogGroupedProductCard } from "@/lib/db/products";
 import { useTranslations } from "next-intl";
 export default function ProductSlider({
   catalog,
-  locale = "ka",
+  locale,
 }: {
   catalog: CatalogGroupedProductCard[];
   locale?: "en" | "ka";
@@ -99,7 +99,7 @@ export default function ProductSlider({
               {/* Note: Ensure your ProductCard accepts className="h-full" or has h-full built in! */}
               <ProductCard
                 product={pRow}
-                locale={locale}
+                locale={locale as "en" | "ka"}
                 revealDelay={idx % 3}
               />
             </div>
