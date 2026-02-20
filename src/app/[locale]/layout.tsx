@@ -7,7 +7,7 @@ import { routing } from "@/i18n/routing";
 import { Montserrat, Noto_Sans_Georgian } from "next/font/google";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/footer/Footer";
-import Banner from "@/components/Header/Banner";
+
 import { Toaster } from "sonner";
 import PublicOnly from "@/components/PublicOnly";
 import "../globals.css";
@@ -65,7 +65,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PublicOnly>
-            <Banner locale={locale} />
+            {/* <Banner locale={locale} /> */}
             <Header locale={locale} />
           </PublicOnly>
 
