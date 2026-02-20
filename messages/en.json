@@ -97,6 +97,12 @@
       "storeTitle": "Our Stores",
       "storesAria": "Store locations"
     },
+    "Newsletter": {
+      "title": "Let's stay in touch.",
+      "description": "Subscribe to our newsletter for exclusive offers and  early access to new collections,",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
     "nav": {
       "help": "Help",
       "orders": "Orders & Returns",
