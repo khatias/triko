@@ -50,7 +50,6 @@
       "viewAll": "View all"
     },
     "Story": {
-      "title": "Designed in Georgia. Made for slow mornings.",
       "sub": "Thoughtful fits, breathable fabrics, and details that matter.",
       "cta": "About Us",
       "imgAlt": "Lifestyle photo showing Triko products in a cozy home"
@@ -335,6 +334,8 @@
       "isTrikoFor3": "Triko is for everyone."
     },
     "goal": {
+      "Cardtitle": "The Vision",
+      "readButton": "Read Our Story",
       "title": "Our Goal",
       "slogan1": "Our goal is to create products for",
       "slogan2": "everyone",

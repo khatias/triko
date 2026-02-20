@@ -8,6 +8,7 @@ import ProductSlider from "@/components/home/ProductSlider";
 import { getProductsByParentCodes } from "@/lib/db/products";
 import { getFeaturedParentCodes } from "@/lib/db/featured";
 import { getFeaturedGroups } from "@/lib/db/groups";
+
 export async function generateMetadata(ctx: {
   params: Promise<{ locale: string }>;
 }) {
@@ -33,8 +34,10 @@ export default async function Home({
       <Hero locale={locale} />
       <StatusStrip />
       <ProductSlider catalog={catalog} />
+
       <CategoryAccordion featuredGroups={featuredGroups} locale={locale} />
       <StorySlice />
+
       <div className={`${wrap} py-8`} />
     </div>
   );
