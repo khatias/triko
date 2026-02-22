@@ -1,12 +1,17 @@
-import "server-only"
-import { requireAdmin } from "@/utils/auth/requireAdmin"
-import { AdminProductListRowSchema, type AdminProductListRow } from "../types/admin-products"
+import "server-only";
+import { requireAdmin } from "@/utils/auth/requireAdmin";
+import {
+  AdminProductListRowSchema,
+  type AdminProductListRow,
+} from "../types/admin-products";
 
-export async function fetchAdminProductsList(locale: string): Promise<AdminProductListRow[]> {
-  const { supabase } = await requireAdmin(locale)
+export async function fetchAdminProductsList(
+  locale: string,
+): Promise<AdminProductListRow[]> {
+  const { supabase } = await requireAdmin(locale);
 
   const { data, error } = await supabase
-    .from("shop_catalog_admin_parent_view")
+    .from("shop_catalog_admin_product_detail_view_v1")
     .select(
       [
         "parent_code",
@@ -23,13 +28,13 @@ export async function fetchAdminProductsList(locale: string): Promise<AdminProdu
         "has_title",
         "has_description",
         "is_ready",
-      ].join(",")
+      ].join(","),
     )
     .order("group_name", { ascending: true })
-    .order("parent_code", { ascending: true })
+    .order("parent_code", { ascending: true });
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(error.message);
 
-  const rows = Array.isArray(data) ? data : []
-  return rows.map((r) => AdminProductListRowSchema.parse(r))
+  const rows = Array.isArray(data) ? data : [];
+  return rows.map((r) => AdminProductListRowSchema.parse(r));
 }

@@ -13,6 +13,57 @@ const HttpUrl = z
   );
 
 /**
+ * number coercion:
+ * - accepts number
+ * - accepts numeric strings like "195" or "195.00"
+ * - treats "" as null
+ * - keeps null as null
+ */
+const CoerceNumber = z.preprocess((v) => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}, z.number().nullable());
+
+const CoerceInt = z.preprocess((v) => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? Math.trunc(v) : null;
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? Math.trunc(n) : null;
+  }
+  return null;
+}, z.number().int().nullable());
+
+const CoerceBool = z.preprocess((v) => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "number") return Boolean(v);
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase();
+    if (s === "true" || s === "t" || s === "1" || s === "yes") return true;
+    if (s === "false" || s === "f" || s === "0" || s === "no") return false;
+  }
+  return null;
+}, z.boolean().nullable());
+
+const CoerceString = z.preprocess((v) => {
+  if (v === null || v === undefined) return null;
+  const s = String(v).trim();
+  return s.length ? s : null;
+}, z.string().nullable());
+
+/** ---------- Photos ---------- */
+
+/**
  * Accept legacy string OR object, then normalize to object.
  */
 export const PhotoSchema = z
@@ -69,54 +120,81 @@ export const PhotosSchema = z
     }));
   });
 
+/** ---------- Variants ---------- */
+
 export const VariantSchema = z.object({
-  fina_id: z.number().nullable().optional(),
-  code: z.string().nullable().optional(),
-  name: z.string().nullable().optional(),
-  size: z.string().nullable().optional(),
-  currency: z.string().nullable().optional(),
-  stock: z.number().nullable().optional(),
-  list_price: z.number().nullable().optional(),
-  price: z.number().nullable().optional(),
-  has_discount: z.boolean().nullable().optional(),
+  fina_id: CoerceInt.optional(),
+  code: CoerceString.optional(),
+  name: CoerceString.optional(),
+  size: CoerceString.optional(),
+  currency: CoerceString.optional(),
+  stock: CoerceInt.optional(),
+  list_price: CoerceNumber.optional(),
+  price: CoerceNumber.optional(),
+  has_discount: CoerceBool.optional(),
 });
 
+/** ---------- Parent product detail ---------- */
+/**
+ * IMPORTANT:
+ * bundle detail view might not return all old fields.
+ * We keep your editor stable by providing defaults.
+ */
 export const AdminParentProductSchema = z.object({
   parent_code: z.string(),
 
-  group_id: z.number().nullable(),
-  group_name: z.string().nullable(),
-  group_name_en: z.string().nullable(),
-  group_name_ka: z.string().nullable(),
+  // sometimes missing on bundle rows -> default null
+  group_id: CoerceInt.optional().default(null),
+  group_name: CoerceString.optional().default(null),
+  group_name_en: CoerceString.optional().default(null),
+  group_name_ka: CoerceString.optional().default(null),
 
-  name: z.string().nullable(),
-  currency: z.string().nullable(),
-  min_price: z.number().nullable(),
-  max_price: z.number().nullable(),
-  min_list_price: z.number().nullable(),
-  max_list_price: z.number().nullable(),
-  total_stock: z.number().nullable(),
-  has_discount: z.boolean().nullable(),
+  name: CoerceString.optional().default(null),
 
-  title_ka: z.string().nullable(),
-  title_en: z.string().nullable(),
-  description_ka: z.string().nullable(),
-  description_en: z.string().nullable(),
+  // old detail view had these; bundles may not -> defaults
+  currency: CoerceString.optional().default("GEL"),
+  min_price: CoerceNumber.optional().default(null),
+  max_price: CoerceNumber.optional().default(null),
+  min_list_price: CoerceNumber.optional().default(null),
+  max_list_price: CoerceNumber.optional().default(null),
+  total_stock: CoerceInt.optional().default(0),
+  has_discount: CoerceBool.optional().default(false),
+
+  title_ka: CoerceString.optional().default(null),
+  title_en: CoerceString.optional().default(null),
+  description_ka: CoerceString.optional().default(null),
+  description_en: CoerceString.optional().default(null),
 
   // normalize at read-time too
   photos: PhotosSchema.default([]),
 
-  is_published: z.boolean().nullable(),
-  has_content: z.boolean().nullable(),
-  has_photos: z.boolean().nullable(),
-  has_title: z.boolean().nullable(),
-  has_description: z.boolean().nullable(),
-  is_ready: z.boolean().nullable(),
+  is_published: CoerceBool.optional().default(false),
+
+  // these flags may not exist on bundle detail view -> defaults
+  has_content: CoerceBool.optional().default(false),
+  has_photos: CoerceBool.optional().default(false),
+  has_title: CoerceBool.optional().default(false),
+  has_description: CoerceBool.optional().default(false),
+  is_ready: CoerceBool.optional().default(false),
 
   variants: z.array(VariantSchema).default([]),
+
+  // optional: helpful in UI
+  is_bundle: z.preprocess((v) => {
+    if (v === null || v === undefined) return false;
+    if (typeof v === "boolean") return v;
+    if (typeof v === "number") return Boolean(v);
+    if (typeof v === "string") {
+      const s = v.trim().toLowerCase();
+      return s === "true" || s === "t" || s === "1" || s === "yes";
+    }
+    return false;
+  }, z.boolean()).default(false),
 });
 
 export type AdminParentProduct = z.infer<typeof AdminParentProductSchema>;
+
+/** ---------- Save content input ---------- */
 
 export const SaveContentInputSchema = z.object({
   parentCode: z.string().trim().min(1),
