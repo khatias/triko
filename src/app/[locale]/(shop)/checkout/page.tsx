@@ -32,12 +32,17 @@ export type CartItemRow = {
   id: string;
   qty: number;
   variant_code: string | null;
-  variant_name?: string | null;
-  product_name: string;
+  variant_name: string | null;
+
+  product_name: string | null;
   title_ka: string | null;
   title_en: string | null;
+
   price_at_add: number;
   image_url: string | null;
+
+  bundle_key: string | null;
+  parent_code: string | null;
 };
 
 export type ProfileInfo = {
@@ -51,6 +56,47 @@ export type SummaryInfo = {
   shipping_total: number;
   total: number;
 };
+
+export type CheckoutLine =
+  | { kind: "single"; key: string; item: CartItemRow }
+  | { kind: "bundle"; key: string; items: CartItemRow[] };
+
+function groupCheckoutItems(items: CartItemRow[]): CheckoutLine[] {
+  const byBundle = new Map<string, CartItemRow[]>();
+  const out: CheckoutLine[] = [];
+  const seen = new Set<string>();
+
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (!k) continue;
+    const arr = byBundle.get(k) ?? [];
+    arr.push(it);
+    byBundle.set(k, arr);
+  }
+
+  // preserve order by first appearance in the original (created_at asc) list
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+
+    const group = byBundle.get(k) ?? [];
+    if (group.length >= 2) {
+      out.push({ kind: "bundle", key: `bundle:${k}`, items: group });
+    } else if (group[0]) {
+      out.push({ kind: "single", key: `single:${group[0].id}`, item: group[0] });
+    }
+  }
+
+  // non-bundle singles
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (k) continue;
+    out.push({ kind: "single", key: `single:${it.id}`, item: it });
+  }
+
+  return out;
+}
 
 export default async function CheckoutPage({
   params,
@@ -99,7 +145,7 @@ export default async function CheckoutPage({
     ? await supabase
         .from("cart_items")
         .select(
-          "id,qty,variant_code,variant_name,product_name,title_ka,title_en,price_at_add,image_url",
+          "id,bundle_key,parent_code,qty,variant_code,variant_name,product_name,title_ka,title_en,price_at_add,image_url",
         )
         .eq("cart_id", cart.id)
         .order("created_at", { ascending: true })
@@ -121,11 +167,13 @@ export default async function CheckoutPage({
 
   const initialZone: ShippingZone =
     (cart?.shipping_zone as ShippingZone | null) ??
-    ((addresses?.[0]?.shipping_zone as ShippingZone | undefined) ?? "tbilisi");
+    (addresses?.[0]?.shipping_zone as ShippingZone | undefined) ??
+    "tbilisi";
 
   const initialSelectedAddrId =
-    (cart?.shipping_address_id as string | null) ??
-    (addresses?.[0]?.id ?? "");
+    (cart?.shipping_address_id as string | null) ?? addresses?.[0]?.id ?? "";
+
+  const cartLines = groupCheckoutItems(cartItems ?? []);
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 lg:py-20 px-4 md:px-6 font-sans text-slate-900">
@@ -133,7 +181,7 @@ export default async function CheckoutPage({
         <CheckoutFormClient
           locale={locale}
           savedAddresses={(addresses ?? []) as AddressRow[]}
-          cartItems={(cartItems ?? []) as CartItemRow[]}
+          cartLines={cartLines}
           profileInfo={{
             full_name: profile?.full_name ?? null,
             phone: profile?.phone ?? null,

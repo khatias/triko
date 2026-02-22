@@ -40,7 +40,7 @@ import {
   makeGeorgiaPhoneSchema,
 } from "@/lib/validation/profile";
 import { hasImg, toNumber } from "@/utils/type-guards";
-import { displayTitle, formatPrice } from "@/lib/helpers";
+import { formatPrice } from "@/lib/helpers";
 
 export type AddressRow = {
   id: string;
@@ -54,15 +54,25 @@ export type AddressRow = {
 
 export type CartItemRow = {
   id: string;
-  product_name: string;
+
+  bundle_key: string | null;
+  parent_code: string | null;
+
+  product_name: string | null;
   title_ka?: string | null;
   title_en?: string | null;
+
   price_at_add: number;
   qty: number;
+
   image_url?: string | null;
   variant_code?: string | null;
   variant_name?: string | null;
 };
+
+export type CheckoutLine =
+  | { kind: "single"; key: string; item: CartItemRow }
+  | { kind: "bundle"; key: string; items: CartItemRow[] };
 
 export type ProfileInfo = {
   full_name?: string | null;
@@ -79,7 +89,7 @@ export type SummaryInfo = {
 type Props = {
   locale: string;
   savedAddresses: AddressRow[];
-  cartItems: CartItemRow[];
+  cartLines: CheckoutLine[];
   profileInfo: ProfileInfo;
   summary: SummaryInfo;
   initialZone: ShippingZone;
@@ -117,10 +127,36 @@ function makeCheckoutSchema(tErr: (k: string) => string) {
 
 type CheckoutValues = z.infer<ReturnType<typeof makeCheckoutSchema>>;
 
+function pickTitle(it: CartItemRow, locale: "en" | "ka"): string {
+  const ka = (it.title_ka ?? "").trim();
+  const en = (it.title_en ?? "").trim();
+  const name = (it.product_name ?? "").trim();
+  if (locale === "ka") return ka || en || name || "Product";
+  return en || ka || name || "Product";
+}
+
+function bundleHeader(items: CartItemRow[], locale: "en" | "ka") {
+  const head = items[0] ?? null;
+  const title = head
+    ? pickTitle(head, locale)
+    : locale === "ka"
+      ? "სეტი"
+      : "Set";
+  const image_url =
+    head && hasImg(head.image_url) ? (head.image_url ?? null) : null;
+  const qty = head?.qty ?? 1;
+
+  // unit total = sum(unit prices of each bundle component
+  const unitSum = items.reduce((acc, x) => acc + toNumber(x.price_at_add), 0);
+  const lineTotal = unitSum * qty;
+
+  return { title, image_url, qty, lineTotal };
+}
+
 export default function CheckoutFormClient({
   locale,
   savedAddresses,
-  cartItems,
+  cartLines,
   profileInfo,
   summary,
   initialZone,
@@ -136,7 +172,7 @@ export default function CheckoutFormClient({
   const [liveSummary, setLiveSummary] = useState<SummaryInfo>(summary);
   const [shippingUpdating, setShippingUpdating] = useState(false);
 
-  const cartIsEmpty = cartItems.length === 0;
+  const cartIsEmpty = cartLines.length === 0;
 
   const schema = useMemo(() => makeCheckoutSchema(e), [e]);
 
@@ -174,7 +210,6 @@ export default function CheckoutFormClient({
     return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
   }, [savedAddresses, selectedAddrId]);
 
-  // If address list changes and selected is missing, fallback safely.
   useEffect(() => {
     if (!savedAddresses.length) return;
 
@@ -187,7 +222,6 @@ export default function CheckoutFormClient({
     }
   }, [savedAddresses, selectedAddrId, safeInitialSelectedAddrId, setValue]);
 
-  // Prevent duplicate shipping RPC calls on mount (and dev strict-mode double invoke)
   const didInit = useRef(false);
 
   const updateShipping = useCallback(
@@ -211,9 +245,6 @@ export default function CheckoutFormClient({
     [locale, router, shippingUpdating],
   );
 
-  // ✅ IMPORTANT FIX:
-  // If user already has a selected address, we MUST ensure shipping is calculated.
-  // Previously validation passed but shipping_total stayed 0 because no RPC call happened.
   useEffect(() => {
     if (didInit.current) return;
     if (!selectedAddr) return;
@@ -230,7 +261,6 @@ export default function CheckoutFormClient({
     if (needsSync) {
       updateShipping(selectedAddr.shipping_zone, selectedAddr.id);
     }
-    // Intentionally run once per mount with the selectedAddr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAddr]);
 
@@ -241,7 +271,6 @@ export default function CheckoutFormClient({
       setValue("selectedAddrId", addr.id, { shouldValidate: true });
       setBannerError(null);
 
-      // Always call because RPC also persists shipping_address_id
       await updateShipping(addr.shipping_zone, addr.id);
     },
     [setValue, updateShipping, shippingUpdating],
@@ -407,36 +436,117 @@ export default function CheckoutFormClient({
             </h2>
 
             <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-              {cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-4 p-4 sm:p-6 hover:bg-gray-50/50"
-                >
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
-                    {hasImg(item.image_url) ? (
-                      <Image
-                        src={item.image_url}
-                        alt=""
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <ShoppingBag className="m-auto mt-6 text-gray-300" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="line-clamp-2 text-sm font-semibold">
-                      {displayTitle(item, locale as "en" | "ka")}
+              {cartLines.map((line) => {
+                if (line.kind === "single") {
+                  const item = line.item;
+                  const title = pickTitle(item, locale as "en" | "ka");
+                  return (
+                    <div
+                      key={line.key}
+                      className="flex gap-4 p-4 sm:p-6 hover:bg-gray-50/50"
+                    >
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                        {hasImg(item.image_url) ? (
+                          <Image
+                            src={item.image_url as string}
+                            alt=""
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <ShoppingBag className="m-auto mt-6 text-gray-300" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="line-clamp-2 text-sm font-semibold">
+                              {title}
+                            </div>
+
+                            <div className="mt-1 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                              x{item.qty}
+                            </div>
+
+                            {item.variant_code ? (
+                              <div className="mt-2 font-mono text-[10px] text-gray-400">
+                                {item.variant_code}
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="shrink-0 text-right">
+                            <div className="text-sm font-bold text-gray-900">
+                              {formatPrice(
+                                toNumber(item.price_at_add) * item.qty,
+                                "GEL",
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-1 text-sm font-bold text-gray-900">
-                      {formatPrice(
-                        toNumber(item.price_at_add) * item.qty,
-                        "GEL",
+                  );
+                }
+
+                // bundle
+                const meta = bundleHeader(line.items, locale as "en" | "ka");
+
+                return (
+                  <div
+                    key={line.key}
+                    className="flex gap-4 p-4 sm:p-6 hover:bg-gray-50/50"
+                  >
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                      {meta.image_url ? (
+                        <Image
+                          src={meta.image_url}
+                          alt=""
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <ShoppingBag className="m-auto mt-6 text-gray-300" />
                       )}
                     </div>
+
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="line-clamp-2 text-sm font-semibold">
+                            {meta.title}
+                          </div>
+                          <div className="mt-1 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                            {locale === "ka" ? "სეტი" : "Set"} · x{meta.qty}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 text-right">
+                          <div className="text-sm font-bold text-gray-900">
+                            {formatPrice(meta.lineTotal, "GEL")}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* optional: show parts */}
+                      <div className="mt-3 space-y-1">
+                        {line.items.map((it) => (
+                          <div
+                            key={it.id}
+                            className="text-xs text-gray-500 flex items-center justify-between gap-3"
+                          >
+                            {it.variant_code ? (
+                              <span className="shrink-0 font-mono text-[10px] text-gray-400">
+                                {it.variant_code}
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {oosItems?.length ? (
