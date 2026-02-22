@@ -5,20 +5,17 @@ import { createClient } from "@/utils/supabase/server";
 ========================= */
 
 export type Variant = {
-  fina_id: number;
+  fina_id: number | null; 
+  top_fina_id?: number | null;
+  bottom_fina_id?: number | null;
+
   code: string | null;
   name: string;
   size: string | null;
 
-  // effective price (discount-aware)
   price: number | null;
-
-  // original/list price
   list_price: number | null;
-
-  // discount flag (optional from DB)
   has_discount: boolean | null;
-
   currency: string | null;
   stock: number | null;
 };
