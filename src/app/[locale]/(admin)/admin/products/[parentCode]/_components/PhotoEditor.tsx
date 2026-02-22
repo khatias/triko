@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   UploadCloud,
@@ -19,6 +19,9 @@ import { supabase } from "@/utils/supabase/clients";
 
 const MAX_PHOTOS = 12;
 
+// 8MB (შეგიძლია გაზარდო, მაგრამ დიდი ფაილები ნელდება)
+const MAX_BYTES = 8 * 1024 * 1024;
+
 function isHttpUrl(u: string) {
   try {
     const x = new URL(u);
@@ -31,7 +34,7 @@ function isHttpUrl(u: string) {
 function normalizeClient(next: Photo[]) {
   const seen = new Set<string>();
   const uniq = next
-    .map((p) => ({ ...p, url: p.url.trim() }))
+    .map((p) => ({ ...p, url: (p.url ?? "").trim() }))
     .filter((p) => {
       if (!p.url) return false;
       if (seen.has(p.url)) return false;
@@ -53,7 +56,7 @@ function normalizeClient(next: Photo[]) {
 }
 
 function safeParentFolder(parentCode: string) {
-  return parentCode.replace(/[^A-Za-z0-9_-]/g, "_");
+  return String(parentCode || "").replace(/[^A-Za-z0-9_-]/g, "_");
 }
 
 function extFromMime(mime: string) {
@@ -64,11 +67,16 @@ function extFromMime(mime: string) {
 }
 
 async function uploadToStorage(file: File, parentCode: string) {
+  if (!file) throw new Error("No file selected.");
+  if (file.size <= 0) throw new Error("Empty file.");
+  if (file.size > MAX_BYTES) throw new Error("Image is too large (max 8MB).");
+
   const mime = file.type || "image/jpeg";
   if (!mime.startsWith("image/")) throw new Error("Unsupported file type.");
 
   const safeParent = safeParentFolder(parentCode);
   const ext = extFromMime(mime);
+
   const objectPath = `products/${safeParent}/${crypto.randomUUID()}.${ext}`;
 
   const { error: upErr } = await supabase.storage
@@ -81,7 +89,10 @@ async function uploadToStorage(file: File, parentCode: string) {
 
   if (upErr) throw new Error(upErr.message);
 
-  const { data } = supabase.storage.from("product-images").getPublicUrl(objectPath);
+  const { data } = supabase.storage
+    .from("product-images")
+    .getPublicUrl(objectPath);
+
   const publicUrl = data?.publicUrl;
   if (!publicUrl) throw new Error("Upload succeeded but URL could not be created.");
 
@@ -100,16 +111,17 @@ export default function PhotoEditor({
   const t = useTranslations("Admin.ProductEdit.media");
   const [urlInput, setUrlInput] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const ordered = useMemo(
-    () => photos.slice().sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0)),
+    () => (photos ?? []).slice().sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0)),
     [photos],
   );
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = "";
+    e.target.value = ""; // allow reselect same file
     if (!file) return;
 
     if (ordered.length >= MAX_PHOTOS) {
@@ -123,7 +135,11 @@ export default function PhotoEditor({
 
       const next: Photo[] = [
         ...ordered,
-        { url: publicUrl, sort: ordered.length, is_primary: ordered.length === 0 },
+        {
+          url: publicUrl,
+          sort: ordered.length,
+          is_primary: ordered.length === 0,
+        },
       ];
 
       setPhotos(normalizeClient(next));
@@ -142,6 +158,7 @@ export default function PhotoEditor({
       toast.error(t("badUrl"));
       return;
     }
+
     if (ordered.length >= MAX_PHOTOS) {
       toast.error(t("max", { count: MAX_PHOTOS }));
       return;
@@ -181,32 +198,40 @@ export default function PhotoEditor({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-4 dark:border-zinc-700 dark:bg-zinc-950 sm:flex-row">
-        {/* hidden input */}
+      {/* Upload / URL bar */}
+      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-4 dark:border-zinc-700 dark:bg-zinc-950 sm:flex-row sm:items-center">
+        {/* IMPORTANT: button type="button" => never submits any form */}
+        <button
+          type="button"
+          disabled={isUploading}
+          onClick={() => fileRef.current?.click()}
+          className={`flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 ${
+            isUploading ? "cursor-not-allowed opacity-50" : ""
+          }`}
+        >
+          {isUploading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <UploadCloud className="h-4 w-4" />
+          )}
+          <span>{t("upload")}</span>
+        </button>
+
+        {/* CRITICAL: name="" + form="" prevents file being attached to any server action form submit */}
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
           className="hidden"
-          disabled={isUploading}
           onChange={handleFileUpload}
-        />
-
-        {/* trigger button */}
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
           disabled={isUploading}
-          className={`flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 ${
-            isUploading ? "cursor-not-allowed opacity-50" : ""
-          }`}
-        >
-          {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-          <span>{t("upload")}</span>
-        </button>
+          name=""
+          form=""
+        />
 
         <div className="flex flex-1 items-center gap-2">
           <div className="text-zinc-300 dark:text-zinc-700">{t("or")}</div>
+
           <div className="relative flex flex-1 items-center">
             <LinkIcon className="absolute left-3 h-4 w-4 text-zinc-400" />
             <input
@@ -217,6 +242,7 @@ export default function PhotoEditor({
               onKeyDown={(e) => e.key === "Enter" && handleUrlAdd()}
             />
           </div>
+
           <button
             type="button"
             onClick={handleUrlAdd}
@@ -228,6 +254,7 @@ export default function PhotoEditor({
         </div>
       </div>
 
+      {/* Grid */}
       {ordered.length > 0 ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {ordered.map((photo, idx) => (
