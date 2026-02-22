@@ -601,7 +601,11 @@
     "shippingPriceText": "Shipping fee will be added at checkout.",
     "errors": {
       "onlyLeft": "Only {available} left in stock.",
-      "notEnoughStock": "Not enough stock available."
+      "notEnoughStock": "Not enough stock available.",
+      "notFound": "This item is currently unavailable.",
+      "priceMismatch": "Please clear your cart and try again.",
+      "priceInvalid": "Price is invalid. Please try again.",
+      "qtyInvalid": "Invalid quantity."
     }
   },
   "Checkout": {
