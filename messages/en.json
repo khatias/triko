@@ -464,7 +464,7 @@
       "setDefault": "Set as default",
       "delete": "Delete",
       "address1": "Address",
-      "address2": "Comppent(optional)",
+      "address2": "Comment(optional)",
       "city": "City",
       "region": "Region",
       "save": "Save Address",
@@ -475,7 +475,7 @@
       "regionVillage": "Region - Village",
       "regionTbilisi": "Tbilisi",
       "municipality": "Municipality",
-      "viiage": "Village"
+      "village": "Village"
     },
     "orders": {
       "title": "My Orders",
@@ -675,6 +675,7 @@
       "date": "Date",
       "status": "Status",
       "subtotal": "Subtotal",
+      "discount": "Discount",
       "total": "Total",
       "action": "Action",
       "items": "Items",
@@ -691,6 +692,8 @@
       "apply": "Apply",
       "loading": "Loading",
       "resetTitle": "Reset to paid",
+
+      "end": "End",
 
       "paid": "Paid",
       "all": "All ",

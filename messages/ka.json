@@ -89,7 +89,8 @@
     "seeMore": "მეტის ნახვა",
     "viewAll": "ყველას ნახვა",
     "all": "ყველა პროდუქტი",
-    "searchPlaceholder": "ძებნა..."
+    "searchPlaceholder": "ძებნა...",
+    "end":"დასასრული"
   },
 
   "Footer": {
