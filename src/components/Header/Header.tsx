@@ -5,6 +5,7 @@ import { getCartState } from "@/lib/cart/actions";
 import type { SafeUser } from "@/types/auth";
 import { getVisibleGroups } from "@/lib/db/groups";
 import Banner from "./Banner";
+import { computeCartBadgeCount } from "@/lib/cart/count";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,6 +27,8 @@ export default async function Header({ locale }: { locale: "en" | "ka" }) {
   const groups = await getVisibleGroups();
   const state = await getCartState();
 
+  const badgeCount = computeCartBadgeCount(state.items);
+
   return (
     <header className="sticky top-0 z-1000 bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/70 shadow-lg">
       <Banner locale={locale} />
@@ -33,7 +36,7 @@ export default async function Header({ locale }: { locale: "en" | "ka" }) {
         user={safeUser}
         locale={locale}
         groups={groups ?? []}
-        cartCount={state.cart.items_count}
+        cartCount={badgeCount}
       />
     </header>
   );
