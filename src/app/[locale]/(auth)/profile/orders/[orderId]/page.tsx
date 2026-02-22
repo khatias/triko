@@ -21,7 +21,7 @@ import {
 
 import { formatDate, formatPrice } from "@/lib/helpers";
 import { CopyId } from "@/components/UI/CopyButton";
-import { toNumber, isPaidStatus } from "@/utils/type-guards";
+import { toNumber, isPaidStatus, hasImg } from "@/utils/type-guards";
 
 export const dynamic = "force-dynamic";
 
@@ -49,10 +49,12 @@ type OrderItemRow = {
   id: string;
   order_id: string;
   fina_id: number | null;
+
   code: string | null;
   name_ka: string | null;
   name_en: string | null;
   product_name: string | null;
+
   image_url: string | null;
   variant_name: string | null;
 
@@ -63,8 +65,16 @@ type OrderItemRow = {
   unit_list_price: number | string | null;
   line_total: number | string | null;
 
+  // ✅ NEW
+  bundle_key: string | null;
+  parent_code: string | null;
+
   created_at: string;
 };
+
+type OrderLine =
+  | { kind: "single"; key: string; item: OrderItemRow }
+  | { kind: "bundle"; key: string; items: OrderItemRow[] };
 
 // --- HELPERS ---
 function isShippingStatus(v: unknown): v is ShippingStatus {
@@ -84,6 +94,68 @@ function safeNum(v: number | string | null | undefined, fallback = 0): number {
 function safeStr(v: string | null | undefined): string | null {
   if (typeof v === "string" && v.trim()) return v.trim();
   return null;
+}
+
+function pickTitle(it: OrderItemRow, locale: "en" | "ka", t: (k: string) => string) {
+  const ka = safeStr(it.name_ka);
+  const en = safeStr(it.name_en);
+  const name = safeStr(it.product_name);
+
+  if (locale === "ka") return ka ?? en ?? name ?? t("productAlt");
+  return en ?? ka ?? name ?? t("productAlt");
+}
+
+function groupOrderItems(items: OrderItemRow[]): OrderLine[] {
+  const byBundle = new Map<string, OrderItemRow[]>();
+  const out: OrderLine[] = [];
+  const seen = new Set<string>();
+
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (!k) continue;
+    const arr = byBundle.get(k) ?? [];
+    arr.push(it);
+    byBundle.set(k, arr);
+  }
+
+  // keep order by original list
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (!k) continue;
+    if (seen.has(k)) continue;
+    seen.add(k);
+
+    const group = byBundle.get(k) ?? [];
+    if (group.length >= 2) out.push({ kind: "bundle", key: `bundle:${k}`, items: group });
+    else if (group[0]) out.push({ kind: "single", key: `single:${group[0].id}`, item: group[0] });
+  }
+
+  // singles (non-bundle)
+  for (const it of items) {
+    const k = (it.bundle_key ?? "").trim();
+    if (k) continue;
+    out.push({ kind: "single", key: `single:${it.id}`, item: it });
+  }
+
+  return out;
+}
+
+function bundleHeader(items: OrderItemRow[], locale: "en" | "ka", t: (k: string) => string) {
+  const head = items[0] ?? null;
+
+  const title = head ? pickTitle(head, locale, t) : locale === "ka" ? "სეტი" : "Set";
+  const image_url = head && hasImg(head.image_url) ? (head.image_url ?? null) : null;
+
+  // qty: same for both parts, but be safe
+  const qty = safeNum(head?.quantity, 1);
+
+  // unit total = sum(unit_price of each item in the bundle
+  const unitSum = items.reduce((acc, x) => acc + safeNum(x.unit_price, 0), 0);
+
+  // line total = unitSum * qty (don’t rely on line_total per item)
+  const lineTotal = unitSum * qty;
+
+  return { title, image_url, qty, lineTotal };
 }
 
 // --- UI COMPONENTS ---
@@ -132,29 +204,14 @@ function ShippingMiniTracker({
       { key: "delivered", icon: MapPin, label: t("shipping.deliveredShort") },
     ];
 
-  const idx = Math.max(
-    0,
-    steps.findIndex((s) => s.key === status),
-  );
+  const idx = Math.max(0, steps.findIndex((s) => s.key === status));
 
   const header =
     status === "confirmed"
-      ? {
-          label: t("shipping.confirmedLabel"),
-          desc: t("shipping.confirmedDesc"),
-          Icon: Box,
-        }
+      ? { label: t("shipping.confirmedLabel"), desc: t("shipping.confirmedDesc"), Icon: Box }
       : status === "in_transit"
-        ? {
-            label: t("shipping.inTransitLabel"),
-            desc: t("shipping.inTransitDesc"),
-            Icon: Truck,
-          }
-        : {
-            label: t("shipping.deliveredLabel"),
-            desc: t("shipping.deliveredDesc"),
-            Icon: CheckCircle2,
-          };
+        ? { label: t("shipping.inTransitLabel"), desc: t("shipping.inTransitDesc"), Icon: Truck }
+        : { label: t("shipping.deliveredLabel"), desc: t("shipping.deliveredDesc"), Icon: CheckCircle2 };
 
   return (
     <section className="overflow-hidden  bg-white border-b border-gray-300 ">
@@ -165,9 +222,7 @@ function ShippingMiniTracker({
           </div>
           <div>
             <p className="text-base font-bold text-gray-900">{header.label}</p>
-            <p className="mt-1 text-sm leading-relaxed text-gray-600">
-              {header.desc}
-            </p>
+            <p className="mt-1 text-sm leading-relaxed text-gray-600">{header.desc}</p>
           </div>
         </div>
       </div>
@@ -192,9 +247,7 @@ function ShippingMiniTracker({
                   <div
                     className={cx(
                       "z-10 flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors",
-                      active
-                        ? "border-[#172a3e] bg-[#172a3e] text-white"
-                        : "border-gray-300 bg-white text-gray-400",
+                      active ? "border-[#172a3e] bg-[#172a3e] text-white" : "border-gray-300 bg-white text-gray-400",
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -241,9 +294,7 @@ export default async function OrderPage({
           <div className="mx-auto mb-6 grid h-14 w-14 place-items-center rounded-full bg-gray-100 text-gray-900">
             <AlertTriangle className="h-6 w-6" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900">
-            {t("logintoView")}
-          </h2>
+          <h2 className="text-lg font-bold text-gray-900">{t("logintoView")}</h2>
           <Link
             href={`/${locale}/login`}
             className="mt-7 inline-flex w-full items-center justify-center rounded-xl bg-gray-900 py-3.5 text-sm font-bold text-white active:scale-[0.99]"
@@ -257,9 +308,7 @@ export default async function OrderPage({
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select(
-      "id,status,shipping_status,items_count,subtotal,discount_total,shipping_total,total,created_at,currency",
-    )
+    .select("id,status,shipping_status,items_count,subtotal,discount_total,shipping_total,total,created_at,currency")
     .eq("id", orderIdStr)
     .eq("user_id", user.id)
     .maybeSingle<OrderRow>();
@@ -281,9 +330,10 @@ export default async function OrderPage({
   const { data: itemsRaw, error: itemsError } = await supabase
     .from("order_items")
     .select(
-      "id,order_id,fina_id,code,name_ka,name_en,product_name,image_url,variant_name,quantity,currency,unit_price,unit_list_price,line_total,created_at",
+      "id,order_id,fina_id,code,name_ka,name_en,product_name,image_url,variant_name,quantity,currency,unit_price,unit_list_price,line_total,bundle_key,parent_code,created_at",
     )
     .eq("order_id", orderIdStr)
+    .order("created_at", { ascending: true })
     .returns<OrderItemRow[]>();
 
   const currency = order.currency ?? "GEL";
@@ -294,39 +344,31 @@ export default async function OrderPage({
 
   const paid = isPaidStatus(order.status);
   const shippingStatus: ShippingStatus | null =
-    paid && isShippingStatus(order.shipping_status)
-      ? order.shipping_status
-      : null;
+    paid && isShippingStatus(order.shipping_status) ? order.shipping_status : null;
 
   const items: OrderItemRow[] = itemsRaw ?? [];
+  const lines = groupOrderItems(items);
+
   const payHref = `/${locale}/checkout?orderId=${encodeURIComponent(orderIdStr)}`;
 
   const SummaryContent = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-gray-600">{t("subtotalLabel")}</span>
-        <span className="font-bold text-gray-900">
-          {formatPrice(subtotal, currency)}
-        </span>
+        <span className="font-bold text-gray-900">{formatPrice(subtotal, currency)}</span>
       </div>
 
       {discountTotal > 0 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="font-medium text-emerald-700">
-            {t("discountLabel")}
-          </span>
-          <span className="font-bold text-emerald-700">
-            -{formatPrice(discountTotal, currency)}
-          </span>
+          <span className="font-medium text-emerald-700">{t("discountLabel")}</span>
+          <span className="font-bold text-emerald-700">-{formatPrice(discountTotal, currency)}</span>
         </div>
       )}
 
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium text-gray-600">{t("shippingLabel")}</span>
         {shippingTotal > 0 ? (
-          <span className="font-bold text-gray-900">
-            {formatPrice(shippingTotal, currency)}
-          </span>
+          <span className="font-bold text-gray-900">{formatPrice(shippingTotal, currency)}</span>
         ) : (
           <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
             {t("freeLabel")}
@@ -336,12 +378,8 @@ export default async function OrderPage({
 
       <div className="border-t border-dashed border-gray-200 pt-4">
         <div className="flex items-center justify-between">
-          <span className="text-base font-extrabold text-gray-900">
-            {t("totalLabel")}
-          </span>
-          <span className="text-2xl font-extrabold text-gray-900">
-            {formatPrice(total, currency)}
-          </span>
+          <span className="text-base font-extrabold text-gray-900">{t("totalLabel")}</span>
+          <span className="text-2xl font-extrabold text-gray-900">{formatPrice(total, currency)}</span>
         </div>
       </div>
 
@@ -389,9 +427,7 @@ export default async function OrderPage({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
           {/* LEFT */}
           <div className="space-y-6 lg:col-span-8">
-            {shippingStatus && (
-              <ShippingMiniTracker status={shippingStatus} t={t} />
-            )}
+            {shippingStatus && <ShippingMiniTracker status={shippingStatus} t={t} />}
 
             {!paid && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
@@ -401,12 +437,8 @@ export default async function OrderPage({
                       <Clock className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="text-base font-bold text-amber-900">
-                        {t("awaitingPaymentTitle")}
-                      </p>
-                      <p className="mt-1 max-w-md text-sm text-amber-900/80">
-                        {t("awaitingPaymentDesc")}
-                      </p>
+                      <p className="text-base font-bold text-amber-900">{t("awaitingPaymentTitle")}</p>
+                      <p className="mt-1 max-w-md text-sm text-amber-900/80">{t("awaitingPaymentDesc")}</p>
                     </div>
                   </div>
 
@@ -424,9 +456,7 @@ export default async function OrderPage({
               title={t("itemsTitle")}
               right={
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-extrabold text-gray-700">
-                  {t("itemsCount", {
-                    count: order.items_count ?? items.length,
-                  })}
+                  {t("itemsCount", { count: order.items_count ?? items.length })}
                 </span>
               }
             >
@@ -438,40 +468,102 @@ export default async function OrderPage({
 
               {items.length === 0 && !itemsError ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center text-gray-500">
-                  <ShoppingBag
-                    className="mb-4 h-12 w-12 opacity-30"
-                    strokeWidth={1}
-                  />
+                  <ShoppingBag className="mb-4 h-12 w-12 opacity-30" strokeWidth={1} />
                   <p className="font-medium">{t("noItems")}</p>
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
-                  {items.map((it) => {
-                    const title =
-                      locale === "ka"
-                        ? (safeStr(it.name_ka) ??
-                          safeStr(it.product_name) ??
-                          t("productAlt"))
-                        : (safeStr(it.name_en) ??
-                          safeStr(it.product_name) ??
-                          t("productAlt"));
+                  {lines.map((line) => {
+                    if (line.kind === "single") {
+                      const it = line.item;
+                      const title = pickTitle(it, locale as "en" | "ka", t);
 
-                    const qty = safeNum(it.quantity, 1);
-                    const unitPrice = safeNum(it.unit_price, 0);
-                    const unitListPrice = safeNum(it.unit_list_price, 0);
-                    const lineTotal = safeNum(it.line_total, unitPrice * qty);
+                      const qty = safeNum(it.quantity, 1);
+                      const unitPrice = safeNum(it.unit_price, 0);
+                      const unitListPrice = safeNum(it.unit_list_price, 0);
+                      const lineTotal = safeNum(it.line_total, unitPrice * qty);
 
-                    const code = safeStr(it.code);
-                    const variant = safeStr(it.variant_name);
+                      const code = safeStr(it.code);
+                      const variant = safeStr(it.variant_name);
+
+                      return (
+                        <li key={line.key} className="py-5 first:pt-0 last:pb-0">
+                          <div className="flex gap-4 sm:gap-6">
+                            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
+                              {it.image_url ? (
+                                <Image
+                                  src={it.image_url}
+                                  alt={title}
+                                  fill
+                                  sizes="96px"
+                                  className="object-contain p-1"
+                                />
+                              ) : (
+                                <div className="grid h-full w-full place-items-center text-gray-300">
+                                  <Package className="h-8 w-8" />
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex min-w-0 flex-1 flex-col justify-between">
+                              <div>
+                                <div className="flex items-start justify-between gap-4">
+                                  <h3 className="line-clamp-2 text-sm font-bold text-gray-900 sm:text-base">
+                                    {title}
+                                  </h3>
+                                  <p className="hidden shrink-0 text-right text-sm font-extrabold text-gray-900 sm:block">
+                                    {formatPrice(lineTotal, currency)}
+                                  </p>
+                                </div>
+
+                                <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                                  {variant && (
+                                    <span className="font-medium text-gray-600">
+                                      {t("variantLabel")}:{" "}
+                                      <span className="text-gray-900">{variant}</span>
+                                    </span>
+                                  )}
+                                  {code && (
+                                    <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-600">
+                                      {code}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="mt-3 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-800">
+                                    {qty} × {formatPrice(unitPrice, currency)}
+                                  </span>
+                                  {unitListPrice > 0 && unitListPrice > unitPrice && (
+                                    <span className="text-xs font-medium text-gray-400 line-through">
+                                      {formatPrice(unitListPrice, currency)}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="block text-sm font-extrabold text-gray-900 sm:hidden">
+                                  {formatPrice(lineTotal, currency)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    }
+
+                    // bundle
+                    const meta = bundleHeader(line.items, locale as "en" | "ka", t);
 
                     return (
-                      <li key={it.id} className="py-5 first:pt-0 last:pb-0">
+                      <li key={line.key} className="py-5 first:pt-0 last:pb-0">
                         <div className="flex gap-4 sm:gap-6">
                           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50 sm:h-24 sm:w-24">
-                            {it.image_url ? (
+                            {meta.image_url ? (
                               <Image
-                                src={it.image_url}
-                                alt={title}
+                                src={meta.image_url}
+                                alt={meta.title}
                                 fill
                                 sizes="96px"
                                 className="object-contain p-1"
@@ -486,48 +578,38 @@ export default async function OrderPage({
                           <div className="flex min-w-0 flex-1 flex-col justify-between">
                             <div>
                               <div className="flex items-start justify-between gap-4">
-                                <h3 className="line-clamp-2 text-sm font-bold text-gray-900 sm:text-base">
-                                  {title}
-                                </h3>
+                                <div className="min-w-0">
+                                  <h3 className="line-clamp-2 text-sm font-bold text-gray-900 sm:text-base">
+                                    {meta.title}
+                                  </h3>
+                                  <div className="mt-2 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                                    {locale === "ka" ? "სეტი" : "Set"} · x{meta.qty}
+                                  </div>
+                                </div>
+
                                 <p className="hidden shrink-0 text-right text-sm font-extrabold text-gray-900 sm:block">
-                                  {formatPrice(lineTotal, currency)}
+                                  {formatPrice(meta.lineTotal, currency)}
                                 </p>
                               </div>
 
-                              <div className="mt-1 flex flex-wrap gap-2 text-xs">
-                                {variant && (
-                                  <span className="font-medium text-gray-600">
-                                    {t("variantLabel")}:{" "}
-                                    <span className="text-gray-900">
-                                      {variant}
+                              {/* parts */}
+                              <div className="mt-3 space-y-1">
+                                {line.items.map((it) => (
+                                  <div key={it.id} className="text-xs text-gray-500 flex items-center justify-between gap-3">
+                                    <span className="truncate">
+                                      {safeStr(it.variant_name) ?? safeStr(it.code) ?? ""}
                                     </span>
-                                  </span>
-                                )}
-                                {code && (
-                                  <span className="rounded bg-gray-100 px-1.5 py-0.5 text-gray-600">
-                                    {code}
-                                  </span>
-                                )}
+                                    <span className="shrink-0 font-mono text-[10px] text-gray-400">
+                                      {safeStr(it.code) ?? ""}
+                                    </span>
+                                  </div>
+                                ))}
                               </div>
                             </div>
 
-                            <div className="mt-3 flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-bold text-gray-800">
-                                  {qty} × {formatPrice(unitPrice, currency)}
-                                </span>
-                                {unitListPrice > 0 &&
-                                  unitListPrice > unitPrice && (
-                                    <span className="text-xs font-medium text-gray-400 line-through">
-                                      {formatPrice(unitListPrice, currency)}
-                                    </span>
-                                  )}
-                              </div>
-
-                              <p className="block text-sm font-extrabold text-gray-900 sm:hidden">
-                                {formatPrice(lineTotal, currency)}
-                              </p>
-                            </div>
+                            <p className="mt-3 block text-sm font-extrabold text-gray-900 sm:hidden">
+                              {formatPrice(meta.lineTotal, currency)}
+                            </p>
                           </div>
                         </div>
                       </li>
