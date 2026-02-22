@@ -12,7 +12,6 @@ type Props = {
   locale: string;
 };
 
-
 export default function ShippingStatusSelect({
   currentValue,
   orderId,
@@ -21,13 +20,13 @@ export default function ShippingStatusSelect({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const t = useTranslations("Admin.Orders");
-const a=useTranslations("Admin.actions");
-const OPTIONS: Array<{ value: ShippingStatus | null; label: string }> = [
-  { value: null, label: t("notStarted") },
-  { value: "confirmed", label: t("confirmed") },
-  { value: "in_transit", label: t("inTransit") },
-  { value: "delivered", label: t("delivered") },
-];
+  const a = useTranslations("Admin.actions");
+  const OPTIONS: Array<{ value: ShippingStatus | null; label: string }> = [
+    { value: "not_started", label: t("notStarted") },
+    { value: "confirmed", label: t("confirmed") },
+    { value: "in_transit", label: t("inTransit") },
+    { value: "delivered", label: t("delivered") },
+  ];
 
   const serverValue =
     currentValue === null ? null : (currentValue as ShippingStatus | null);

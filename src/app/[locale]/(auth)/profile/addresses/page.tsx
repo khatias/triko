@@ -106,11 +106,11 @@ export default async function AddressesPage() {
 
                 {/* Card body */}
                 <div className="min-w-0 space-y-1 mt-3">
-                  <p className="break-words text-base font-semibold text-slate-900">
+                  <p className="wrap-break-word text-base font-semibold text-slate-900">
                     {a.line1}
                   </p>
                   {a.line2 && (
-                    <p className="break-words text-sm text-slate-600">
+                    <p className="wrap-break-word text-sm text-slate-600">
                       {a.line2}
                     </p>
                   )}

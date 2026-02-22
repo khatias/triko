@@ -1,10 +1,11 @@
-import { NextConfig } from "next";
+import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   images: {
+    qualities: [60, 70, 75, 80, 85, 90, 95, 100],
     remotePatterns: [
       {
         protocol: "https",
@@ -15,7 +16,7 @@ const nextConfig: NextConfig = {
 
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb", 
+      bodySizeLimit: "10mb",
     },
   },
 };

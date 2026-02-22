@@ -26,15 +26,19 @@ export async function addAddressAction(formData: FormData) {
       ? String(formData.get("line2")).trim()
       : null,
     city: String(formData.get("city") || "").trim(),
+    shipping_zone: String(formData.get("shipping_zone") || "").trim() as
+      | "tbilisi"
+      | "region_city"
+      | "region_village",
     region: (formData.get("region") as string)
       ? String(formData.get("region")).trim()
       : null,
     is_default_shipping: isDefault,
   };
 
-  if (!payload.line1 || !payload.city) {
+  if (!payload.line1 || !payload.city || !payload.shipping_zone) {
     console.error(
-      "addAddressAction validation failed: line1 and city are required"
+      "addAddressAction validation failed: line1, city, and shipping_zone are required"
     );
     return;
   }
@@ -53,6 +57,7 @@ export async function addAddressAction(formData: FormData) {
 
   const { error } = await supabase.from("addresses").insert(payload);
   if (error) {
+    console.log("addAddressAction error", error);
     console.error("addAddressAction error", error);
   }
 

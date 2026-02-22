@@ -5,20 +5,17 @@ import { createClient } from "@/utils/supabase/server";
 ========================= */
 
 export type Variant = {
-  fina_id: number;
+  fina_id: number | null; 
+  top_fina_id?: number | null;
+  bottom_fina_id?: number | null;
+
   code: string | null;
   name: string;
   size: string | null;
 
-  // effective price (discount-aware)
   price: number | null;
-
-  // original/list price
   list_price: number | null;
-
-  // discount flag (optional from DB)
   has_discount: boolean | null;
-
   currency: string | null;
   stock: number | null;
 };
@@ -150,10 +147,24 @@ export async function getCatalogProductsGrouped(
     query = query.eq("group_id", args.groupId);
   }
 
-  const q = (args.q ?? "").trim();
-  if (q) {
+  const rawQ = (args.q ?? "").trim();
+  if (rawQ) {
+    const q = rawQ
+      .replace(/[%_]/g, "\\$&") // escape ILIKE wildcards
+      .replace(/,/g, " ") // commas break .or() list
+      .replace(/\s+/g, " ")
+      .slice(0, 80);
+
     query = query.or(
-      `name.ilike.%${q}%,title_en.ilike.%${q}%,title_ka.ilike.%${q}%`,
+      [
+        `name.ilike.%${q}%`,
+        `title_en.ilike.%${q}%`,
+        `title_ka.ilike.%${q}%`,
+        `group_name.ilike.%${q}%`,
+        `group_name_en.ilike.%${q}%`,
+        `group_name_ka.ilike.%${q}%`,
+        `parent_code.ilike.%${q}%`,
+      ].join(","),
     );
   }
 
@@ -225,4 +236,72 @@ export async function getCatalogProductDetail(
   }
 
   return (data ?? null) as CatalogProductDetail | null;
+}
+function uniqueKeepOrder(list: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of list) {
+    if (!x) continue;
+    if (seen.has(x)) continue;
+    seen.add(x);
+    out.push(x);
+  }
+  return out;
+}
+
+export async function getProductsByParentCodes(
+  parentCodes: string[],
+): Promise<CatalogGroupedProductCard[]> {
+  const codes = uniqueKeepOrder(parentCodes);
+  if (codes.length === 0) return [];
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("shop_catalog_parent_view")
+    .select(
+      `
+      parent_code,
+      name,
+      title_ka,
+      title_en,
+      description_ka,
+      description_en,
+      photos,
+      currency,
+      min_price,
+      max_price,
+      min_list_price,
+      max_list_price,
+      has_discount,
+      group_id,
+      group_name,
+      group_name_en,
+      group_name_ka,
+      total_stock,
+      variants
+    `,
+    )
+    .in("parent_code", codes);
+
+  if (error) {
+    console.error("getProductsByParentCodes error:", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error("Failed to fetch products by parent codes");
+  }
+
+  const rows = (data ?? []) as CatalogGroupedProductCard[];
+
+  const map = new Map<string, CatalogGroupedProductCard>();
+  for (const r of rows) {
+    if (!map.has(r.parent_code)) map.set(r.parent_code, r);
+  }
+
+  return codes
+    .map((c) => map.get(c))
+    .filter(Boolean) as CatalogGroupedProductCard[];
 }

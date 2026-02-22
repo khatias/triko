@@ -1,7 +1,13 @@
 "use client";
-import { useTranslations } from "next-intl";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -9,335 +15,293 @@ import {
   Check,
   ShoppingBag,
   MapPin,
-  Truck,
   AlertCircle,
+  Truck,
 } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import clsx from "clsx";
 
+import AddAddressCard from "@/components/address/AddAddressCard";
+import { addAddressAction } from "@/app/actions/addAddressAction";
+import { InputField } from "@/components/form/Field";
 import {
   createPendingOrder,
   type CreateOrderInput,
   type OutOfStockItem,
-  type OutOfStockReason,
 } from "../actions/createPendingOrder";
-
-import type {
-  AddressRow,
-  CartItemRow,
-  ProfileInfo,
-  SummaryInfo,
-} from "../page";
-import { hasImg, toNumber } from "@/utils/type-guards";
-import { formatPrice } from "@/lib/helpers";
 import {
-  addressSchema,
+  setShippingZoneAction,
+  type ShippingZone,
+} from "../actions/setShippingZone";
+import {
   fullNameSchema,
   makeGeorgiaPhoneSchema,
 } from "@/lib/validation/profile";
-import { InputField } from "@/components/form/Field";
+import { hasImg, toNumber } from "@/utils/type-guards";
+import { formatPrice } from "@/lib/helpers";
 
-/* ---------------- helpers ---------------- */
+export type AddressRow = {
+  id: string;
+  line1: string;
+  line2?: string | null;
+  city: string;
+  region?: string | null;
+  shipping_zone: ShippingZone;
+  is_default_shipping?: boolean;
+};
 
-function itemTitle(item: CartItemRow, locale: string) {
-  const localized = locale === "ka" ? item.title_ka : item.title_en;
-  return (localized?.trim() || item.product_name || "Product").trim();
-}
+export type CartItemRow = {
+  id: string;
 
-function money(v: number | null, currency: string | null): string | null {
-  if (v == null) return null;
-  return formatPrice(v, currency);
-}
+  bundle_key: string | null;
+  parent_code: string | null;
 
-function reasonKey(r: OutOfStockReason) {
-  if (r === "reserved_temporarily") return "oos_reserved_temporarily";
-  if (r === "no_stock") return "oos_no_stock";
-  return "oos_insufficient";
-}
+  product_name: string | null;
+  title_ka?: string | null;
+  title_en?: string | null;
 
-const bogInitSchema = z.object({
-  redirectUrl: z.string().min(1),
-});
+  price_at_add: number;
+  qty: number;
+
+  image_url?: string | null;
+  variant_code?: string | null;
+  variant_name?: string | null;
+};
+
+export type CheckoutLine =
+  | { kind: "single"; key: string; item: CartItemRow }
+  | { kind: "bundle"; key: string; items: CartItemRow[] };
+
+export type ProfileInfo = {
+  full_name?: string | null;
+  phone?: string | null;
+};
+
+export type SummaryInfo = {
+  subtotal: number;
+  discount_total: number;
+  shipping_total: number;
+  total: number;
+};
+
+type Props = {
+  locale: string;
+  savedAddresses: AddressRow[];
+  cartLines: CheckoutLine[];
+  profileInfo: ProfileInfo;
+  summary: SummaryInfo;
+  initialZone: ShippingZone;
+  initialSelectedAddrId: string;
+};
 
 async function initBogPayment(
   orderId: string,
   locale: string,
 ): Promise<string | null> {
-  const res = await fetch("/api/bog/create-order-for-order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ orderId, locale }),
-  });
-
-  const json: unknown = await res.json().catch(() => null);
-  const parsed = bogInitSchema.safeParse(json);
-
-  if (!res.ok || !parsed.success) return null;
-  return parsed.data.redirectUrl;
+  try {
+    const res = await fetch("/api/bog/create-order-for-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, locale }),
+    });
+    const json = await res.json();
+    return json?.redirectUrl || null;
+  } catch {
+    return null;
+  }
 }
 
-/* ---------------- schema ---------------- */
-
 function makeCheckoutSchema(tErr: (k: string) => string) {
-  const phone = makeGeorgiaPhoneSchema({
-    t: tErr,
-    output: "e164",
-    allowLandline: false,
+  return z.object({
+    fullName: fullNameSchema(tErr),
+    phone: makeGeorgiaPhoneSchema({
+      t: tErr,
+      output: "e164",
+      allowLandline: false,
+    }),
+    selectedAddrId: z.string().min(1, tErr("addressSelectionRequired")),
   });
-
-  const fullName = fullNameSchema(tErr);
-  const addr = addressSchema(tErr);
-
-  return z
-    .object({
-      fullName,
-      phone,
-      useSaved: z.boolean(),
-      selectedAddrId: z.string(),
-      line1: z.string(),
-      line2: z.string(),
-      city: z.string(),
-    })
-    .superRefine((val, ctx) => {
-      if (val.useSaved) {
-        if (!val.selectedAddrId.trim()) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["selectedAddrId"],
-            message: tErr("addressSelectionRequired"),
-          });
-        }
-        return;
-      }
-
-      const r = addr.safeParse({
-        line1: val.line1,
-        line2: val.line2,
-        city: val.city,
-        region: "",
-      });
-
-      if (!r.success) {
-        const flat = r.error.flatten().fieldErrors;
-
-        if (flat.line1?.[0]) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["line1"],
-            message: flat.line1[0],
-          });
-        }
-        if (flat.city?.[0]) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["city"],
-            message: flat.city[0],
-          });
-        }
-      }
-    });
 }
 
 type CheckoutValues = z.infer<ReturnType<typeof makeCheckoutSchema>>;
-type TValues = Record<string, string | number>;
 
-/* ---------------- component ---------------- */
+function pickTitle(it: CartItemRow, locale: "en" | "ka"): string {
+  const ka = (it.title_ka ?? "").trim();
+  const en = (it.title_en ?? "").trim();
+  const name = (it.product_name ?? "").trim();
+  if (locale === "ka") return ka || en || name || "Product";
+  return en || ka || name || "Product";
+}
 
-type Props = {
-  locale: string;
-  savedAddresses: AddressRow[];
-  cartItems: CartItemRow[];
-  profileInfo: ProfileInfo;
-  summary: SummaryInfo;
-};
+function bundleHeader(items: CartItemRow[], locale: "en" | "ka") {
+  const head = items[0] ?? null;
+  const title = head
+    ? pickTitle(head, locale)
+    : locale === "ka"
+      ? "სეტი"
+      : "Set";
+  const image_url =
+    head && hasImg(head.image_url) ? (head.image_url ?? null) : null;
+  const qty = head?.qty ?? 1;
+
+  // unit total = sum(unit prices of each bundle component
+  const unitSum = items.reduce((acc, x) => acc + toNumber(x.price_at_add), 0);
+  const lineTotal = unitSum * qty;
+
+  return { title, image_url, qty, lineTotal };
+}
 
 export default function CheckoutFormClient({
   locale,
   savedAddresses,
-  cartItems,
+  cartLines,
   profileInfo,
   summary,
+  initialZone,
+  initialSelectedAddrId,
 }: Props) {
   const router = useRouter();
-
   const t = useTranslations("Checkout");
   const eIntl = useTranslations("Errors");
-
   const e = useCallback((k: string) => eIntl(k as never), [eIntl]);
-  const eVars = useCallback(
-    (k: string, values: TValues) => eIntl(k as never, values as never),
-    [eIntl],
-  );
-
-  const schema = useMemo(() => makeCheckoutSchema(e), [e]);
 
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [oosItems, setOosItems] = useState<OutOfStockItem[] | null>(null);
+  const [liveSummary, setLiveSummary] = useState<SummaryInfo>(summary);
+  const [shippingUpdating, setShippingUpdating] = useState(false);
 
-  const clearBanner = useCallback(() => {
-    setBannerError(null);
-    setOosItems(null);
-  }, []);
+  const cartIsEmpty = cartLines.length === 0;
 
-  const cartIsEmpty = cartItems.length === 0;
+  const schema = useMemo(() => makeCheckoutSchema(e), [e]);
 
-  useEffect(() => {
-    if (cartIsEmpty) router.replace(`/${locale}/cart`);
-  }, [cartIsEmpty, locale, router]);
+  const safeInitialSelectedAddrId = useMemo(() => {
+    if (!savedAddresses.length) return "";
 
-  const canUseSaved = savedAddresses.length > 0;
-  const firstAddrId = savedAddresses[0]?.id ?? "";
+    const ids = new Set(savedAddresses.map((a) => a.id));
+    if (initialSelectedAddrId && ids.has(initialSelectedAddrId))
+      return initialSelectedAddrId;
+
+    const def = savedAddresses.find((a) => a.is_default_shipping)?.id;
+    return def ?? savedAddresses[0].id;
+  }, [initialSelectedAddrId, savedAddresses]);
 
   const {
     register,
     handleSubmit,
     setValue,
     watch,
-    setError,
-    formState: { errors, isSubmitting, isValid, dirtyFields, isSubmitted },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<CheckoutValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
     defaultValues: {
       fullName: profileInfo.full_name ?? "",
       phone: profileInfo.phone ?? "",
-      useSaved: canUseSaved,
-      selectedAddrId: firstAddrId,
-      line1: "",
-      line2: "",
-      city: "",
+      selectedAddrId: safeInitialSelectedAddrId,
     },
   });
 
-  const useSavedRaw = watch("useSaved");
   const selectedAddrId = watch("selectedAddrId");
 
-  const useSaved = canUseSaved && useSavedRaw;
+  const selectedAddr = useMemo(() => {
+    if (!selectedAddrId) return null;
+    return savedAddresses.find((a) => a.id === selectedAddrId) ?? null;
+  }, [savedAddresses, selectedAddrId]);
 
   useEffect(() => {
-    if (!canUseSaved) {
-      if (useSavedRaw) {
-        setValue("useSaved", false, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-      if (selectedAddrId) {
-        setValue("selectedAddrId", "", {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-      return;
-    }
+    if (!savedAddresses.length) return;
 
-    if (useSaved) {
-      const exists = savedAddresses.some((a) => a.id === selectedAddrId);
-      if (!exists) {
-        setValue("selectedAddrId", firstAddrId, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    }
-  }, [
-    canUseSaved,
-    useSaved,
-    useSavedRaw,
-    selectedAddrId,
-    savedAddresses,
-    setValue,
-    firstAddrId,
-  ]);
-
-  const showErr = (name: keyof CheckoutValues) =>
-    Boolean(errors[name]?.message) &&
-    (Boolean(dirtyFields[name]) || isSubmitted);
-
-  function oosTitleFor(item: OutOfStockItem) {
-    const title =
-      locale === "ka"
-        ? (item.title_ka ?? item.product_name)
-        : (item.title_en ?? item.product_name);
-    return (title ?? "Product").trim();
-  }
-
-  const regFullName = register("fullName", { onChange: clearBanner });
-  const regPhone = register("phone", { onChange: clearBanner });
-  const regLine1 = register("line1", { onChange: clearBanner });
-  const regLine2 = register("line2", { onChange: clearBanner });
-  const regCity = register("city", { onChange: clearBanner });
-
-  const toggleAddressMode = useCallback(() => {
-    clearBanner();
-    if (!canUseSaved) return;
-
-    const next = !useSavedRaw;
-    setValue("useSaved", next, { shouldValidate: true, shouldDirty: true });
-
-    if (next) {
-      const exists = savedAddresses.some((a) => a.id === selectedAddrId);
-      if (!exists) {
-        setValue("selectedAddrId", firstAddrId, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    } else {
-      setValue("selectedAddrId", "", {
+    const exists =
+      selectedAddrId && savedAddresses.some((a) => a.id === selectedAddrId);
+    if (!exists) {
+      setValue("selectedAddrId", safeInitialSelectedAddrId, {
         shouldValidate: true,
-        shouldDirty: true,
       });
     }
-  }, [
-    clearBanner,
-    canUseSaved,
-    useSavedRaw,
-    setValue,
-    savedAddresses,
-    selectedAddrId,
-    firstAddrId,
-  ]);
+  }, [savedAddresses, selectedAddrId, safeInitialSelectedAddrId, setValue]);
 
-  const onSubmit = handleSubmit(async (values) => {
-    clearBanner();
+  const didInit = useRef(false);
 
-    const normalizedUseSaved = canUseSaved && values.useSaved;
+  const updateShipping = useCallback(
+    async (zone: ShippingZone, addrId: string) => {
+      if (shippingUpdating) return;
 
-    if (normalizedUseSaved) {
-      const exists = savedAddresses.some((a) => a.id === values.selectedAddrId);
-      if (!exists) {
-        setError("selectedAddrId", {
-          type: "validate",
-          message: e("addressSelectionRequired"),
-        });
-        return;
+      setShippingUpdating(true);
+      setBannerError(null);
+
+      const res = await setShippingZoneAction(locale, zone, addrId);
+
+      setShippingUpdating(false);
+
+      if (res.ok) {
+        setLiveSummary(res.summary);
+        router.refresh();
+      } else {
+        setBannerError("Failed to calculate shipping price");
       }
-    }
+    },
+    [locale, router, shippingUpdating],
+  );
 
-    const addr = normalizedUseSaved
-      ? (savedAddresses.find((a) => a.id === values.selectedAddrId) ?? null)
-      : null;
+  useEffect(() => {
+    if (didInit.current) return;
+    if (!selectedAddr) return;
+
+    didInit.current = true;
+
+    const shippingMissing = Number(liveSummary.shipping_total ?? 0) <= 0;
+
+    const needsSync =
+      shippingMissing ||
+      selectedAddr.shipping_zone !== initialZone ||
+      !initialSelectedAddrId;
+
+    if (needsSync) {
+      updateShipping(selectedAddr.shipping_zone, selectedAddr.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAddr]);
+
+  const handleSelectAddress = useCallback(
+    async (addr: AddressRow) => {
+      if (shippingUpdating) return;
+
+      setValue("selectedAddrId", addr.id, { shouldValidate: true });
+      setBannerError(null);
+
+      await updateShipping(addr.shipping_zone, addr.id);
+    },
+    [setValue, updateShipping, shippingUpdating],
+  );
+
+  const onSubmit = async (values: CheckoutValues) => {
+    setBannerError(null);
+    setOosItems(null);
+
+    const addr = savedAddresses.find((a) => a.id === values.selectedAddrId);
+    if (!addr) {
+      setBannerError(e("addressSelectionRequired"));
+      return;
+    }
 
     const payload: CreateOrderInput = {
       full_name: values.fullName,
       phone: values.phone,
-      line1: normalizedUseSaved ? (addr?.line1 ?? "") : values.line1,
-      line2: normalizedUseSaved ? (addr?.line2 ?? "") : values.line2,
-      city: normalizedUseSaved ? (addr?.city ?? "") : values.city,
-      shipping_address_id: normalizedUseSaved
-        ? values.selectedAddrId
-        : undefined,
+      shipping_address_id: values.selectedAddrId,
+      line1: addr.line1,
+      line2: addr.line2 || "",
+      city: addr.city,
+      region: addr.region || undefined,
     };
 
     const r = await createPendingOrder(payload);
 
     if (!r.ok) {
       setBannerError(e(r.code));
-      if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length) {
+      if (r.code === "OUT_OF_STOCK" && r.outOfStock?.length)
         setOosItems(r.outOfStock);
-      }
       return;
     }
 
@@ -348,277 +312,256 @@ export default function CheckoutFormClient({
     }
 
     window.location.assign(redirectUrl);
-  });
+  };
 
   if (cartIsEmpty) return null;
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8"
-    >
+    <div className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
       <div className="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
-        {/* LEFT COLUMN */}
+        {/* LEFT */}
         <div className="lg:col-span-7 space-y-12">
-          {/* Contact */}
-          <section
-            aria-labelledby="contact-heading"
-            className="animate-in fade-in slide-in-from-bottom-4 duration-700"
-          >
-            <h2
-              id="contact-heading"
-              className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2"
-            >
+          {/* 1. Contact */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
                 1
               </span>
               {t("contactTitle")}
             </h2>
 
-            <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
               <InputField
                 id="fullName"
                 label={t("fullNameLabel")}
-                autoComplete="name"
                 error={errors.fullName?.message ?? null}
-                {...regFullName}
+                {...register("fullName")}
               />
-
               <InputField
                 id="phone"
                 label={t("phoneLabel")}
                 inputMode="tel"
-                autoComplete="tel"
                 error={errors.phone?.message ?? null}
-                {...regPhone}
+                {...register("phone")}
               />
             </div>
           </section>
 
-          {/* Shipping */}
-          <section
-            aria-labelledby="shipping-heading"
-            className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <h2
-                id="shipping-heading"
-                className="text-xl font-semibold tracking-tight text-gray-900 flex items-center gap-2"
-              >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
-                  2
-                </span>
-                {t("shippingTitle")}
-              </h2>
+          {/* 2. Shipping */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
+                2
+              </span>
+              {t("shippingTitle")}
+            </h2>
 
-              {canUseSaved && (
-                <button
-                  type="button"
-                  onClick={toggleAddressMode}
-                  className="group text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center gap-1"
-                >
-                  <span>{useSaved ? t("toggleManual") : t("toggleSaved")}</span>
-                </button>
-              )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {savedAddresses.map((addr) => {
+                const isSelected = selectedAddrId === addr.id;
+
+                const title =
+                  addr.shipping_zone === "region_village"
+                    ? `${addr.region ?? ""}${addr.region ? ", " : ""}${addr.city}`
+                    : addr.city;
+
+                const zoneLabel =
+                  addr.shipping_zone === "tbilisi"
+                    ? "Tbilisi"
+                    : addr.shipping_zone === "region_city"
+                      ? "City"
+                      : "Village";
+
+                return (
+                  <button
+                    key={addr.id}
+                    type="button"
+                    onClick={() => handleSelectAddress(addr)}
+                    disabled={shippingUpdating}
+                    className={clsx(
+                      "relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left outline-none transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60",
+                      isSelected
+                        ? "z-10 border-black bg-slate-50 shadow-sm ring-1 ring-black"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50",
+                    )}
+                  >
+                    <div className="mb-1 flex w-full items-start justify-between">
+                      <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
+                        <MapPin
+                          size={16}
+                          className={
+                            isSelected ? "text-black" : "text-gray-400"
+                          }
+                        />
+                        {title}
+                      </div>
+                      {isSelected && (
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                          <Check size={12} strokeWidth={3} />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="mb-2 line-clamp-2 pl-6 text-sm text-gray-600">
+                      {addr.line1}
+                    </p>
+
+                    <span className="ml-6 inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                      {zoneLabel}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <div className="flex min-h-35 items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 transition-all hover:border-orange-300 hover:bg-slate-50">
+                <AddAddressCard action={addAddressAction} />
+              </div>
             </div>
 
-            {useSaved ? (
-              <div className="space-y-4">
-                {showErr("selectedAddrId") && errors.selectedAddrId?.message ? (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
-                    <AlertCircle size={16} />
-                    {errors.selectedAddrId.message}
-                  </div>
-                ) : null}
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {savedAddresses.map((addr) => {
-                    const isSelected = selectedAddrId === addr.id;
-                    return (
-                      <button
-                        key={addr.id}
-                        type="button"
-                        onClick={() => {
-                          clearBanner();
-                          setValue("selectedAddrId", addr.id, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                            shouldTouch: true,
-                          });
-                        }}
-                        className={`relative flex flex-col items-start gap-1 rounded-2xl border p-5 text-left transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 ${
-                          isSelected
-                            ? "bg-gray-50 border-black shadow-[0_0_0_1px_black] z-10"
-                            : "bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
-                        }`}
-                      >
-                        <div className="flex w-full justify-between items-start">
-                          <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                            <MapPin
-                              size={14}
-                              className={
-                                isSelected ? "text-black" : "text-gray-400"
-                              }
-                            />
-                            {addr.city}
-                          </div>
-
-                          <div
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
-                              isSelected
-                                ? "border-black bg-black text-white"
-                                : "border-gray-300 bg-transparent"
-                            }`}
-                          >
-                            {isSelected && <Check size={10} strokeWidth={3} />}
-                          </div>
-                        </div>
-
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2 pl-6">
-                          {addr.line1}
-                        </p>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-2 animate-in fade-in zoom-in-95 duration-300">
-                <div className="sm:col-span-2">
-                  <InputField
-                    id="line1"
-                    label={t("addressLine1Label")}
-                    autoComplete="address-line1"
-                    {...regLine1}
-                    error={
-                      showErr("line1") ? (errors.line1?.message ?? null) : null
-                    }
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <InputField
-                    id="line2"
-                    label={t("addressLine2Label")}
-                    autoComplete="address-line2"
-                    {...regLine2}
-                  />
-                </div>
-
-                <InputField
-                  id="city"
-                  label={t("cityLabel")}
-                  autoComplete="address-level2"
-                  {...regCity}
-                  error={
-                    showErr("city") ? (errors.city?.message ?? null) : null
-                  }
-                />
-
-                <div className="opacity-60 pointer-events-none select-none">
-                  <InputField
-                    id="country"
-                    label={t("countryLabel")}
-                    value={t("countryValue")}
-                    disabled
-                  />
-                </div>
+            {errors.selectedAddrId && (
+              <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-600">
+                <AlertCircle size={16} />
+                {errors.selectedAddrId.message}
               </div>
             )}
           </section>
 
-          {/* Product Review */}
-          <section
-            aria-labelledby="review-heading"
-            className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
-          >
-            <h2
-              id="review-heading"
-              className="text-xl font-semibold tracking-tight text-gray-900 mb-6 flex items-center gap-2"
-            >
+          {/* 3. Review */}
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+            <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-bold text-white">
                 3
               </span>
               {t("reviewTitle")}
             </h2>
 
-            <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-              {cartItems.map((item) => {
-                const unit = toNumber(item.price_at_add);
-                const qty =
-                  typeof item.qty === "number"
-                    ? item.qty
-                    : (toNumber(item.qty) ?? 0);
-                const safeUnit = Number.isFinite(unit) ? unit : 0;
-                const safeQty = Number.isFinite(qty) ? qty : 0;
-                const lineTotal = safeUnit * safeQty;
+            <div className="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+              {cartLines.map((line) => {
+                if (line.kind === "single") {
+                  const item = line.item;
+                  const title = pickTitle(item, locale as "en" | "ka");
+                  return (
+                    <div
+                      key={line.key}
+                      className="flex gap-4 p-4 sm:p-6 hover:bg-gray-50/50"
+                    >
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                        {hasImg(item.image_url) ? (
+                          <Image
+                            src={item.image_url as string}
+                            alt=""
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <ShoppingBag className="m-auto mt-6 text-gray-300" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="line-clamp-2 text-sm font-semibold">
+                              {title}
+                            </div>
+
+                            <div className="mt-1 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                              x{item.qty}
+                            </div>
+
+                            {item.variant_code ? (
+                              <div className="mt-2 font-mono text-[10px] text-gray-400">
+                                {item.variant_code}
+                              </div>
+                            ) : null}
+                          </div>
+
+                          <div className="shrink-0 text-right">
+                            <div className="text-sm font-bold text-gray-900">
+                              {formatPrice(
+                                toNumber(item.price_at_add) * item.qty,
+                                "GEL",
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // bundle
+                const meta = bundleHeader(line.items, locale as "en" | "ka");
 
                 return (
                   <div
-                    key={item.id}
-                    className="flex gap-6 p-6 transition-colors hover:bg-gray-50/50"
+                    key={line.key}
+                    className="flex gap-4 p-4 sm:p-6 hover:bg-gray-50/50"
                   >
-                    <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-                      {hasImg(item.image_url) ? (
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                      {meta.image_url ? (
                         <Image
-                          src={item.image_url}
-                          alt={itemTitle(item, locale)}
+                          src={meta.image_url}
+                          alt=""
                           fill
-                          sizes="96px"
-                          className="object-cover object-center"
+                          className="object-cover"
                         />
                       ) : (
-                        <div className="grid h-full w-full place-items-center text-gray-300">
-                          <ShoppingBag size={24} />
-                        </div>
+                        <ShoppingBag className="m-auto mt-6 text-gray-300" />
                       )}
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-between">
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                            {itemTitle(item, locale)}
-                          </h3>
-                          {item.variant_code && (
-                            <p className="text-xs text-gray-500 font-medium font-mono">
-                              {item.variant_code}
-                            </p>
-                          )}
-                          {item.variant_name && (
-                            <p className="text-xs text-gray-500 font-medium">
-                              {t("sizeLabel")} {item.variant_name}
-                            </p>
-                          )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="line-clamp-2 text-sm font-semibold">
+                            {meta.title}
+                          </div>
+                          <div className="mt-1 inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
+                            {locale === "ka" ? "სეტი" : "Set"} · x{meta.qty}
+                          </div>
                         </div>
-                        <p className="text-sm font-bold text-gray-900 whitespace-nowrap">
-                          {money(lineTotal, "GEL")}
-                        </p>
+
+                        <div className="shrink-0 text-right">
+                          <div className="text-sm font-bold text-gray-900">
+                            {formatPrice(meta.lineTotal, "GEL")}
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex items-center text-xs text-gray-500">
-                        <span>
-                          {t("qtyLabel")}{" "}
-                          <span className="text-gray-900 font-medium">
-                            {safeQty}
-                          </span>
-                        </span>
-                        <span className="mx-2 text-gray-300">•</span>
-                        <span>{money(unit, "GEL")} / unit</span>
+                      {/* optional: show parts */}
+                      <div className="mt-3 space-y-1">
+                        {line.items.map((it) => (
+                          <div
+                            key={it.id}
+                            className="text-xs text-gray-500 flex items-center justify-between gap-3"
+                          >
+                            {it.variant_code ? (
+                              <span className="shrink-0 font-mono text-[10px] text-gray-400">
+                                {it.variant_code}
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+
+            {oosItems?.length ? (
+              <div className="mt-4 rounded-xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900">
+                Some items are out of stock.
+              </div>
+            ) : null}
           </section>
         </div>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT */}
         <div className="mt-16 lg:col-span-5 lg:mt-0">
-          <div className="sticky top-10 overflow-hidden rounded-3xl bg-white shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] ring-1 ring-gray-900/5">
+          <div className="sticky top-10 overflow-hidden rounded-3xl bg-white shadow-xl shadow-gray-200/50 ring-1 ring-gray-900/5">
             <div className="p-8">
-              <h2 className="text-lg font-bold tracking-tight text-gray-900 mb-6">
+              <h2 className="mb-6 text-lg font-bold tracking-tight text-gray-900">
                 {t("orderSummaryTitle")}
               </h2>
 
@@ -626,131 +569,83 @@ export default function CheckoutFormClient({
                 <div className="flex items-center justify-between">
                   <dt className="text-sm text-gray-500">{t("subtotal")}</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {money(summary.subtotal, "GEL")}
+                    {formatPrice(liveSummary.subtotal, "GEL")}
                   </dd>
                 </div>
 
-                {summary.discount_total > 0 && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-sm text-gray-500">{t("discount")}</dt>
-                    <dd className="text-sm font-medium text-emerald-600">
-                      -{money(summary.discount_total, "GEL")}
+                {liveSummary.discount_total > 0 && (
+                  <div className="flex items-center justify-between text-emerald-600">
+                    <dt className="text-sm">{t("discount")}</dt>
+                    <dd className="text-sm font-medium">
+                      -{formatPrice(liveSummary.discount_total, "GEL")}
                     </dd>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between">
-                  <dt className="text-sm text-gray-500 flex items-center gap-2">
-                    {t("shipping")}
+                  <dt className="flex items-center gap-2 text-sm text-gray-500">
+                    {t("shipping")}{" "}
                     <Truck size={14} className="text-gray-300" />
                   </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    {money(summary.shipping_total, "GEL")}
+                  <dd
+                    className={clsx(
+                      "text-sm font-medium text-gray-900",
+                      shippingUpdating && "opacity-50",
+                    )}
+                  >
+                    {shippingUpdating
+                      ? "..."
+                      : formatPrice(liveSummary.shipping_total, "GEL")}
                   </dd>
                 </div>
 
-                <div className="my-6 border-t border-gray-100 pt-6 flex items-center justify-between">
+                <div className="my-6 flex items-center justify-between border-t border-gray-100 pt-6">
                   <dt className="text-base font-bold text-gray-900">
                     {t("total")}
                   </dt>
-                  <dd className="text-2xl font-bold tracking-tight text-gray-900">
-                    {money(summary.total, "GEL")}
+                  <dd
+                    className={clsx(
+                      "text-2xl font-bold text-gray-900",
+                      shippingUpdating && "opacity-50",
+                    )}
+                  >
+                    {shippingUpdating
+                      ? "..."
+                      : formatPrice(liveSummary.total, "GEL")}
                   </dd>
                 </div>
               </dl>
 
-              {bannerError ? (
-                <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-100 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
-                    <div className="space-y-1">
-                      <h3 className="text-sm font-medium text-red-800">
-                        {bannerError}
-                      </h3>
-
-                      {oosItems && oosItems.length > 0 && (
-                        <div className="mt-2 space-y-2">
-                          <p className="text-xs font-semibold text-red-700 uppercase tracking-wide opacity-80">
-                            {e("OOS_DETAILS_TITLE")}
-                          </p>
-
-                          <ul className="space-y-2">
-                            {oosItems.map((it) => (
-                              <li
-                                key={`${it.fina_id}`}
-                                className="text-xs text-red-700 bg-white/50 p-2 rounded border border-red-100/50"
-                              >
-                                <span className="font-semibold block mb-1">
-                                  {oosTitleFor(it)}
-                                </span>
-                                <span>
-                                  {eVars("OOS_QTY_LINE", {
-                                    requested: it.requested,
-                                    available: it.available,
-                                  })}
-                                </span>
-                                <span className="block mt-0.5 opacity-75">
-                                  {e(reasonKey(it.reason))}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+              {bannerError && (
+                <div className="mb-6 flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 p-4 text-sm text-red-800">
+                  <AlertCircle className="h-5 w-5 shrink-0" /> {bannerError}
                 </div>
-              ) : null}
+              )}
 
               <button
-                type="submit"
-                disabled={isSubmitting || !isValid}
-                className="group relative w-full overflow-hidden rounded-xl bg-black px-4 py-4 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-neutral-800 hover:shadow-lg hover:shadow-neutral-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none"
+                type="button"
+                onClick={handleSubmit(onSubmit)}
+                disabled={isSubmitting || !isValid || shippingUpdating}
+                className="group relative w-full overflow-hidden rounded-xl bg-black px-4 py-4 text-sm font-semibold text-white shadow-md transition-all hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {isSubmitting ? (
-                    <>
-                      <svg
-                        className="h-4 w-4 animate-spin text-white/50"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                      >
-                        <circle
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      {t("processing")}
-                    </>
+                    t("processing")
                   ) : (
                     <>
                       {t("payNow")}
                       <Lock
                         size={14}
-                        className="text-white/70 group-hover:text-white transition-colors"
+                        className="text-white/70 group-hover:text-white"
                       />
                     </>
                   )}
                 </span>
               </button>
-
-              <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
-                <Lock size={12} />
-                <span>{t("securePayment")}</span>
-              </div>
             </div>
-
-            <div className="h-1.5 w-full bg-linear-to-r from-gray-100 via-gray-200 to-gray-100" />
           </div>
         </div>
       </div>
-    </form>
+    </div>
   );
 }

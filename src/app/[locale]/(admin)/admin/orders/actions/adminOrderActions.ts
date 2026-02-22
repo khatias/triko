@@ -3,7 +3,12 @@
 import { requireAdmin } from "@/utils/auth/requireAdmin";
 import { revalidatePath } from "next/cache";
 
-type ShippingStatus = "" | "confirmed" | "in_transit" | "delivered";
+type ShippingStatus =
+  | ""
+  | "not_started"
+  | "confirmed"
+  | "in_transit"
+  | "delivered";
 
 export async function updateShippingStatusAction(input: {
   locale: string;
@@ -18,7 +23,10 @@ export async function updateShippingStatusAction(input: {
     shipping_status: shipping_status ? shipping_status : null,
   };
 
-  const { error } = await supabase.from("orders").update(patch).eq("id", orderId);
+  const { error } = await supabase
+    .from("orders")
+    .update(patch)
+    .eq("id", orderId);
   if (error) throw new Error(error.message);
 
   revalidatePath(`/${locale}/admin/orders`);

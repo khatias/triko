@@ -1,3 +1,4 @@
+// src/app/[locale]/products/[parent_code]/ProductDetailClient.tsx
 "use client";
 
 import Image from "next/image";
@@ -5,23 +6,41 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import type { Variant } from "@/lib/db/products";
+import type { Variant as DbVariant } from "@/lib/db/products";
 import { buildSizes, formatPrice } from "@/lib/helpers";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
-import { getFinaIdFromVariant } from "@/utils/fina/ids";
+import {
+  getFinaIdFromVariant,
+  getBundleFinaIdsFromVariant,
+} from "@/utils/fina/ids";
 
 type ProductDetailClientProps = {
   locale: string;
   title: string;
   photos: string[];
-  variants: Variant[];
+  variants: DbVariant[];
   groupName: string;
   description: string;
-
-  // fallback label (range)
   basePriceLabel: string;
-
   currency?: string | null;
+};
+
+// ✅ Extend Variant shape (no any)
+type Variant = DbVariant & {
+  price?: number | null;
+  list_price?: number | null;
+  has_discount?: boolean | null;
+  parent_code?: string | null;
+  // bundle fields live in JSON too; ids.ts reads them safely
+  top_fina_id?: number | string | null;
+  bottom_fina_id?: number | string | null;
+};
+
+type BundleMeta = {
+  parentCode: string | null;
+  titleEn: string;
+  titleKa: string;
+  imageUrl: string | null;
 };
 
 function money(v: number | null, currency: string | null): string | null {
@@ -46,7 +65,12 @@ export default function ProductDetailClient({
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
   const imgRef = useRef<HTMLDivElement>(null);
 
-  const sizeRows = useMemo(() => buildSizes(variants), [variants]);
+  const h = useTranslations("Helpers");
+  const t = useTranslations("Products");
+  const cartT = useTranslations("Cart");
+
+  // buildSizes expects Variant[]; ours is compatible
+  const sizeRows = useMemo(() => buildSizes(variants as Variant[]), [variants]);
 
   const selectedRow = useMemo(() => {
     if (!selected) return null;
@@ -57,25 +81,27 @@ export default function ProductDetailClient({
     const row = selectedRow;
     if (!row) return null;
     if (!row.inStock) return null;
-    return row.variant ?? null;
+    return (row.variant as Variant) ?? null;
   }, [selectedRow]);
 
-  const selectedFinaId = useMemo(() => {
+  const selectedSingleFinaId = useMemo(() => {
     if (!selectedVariant) return null;
-    return getFinaIdFromVariant(selectedVariant);
+    return getFinaIdFromVariant(selectedVariant as DbVariant);
+  }, [selectedVariant]);
+
+  const selectedBundleIds = useMemo(() => {
+    if (!selectedVariant) return null;
+    return getBundleFinaIdsFromVariant(selectedVariant as DbVariant);
   }, [selectedVariant]);
 
   const activePhoto = photos[active] ?? null;
 
-  const h = useTranslations("Helpers");
-  const t = useTranslations("Products");
-  const cartT = useTranslations("Cart");
-
-  const { onAdd, isPending, err, toast } = useAddToCart({
-    locale,
-    qty: 1,
-    successMessage: t("addedToCart"),
-  });
+  const { onAdd, onAddBundle, isPending, pendingFinaId, err, toast } =
+    useAddToCart({
+      locale,
+      qty: 1,
+      successMessage: t("addedToCart"),
+    });
 
   function parseAvailable(msg: string): string | null {
     const m = /available\s+([0-9]+(?:\.[0-9]+)?)/i.exec(msg);
@@ -95,11 +121,36 @@ export default function ProductDetailClient({
     });
   };
 
-  const canAdd = !!selectedVariant && !!selectedFinaId && !isPending;
+  // ✅ canAdd: single OR bundle
+  const canAdd =
+    !!selectedVariant &&
+    !isPending &&
+    (selectedSingleFinaId != null || selectedBundleIds != null);
 
-  // ===== Price block that switches when size selected =====
+  // ✅ typed bundle meta (no any)
+  const bundleMeta: BundleMeta = useMemo(
+    () => ({
+      parentCode: selectedVariant?.parent_code ?? null,
+      titleEn: title,
+      titleKa: title,
+      imageUrl: activePhoto ?? photos?.[0] ?? null,
+    }),
+    [selectedVariant, title, activePhoto, photos],
+  );
+
+  // Pending label for this selection (single or bundle)
+  const isSinglePending =
+    selectedSingleFinaId != null &&
+    pendingFinaId === selectedSingleFinaId &&
+    isPending;
+
+  const isBundlePending =
+    selectedBundleIds != null && pendingFinaId === selectedBundleIds.top && isPending;
+
+  const isThisSelectionPending = isSinglePending || isBundlePending;
+
+  // ===== Price block =====
   const priceBlock = useMemo(() => {
-    // default: show range label
     if (!selectedVariant) {
       return (
         <p className="text-3xl font-light text-stone-800 tracking-tight">
@@ -114,12 +165,10 @@ export default function ProductDetailClient({
     const effLabel = money(eff, currency);
     const listLabel = money(list, currency);
 
-    // prefer DB flag but also infer if needed
     const hasDiscount =
-      (selectedVariant.has_discount ?? null) === true ||
+      selectedVariant.has_discount === true ||
       (eff != null && list != null && eff < list);
 
-    // if we cannot format effective price -> fallback to base
     if (!effLabel) {
       return (
         <p className="text-3xl font-light text-stone-800 tracking-tight">
@@ -155,11 +204,11 @@ export default function ProductDetailClient({
 
   return (
     <div className="relative grid gap-16 lg:grid-cols-12 items-start pt-4">
-      {toast ? (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-100 bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-8 py-4 rounded-full text-[10px] tracking-[0.4em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
-          {toast}
-        </div>
-      ) : null}
+{toast ? (
+  <div className="fixed top-10 left-1/2 -translate-x-1/2 z-9999 bg-stone-900/95 backdrop-blur-xl text-[#D4AF37] px-8 py-4 rounded-full text-[10px] tracking-[0.4em] uppercase shadow-2xl border border-stone-700 animate-in fade-in zoom-in-95 duration-300">
+    {toast}
+  </div>
+) : null}
 
       {/* LEFT */}
       <div className="lg:col-span-7 space-y-8">
@@ -219,13 +268,7 @@ export default function ProductDetailClient({
                     : "opacity-40 hover:opacity-100"
                 }`}
               >
-                <Image
-                  src={pht}
-                  alt=""
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                />
+                <Image src={pht} alt="" fill sizes="80px" className="object-cover" />
               </button>
             );
           })}
@@ -246,10 +289,8 @@ export default function ProductDetailClient({
             {title}
           </h1>
 
-          {/* PRICE */}
           <div className="pt-4">{priceBlock}</div>
 
-          {/* Selected size line */}
           {selectedVariant ? (
             <p className="text-[10px] uppercase tracking-[0.25em] text-stone-400">
               {t("selectedSize")}{" "}
@@ -275,7 +316,16 @@ export default function ProductDetailClient({
 
           <div className="flex flex-wrap gap-3">
             {sizeRows.map((row) => {
-              const disabled = !row.inStock || isPending || !row.variant;
+              const v = (row.variant as DbVariant | null) ?? null;
+              const singleId = v ? getFinaIdFromVariant(v) : null;
+              const bundleIds = v ? getBundleFinaIdsFromVariant(v) : null;
+
+              const disabled =
+                !row.inStock ||
+                isPending ||
+                !v ||
+                (singleId == null && bundleIds == null);
+
               const isSelected = selected === row.label;
 
               return (
@@ -299,31 +349,31 @@ export default function ProductDetailClient({
               );
             })}
           </div>
-
-          {!selected ? (
-            <p className="text-[10px] uppercase tracking-widest text-stone-400">
-              {t("chooseSize")}
-            </p>
-          ) : selectedRow && !selectedRow.inStock ? (
-            <p className="text-[10px] uppercase tracking-widest text-red-700">
-              {t("outOfStock")}
-            </p>
-          ) : null}
         </div>
 
-        {/* Purchase Button */}
+        {/* Purchase */}
         <div className="space-y-4">
           <button
             type="button"
             disabled={!canAdd}
             onClick={() => {
-              if (selectedVariant) onAdd(selectedVariant);
+              if (!selectedVariant) return;
+
+              if (selectedSingleFinaId != null) {
+                onAdd(selectedVariant as DbVariant);
+                return;
+              }
+
+              if (selectedBundleIds != null) {
+                onAddBundle(selectedVariant as DbVariant, bundleMeta);
+                return;
+              }
             }}
             className="group relative w-full h-20 rounded-full bg-stone-900 overflow-hidden transition-all active:scale-[0.98] shadow-xl hover:shadow-stone-900/20 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <div className="absolute inset-0 bg-[#D4AF37] translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out" />
             <span className="relative z-10 text-white group-hover:text-stone-900 text-[12px] font-black uppercase tracking-[0.5em] transition-colors duration-500">
-              {isPending ? t("adding") : t("addToCart")}
+              {isThisSelectionPending ? t("adding") : t("addToCart")}
             </span>
           </button>
 

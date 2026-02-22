@@ -1,3 +1,4 @@
+// src/lib/cart/actions.ts
 "use server";
 
 import { cookies } from "next/headers";
@@ -13,18 +14,13 @@ import {
   asInt,
 } from "@/utils/type-guards";
 import { getTranslations } from "next-intl/server";
+
 const CART_COOKIE = "cart_token";
 
-/* =========================
-   Result Types
-========================= */
 type ActionOk = { ok: true };
 type ActionErr = { ok: false; message: string; kind: "stock" | "unknown" };
 export type ActionResult = ActionOk | ActionErr;
 
-/* =========================
-   DB Types
-========================= */
 export type CartRow = {
   id: string;
   user_id: string | null;
@@ -43,6 +39,8 @@ export type CartRow = {
 export type CartItemRow = {
   id: string;
   cart_id: string;
+
+  bundle_key: string | null;
 
   fina_id: number;
   qty: number;
@@ -67,26 +65,63 @@ export type CartState = {
   items: CartItemRow[];
 };
 
-/* =========================
-   Helpers
-========================= */
 function normalizeSupabaseErrorMessage(msg: string): string {
-  // Keep this conservative: just normalize whitespace + case checks elsewhere
   return (msg ?? "UNKNOWN").trim();
+}
+
+function safeT(t: (k: string) => string, key: string, fallback: string) {
+  const v = t(key);
+  if (!v || v === key) return fallback;
+  return v;
 }
 
 async function classifyRpcError(message: string): Promise<ActionErr> {
   const raw = normalizeSupabaseErrorMessage(message);
   const m = raw.toLowerCase();
   const t = await getTranslations("Cart.errors");
-  // Our SQL raises exactly: OUT_OF_STOCK
-  if (m.includes("out_of_stock")) {
-    return { ok: false, kind: "stock", message: t("notEnoughStock") };
+
+  if (m.includes("out_of_stock") || m.includes("not enough stock")) {
+    return {
+      ok: false,
+      kind: "stock",
+      message: safeT(t, "notEnoughStock", "Not enough stock"),
+    };
   }
 
-  // Older versions used different text
-  if (m.includes("not enough stock")) {
-    return { ok: false, kind: "stock", message: t("notEnoughStock") };
+  if (m.includes("not_found")) {
+    return {
+      ok: false,
+      kind: "unknown",
+      message: safeT(t, "notFound", "This item is currently unavailable."),
+    };
+  }
+
+  if (m.includes("cart_price_id_mismatch")) {
+    return {
+      ok: false,
+      kind: "unknown",
+      message: safeT(
+        t,
+        "priceMismatch",
+        "Please clear your cart and try again.",
+      ),
+    };
+  }
+
+  if (m.includes("price_invalid")) {
+    return {
+      ok: false,
+      kind: "unknown",
+      message: safeT(t, "priceInvalid", "Price is invalid. Please try again."),
+    };
+  }
+
+  if (m.includes("qty_invalid")) {
+    return {
+      ok: false,
+      kind: "unknown",
+      message: safeT(t, "qtyInvalid", "Invalid quantity."),
+    };
   }
 
   return { ok: false, kind: "unknown", message: "Something went wrong" };
@@ -139,24 +174,21 @@ function parseCartItemRow(v: unknown): CartItemRow {
     id,
     cart_id,
 
+    bundle_key: asNullableString(v.bundle_key),
+
     fina_id: asInt(v.fina_id, "item.fina_id"),
     qty: asInt(v.qty, "item.qty"),
-
     price_at_add: asMoneyString(v.price_at_add, "item.price_at_add"),
     list_price_at_add: asNullableMoneyString(
       v.list_price_at_add,
       "item.list_price_at_add",
     ),
-
     parent_code: asNullableString(v.parent_code),
-
     title_en: asNullableString(v.title_en),
     title_ka: asNullableString(v.title_ka),
-
     product_name: asNullableString(v.product_name),
     variant_size: asNullableString(v.variant_size),
     variant_code: asNullableString(v.variant_code),
-
     image_url: asNullableString(v.image_url),
   };
 }
@@ -165,26 +197,21 @@ function parseCartReadResponse(payload: unknown): CartState {
   if (!isObject(payload))
     throw new Error("cart_read_v2: payload is not an object");
 
-  const cartRaw = payload.cart;
+  const cart = parseCartRow(payload.cart);
+
   const itemsRaw = payload.items;
-
-  const cart = parseCartRow(cartRaw);
-
   if (!Array.isArray(itemsRaw))
     throw new Error("cart_read_v2: items is not an array");
-  const items = itemsRaw.map(parseCartItemRow);
 
-  return { cart, items };
+  return { cart, items: itemsRaw.map(parseCartItemRow) };
 }
 
 async function getCartToken(): Promise<string> {
   const store = await cookies();
   const token = store.get(CART_COOKIE)?.value ?? null;
 
-  if (!token) {
+  if (!token)
     throw new Error("cart_token cookie missing. Check middleware sets it.");
-  }
-
   return token;
 }
 
@@ -192,10 +219,6 @@ function clampQty(qty: number, min: number): number {
   if (!Number.isFinite(qty)) return min;
   return Math.max(min, Math.floor(qty));
 }
-
-/* =========================
-   Actions
-========================= */
 
 export async function getCartState(): Promise<CartState> {
   const supabase = await createClient();
@@ -206,7 +229,6 @@ export async function getCartState(): Promise<CartState> {
   });
 
   if (error) throw new Error(error.message);
-
   return parseCartReadResponse(data as unknown);
 }
 
@@ -226,14 +248,48 @@ export async function addToCart(
     p_qty: safeQty,
   });
 
-  if (error) {
-    return await classifyRpcError(error.message);
-  }
+  if (error) return await classifyRpcError(error.message);
 
   revalidatePath(`/${locale}/cart`);
   return { ok: true };
 }
+export async function addBundleToCart(
+  locale: string,
+  topFinaId: number,
+  bottomFinaId: number,
+  qty = 1,
+  meta?: {
+    parentCode: string | null;
+    titleEn: string | null;
+    titleKa: string | null;
+    imageUrl: string | null;
+  },
+): Promise<ActionResult> {
+  try {
+    const supabase = await createClient();
+    const token = await getCartToken();
+    const safeQty = clampQty(qty, 1);
 
+    const { error } = await supabase.rpc("cart_add_bundle_by_fina", {
+      p_cart_token: token,
+      p_top_fina_id: topFinaId,
+      p_bottom_fina_id: bottomFinaId,
+      p_qty: safeQty,
+      p_parent_code: meta?.parentCode ?? null,
+      p_title_en: meta?.titleEn ?? null,
+      p_title_ka: meta?.titleKa ?? null,
+      p_image_url: meta?.imageUrl ?? null,
+    });
+
+    if (error) return await classifyRpcError(error.message);
+
+    revalidatePath(`/${locale}/cart`);
+    return { ok: true };
+  } catch (e) {
+    console.error("[addBundleToCart] threw:", e);
+    return { ok: false, kind: "unknown", message: "Something went wrong" };
+  }
+}
 export async function updateCartQty(
   locale: string,
   finaId: number,
@@ -250,9 +306,7 @@ export async function updateCartQty(
     p_qty: safeQty,
   });
 
-  if (error) {
-    return classifyRpcError(error.message);
-  }
+  if (error) return await classifyRpcError(error.message);
 
   revalidatePath(`/${locale}/cart`);
   return { ok: true };

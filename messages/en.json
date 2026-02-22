@@ -12,6 +12,24 @@
       "imgAlt": "Triko loungewear on a model in a soft-lit studio"
     },
 
+    "StatusStrip": {
+      "seasonValue": "Everyday Comfort",
+      "featureLeft": "Premium quality",
+      "featureRight": "Ships Across Georgia",
+      "locationCode": "[ TBS / GEO ]",
+      "scarcity": "Limited Stock",
+      "mobileLeft": "Cotton Blend",
+      "mobileRight": "Delivery in Georgia"
+    },
+    "Slider": {
+      "subTitle": "New Season",
+      "title": "Latest Drops"
+    },
+    "Groups": {
+      "title": "The Collection",
+      "subTitle": "Select a category",
+      "explore": "Explore"
+    },
     "Categories": {
       "title": "Shop by popular category",
       "items": {
@@ -32,7 +50,6 @@
       "viewAll": "View all"
     },
     "Story": {
-      "title": "Designed in Georgia. Made for slow mornings.",
       "sub": "Thoughtful fits, breathable fabrics, and details that matter.",
       "cta": "About Us",
       "imgAlt": "Lifestyle photo showing Triko products in a cozy home"
@@ -69,7 +86,9 @@
     "welcome": "Welcome",
     "joinUs": "Join Us",
     "seeMore": "See More",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "all": "All products",
+    "searchPlaceholder": "Search .."
   },
 
   "Footer": {
@@ -78,6 +97,12 @@
       "tagline": "Everyday comfort, made for you.",
       "storeTitle": "Our Stores",
       "storesAria": "Store locations"
+    },
+    "Newsletter": {
+      "title": "Let's stay in touch.",
+      "description": "Subscribe to our newsletter for exclusive offers and  early access to new collections,",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
     },
     "nav": {
       "help": "Help",
@@ -160,6 +185,7 @@
     },
     "actions": {
       "submit": "Sign in",
+      "send": "Send Message",
       "sending": "Sending…",
       "signIn": "Sign in",
       "signUp": "Create account",
@@ -299,45 +325,56 @@
       "description": "Discover Triko: our story, mission, values, and store locations."
     },
     "hero": {
-      "kicker": "Our story",
-      "title": "Comfort-first essentials designed in Tbilisi",
-      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again.",
-      "imageAlt": "Lifestyle composition of Triko garments"
+      "title": "TRIKO",
+      "detail": "First and only",
+      "exploreMore": "Explore Studio",
+      "description": "Triko is the first and only Georgian brand creating underwear, pajama sets, and unisex kimonos for women and men. What started as a local brand in Tbilisi is now expanding internationally, sharing our vision of comfort and individuality with a wider audience.",
+      "underwear": "Underwear",
+      "kimano": "Kimono",
+      "pajamas": "Pajamas",
+      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again."
     },
-    "story": {
-      "title": "Where we began",
-      "paragraph1": "Founded in Tbilisi, Triko started with a simple goal: make comfortable, durable, and beautifully minimal pieces that feel great from morning to night.",
-      "paragraph2": "Today, we keep production nimble, materials carefully sourced, and designs focused on what matters: fit, comfort, and longevity."
+    "whoIsTrikoFor": {
+      "title": "Who is Triko for?",
+      "desc": "Our unisex designs are created for all genders and lifestyles, allowing freedom of movement, self-expression, and ease in everyday life.",
+      "isTrikoFor1": "For people who value comfort just as much as style.",
+      "isTrikoFor2": "For those who love color, simplicity, and feeling good in what they wear.",
+      "isTrikoFor3": "Triko is for everyone."
     },
-    "mission": {
-      "title": "Our mission",
-      "desc": "Build a reliable wardrobe of everyday basics—crafted with care, priced fairly, and made to last. We design for movement, softness, and simplicity."
+    "goal": {
+      "Cardtitle": "The Vision",
+      "readButton": "Read Our Story",
+      "title": "Our Goal",
+      "slogan1": "Our goal is to create products for",
+      "slogan2": "everyone",
+      "slogan3": "without sacrificing quality ethics, or",
+      "slogan4": "aesthetics"
     },
-    "values": {
-      "title": "What we value",
-      "items": {
-        "quality": {
-          "title": "Quality",
-          "desc": "We source comfortable fabrics and use careful stitching for durability."
-        },
-        "comfort": {
-          "title": "Comfort",
-          "desc": "Every pattern is tested to move with you throughout the day."
-        },
-        "design": {
-          "title": "Timeless Design",
-          "desc": "Clean silhouettes, neutral palettes, and subtle details."
-        },
-        "service": {
-          "title": "Service",
-          "desc": "Fast responses and friendly support across channels."
-        }
-      }
+    "philosophy": {
+      "title": "Our philosophy",
+      "desc": "We believe that quality should be accessible. Triko is a budget-oriented brand with high standards—proving that good materials, thoughtful design, and comfort do not have to come at a high price.",
+      "discoverCollection": "Discover our collection"
+    },
+    "WhatWeCreate": {
+      "concept": "Concept",
+      "title1": "What We",
+      "title2": "Create",
+      "desc": "We design and produce underwear, pajama sets, and unisex kimonos that are meant to be worn every day. Our collections are modern, functional, and expressive—created to feel natural on the body while still standing out visually."
+    },
+    "FabricsAndQuality": {
+      "title": "Fabrics & Quality",
+      "desc": "Fabric is the foundation of Triko. We work very delicately with materials, carefully choosing natural, breathable, and skin-friendly textiles. Every product is made to be comfortable, soft, and long-lasting, so you can truly feel the difference when wearing it.",
+      "seeMore": "See our Products"
+    },
+    "Georgia": {
+      "title": "From Georgia to the World",
+      "desc": "Proudly founded in Georgia, Triko began as a local brand and is now growing internationally. While our roots remain in Tbilisi, our vision is global—bringing Georgian creativity, care, and craftsmanship to customers around the world."
     },
     "locations": {
-      "title": "Our stores",
-      "subtitle": "Visit us in person—try on styles, feel fabrics, and get fit advice.",
+      "title": "Visit Us",
+      "subtitle": "Directory & Showrooms",
       "openInMaps": "Open in Maps",
+      "viewOnMap": "View on map",
       "items": {
         "store1": {
           "title": "Tbilisi · Galleria Tbilisi",
@@ -385,6 +422,12 @@
     "timeout": "Request timed out. Please try again."
   },
   "Profile": {
+    "hello": "Hello, {name}!",
+    "subtitle": "Welcome back! Manage your account, view orders, and update your information.",
+    "email": "Email",
+    "registeredOn": "Registered on",
+    "lastActivity": "Last Activity",
+    "unknown": "Unknown",
     "meta": {
       "title": "Profile — Triko",
       "description": "Manage your Triko account details, including your name, email, phone number, and preferences. Update your profile information securely."
@@ -393,7 +436,8 @@
       "orders": "My Orders",
       "account": "My Account",
       "addresses": "My Addresses",
-      "title": "My Profile"
+      "title": "My Profile",
+      "signOut": "Sign out"
     },
     "actions": {
       "save": "Save changes",
@@ -419,13 +463,19 @@
       "default": "Default",
       "setDefault": "Set as default",
       "delete": "Delete",
-      "address1": "Address Line 1",
-      "address2": "Address Line 2 (optional)",
+      "address1": "Address",
+      "address2": "Comment(optional)",
       "city": "City",
       "region": "Region",
       "save": "Save Address",
       "saving": "Saving…",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "shippingZone": "Choose Shipping zone",
+      "regionCity": "Region - City",
+      "regionVillage": "Region - Village",
+      "regionTbilisi": "Tbilisi",
+      "municipality": "Municipality",
+      "village": "Village"
     },
     "orders": {
       "title": "My Orders",
@@ -510,6 +560,12 @@
       "title": "Products — Triko",
       "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
     },
+    "empty": {
+      "title": "No products found",
+      "description": "There are no products on this page. Try going back to page one or continue browsing the catalog.",
+      "primary": "Back to page 1",
+      "secondary": "Shop"
+    },
     "sizes": "Sizes",
     "sale": "SALE",
     "selectedSize": "Selected size:",
@@ -543,9 +599,14 @@
     "products": "Products",
     "deliveryFee": "Delivery Fee",
     "discount": "Discount",
+    "shippingPriceText": "Shipping fee will be added at checkout.",
     "errors": {
       "onlyLeft": "Only {available} left in stock.",
-      "notEnoughStock": "Not enough stock available."
+      "notEnoughStock": "Not enough stock available.",
+      "notFound": "This item is currently unavailable.",
+      "priceMismatch": "Please clear your cart and try again.",
+      "priceInvalid": "Price is invalid. Please try again.",
+      "qtyInvalid": "Invalid quantity."
     }
   },
   "Checkout": {
@@ -614,6 +675,7 @@
       "date": "Date",
       "status": "Status",
       "subtotal": "Subtotal",
+      "discount": "Discount",
       "total": "Total",
       "action": "Action",
       "items": "Items",
@@ -630,6 +692,8 @@
       "apply": "Apply",
       "loading": "Loading",
       "resetTitle": "Reset to paid",
+
+      "end": "End",
 
       "paid": "Paid",
       "all": "All ",
@@ -677,7 +741,8 @@
       "dashboard": "Dashboard",
       "orders": "Orders",
       "products": "Products",
-      "groups": "Groups"
+      "groups": "Groups",
+      "site": "Site parameters"
     },
     "groups": {
       "title": "Groups",
@@ -725,6 +790,22 @@
         "title": "Coming soon",
         "desc": "Add top products, inventory alerts, or sales charts here."
       }
+    },
+    "site": {
+      "title": "Website Parameters",
+      "desc": "Manage your store's main settings",
+      "banner": "Site banner",
+      "bannerHint": "This banner will appear at the top of your website.",
+      "active": "Active",
+      "english": "English",
+      "georgian": "Georgian",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved",
+      "ctaLabelEN": "CTA Label En",
+      "ctaLabelKA": "CTA Label Ka",
+      "ctaURL": "CTA URL",
+      "usePath": "Use internal path (e.g. /products) instead of full URL"
     },
     "Products": {
       "title": "Product Management",
@@ -865,6 +946,348 @@
         "inStock": "In Stock",
         "empty": "No variants found for this product."
       }
+    }
+  },
+  "PrivacyPolicy": {
+    "meta": {
+      "title": "Privacy Policy",
+      "description": "How Triko collects, uses, shares, and protects your information."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Privacy Policy",
+      "title": "Your privacy matters",
+      "description": "This Privacy Policy explains how Triko collects, uses, shares, and protects your information when you use our website and services.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Privacy policy contents",
+      "items": {
+        "who-we-are": "Who we are",
+        "info-we-collect": "Information we collect",
+        "how-we-use": "How we use information",
+        "cookies": "Cookies and analytics",
+        "sharing": "Sharing and disclosures",
+        "payments": "Payments",
+        "security": "Security",
+        "retention": "Data retention",
+        "your-rights": "Your rights and choices",
+        "children": "Children",
+        "international": "International transfers",
+        "contact": "Contact us"
+      }
+    },
+    "sections": {
+      "whoWeAre": {
+        "title": "Who we are",
+        "body": "Triko is a brand and online store. In this policy, “Triko,” “we,” “us,” and “our” refer to the entity operating this website and providing our services."
+      },
+      "collect": {
+        "title": "Information we collect",
+        "lead": "We may collect the following categories of information:",
+        "items": [
+          "Contact details, such as name, email address, phone number, and delivery address",
+          "Account details, such as login identifiers and preferences if you create an account",
+          "Order information, such as items purchased, size, color, order total, and order history",
+          "Payment related data handled by our payment providers (we do not store full card numbers)",
+          "Device and usage data, such as IP address, browser type, pages viewed, and approximate location derived from IP",
+          "Customer support content, such as messages you send us and our replies"
+        ]
+      },
+      "use": {
+        "title": "How we use information",
+        "lead": "We use information to:",
+        "items": [
+          "Provide and operate the website and store",
+          "Process orders, deliveries, returns, and customer support",
+          "Send transactional messages about your orders",
+          "Detect, prevent, and investigate fraud and abuse",
+          "Improve our products, site performance, and user experience",
+          "Send marketing communications if you opt in, and allow you to opt out at any time"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies and analytics",
+        "p1": "We use cookies and similar technologies to keep the site working, remember your preferences, and understand usage. You can control cookies through your browser settings. If you disable cookies, some features may not work as intended.",
+        "p2": "If we use analytics tools, they help us measure traffic and site performance. Where required, we will request consent before setting non essential cookies."
+      },
+      "sharing": {
+        "title": "Sharing and disclosures",
+        "lead": "We may share information in these situations:",
+        "items": [
+          "Service providers who help us run the business, such as hosting, email delivery, customer support tools, and analytics",
+          "Delivery and logistics partners to ship your order and provide tracking",
+          "Payment providers to process payments and prevent fraud",
+          "Legal and safety reasons, such as complying with law, responding to lawful requests, or protecting rights and safety",
+          "Business changes, such as a merger, acquisition, or sale of assets (information may be transferred as part of that deal)"
+        ],
+        "note": "We do not sell your personal information in the ordinary meaning of “sell.”"
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party payment providers. Your payment information is handled according to their policies. We typically receive limited payment details, such as payment status and a token or reference, not full card numbers."
+      },
+      "security": {
+        "title": "Security",
+        "body": "We use reasonable technical and organizational measures to protect information. No method of transmission or storage is completely secure, so we cannot guarantee absolute security."
+      },
+      "retention": {
+        "title": "Data retention",
+        "body": "We keep personal information only as long as necessary for the purposes described in this policy, including legal, accounting, and operational requirements. Retention periods may vary depending on the type of data and the purpose."
+      },
+      "rights": {
+        "title": "Your rights and choices",
+        "lead": "Depending on where you live, you may have rights to access, correct, delete, or receive a copy of your personal information, and to object or restrict certain processing.",
+        "items": [
+          "Marketing emails: you can unsubscribe using the link in the message",
+          "Account: you can update certain details in your account settings if available",
+          "Requests: you can contact us to request access, correction, or deletion where applicable"
+        ]
+      },
+      "children": {
+        "title": "Children",
+        "body": "Our services are not intended for children. If you believe a child has provided personal information, contact us so we can take appropriate steps."
+      },
+      "international": {
+        "title": "International transfers",
+        "body": "Your information may be processed in countries other than your own, for example where our service providers operate. Where required, we take steps to provide appropriate safeguards for transfers."
+      },
+      "contact": {
+        "title": "Contact us",
+        "p1": "For privacy questions or requests, contact us at",
+        "p2": "You can also visit our",
+        "termsLink": "Terms",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This page is a high quality template. For best accuracy, update payment providers, shipping partners, your company legal name, address, and jurisdiction specific rights."
+    }
+  },
+  "Terms": {
+    "meta": {
+      "title": "Terms and Conditions",
+      "description": "The rules and conditions for using Triko’s website and services."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Terms",
+      "title": "Terms and Conditions",
+      "description": "These Terms explain the rules for using Triko’s website and purchasing from our online store.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Terms contents",
+      "items": {
+        "about": "About these Terms",
+        "eligibility": "Eligibility",
+        "accounts": "Accounts",
+        "orders": "Orders",
+        "pricing": "Pricing",
+        "shipping": "Shipping",
+        "returns": "Returns",
+        "payments": "Payments",
+        "content": "Content and IP",
+        "acceptable-use": "Acceptable use",
+        "warranties": "Disclaimers",
+        "liability": "Limitation of liability",
+        "changes": "Changes to these Terms",
+        "law": "Governing law",
+        "contact": "Contact"
+      }
+    },
+    "sections": {
+      "about": {
+        "title": "About these Terms",
+        "body": "By accessing or using our website and services, you agree to these Terms. If you do not agree, do not use the website."
+      },
+      "eligibility": {
+        "title": "Eligibility",
+        "body": "You must be able to form a binding contract under applicable law to use our services. If you are using the website on behalf of a business, you confirm you are authorized to do so."
+      },
+      "accounts": {
+        "title": "Accounts",
+        "body": "If you create an account, you are responsible for keeping your login details secure and for activity under your account. Tell us promptly if you suspect unauthorized access."
+      },
+      "orders": {
+        "title": "Orders",
+        "body": "Placing an order is an offer to purchase. We may refuse or cancel an order in limited cases, including suspected fraud, incorrect pricing, or inventory issues. If we cancel after payment, we will refund according to the payment method."
+      },
+      "pricing": {
+        "title": "Pricing",
+        "body": "Prices are shown in the currency displayed at checkout and may change at any time. Taxes, shipping, and fees (if any) are shown before you confirm payment."
+      },
+      "shipping": {
+        "title": "Shipping",
+        "body": "Delivery times are estimates and can vary by location and carrier. Risk of loss transfers to you upon delivery, where allowed by law."
+      },
+      "returns": {
+        "title": "Returns",
+        "body": "Return and exchange rules depend on product type and condition. See our returns guidance (or contact support) for steps, time limits, and eligibility."
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party providers. We may receive limited payment data such as status and reference identifiers."
+      },
+      "content": {
+        "title": "Content and intellectual property",
+        "body": "All website content, including designs, text, images, logos, and code, is owned by Triko or its licensors and protected by applicable laws. You may not copy, modify, distribute, or use it without permission."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "items": [
+          "Do not misuse the website or attempt to disrupt it",
+          "Do not access accounts or data without authorization",
+          "Do not upload malicious code or perform automated scraping without permission",
+          "Do not use the website for unlawful or harmful activities"
+        ]
+      },
+      "warranties": {
+        "title": "Disclaimers",
+        "body": "The website and services are provided “as is” and “as available,” to the fullest extent permitted by law. We do not guarantee uninterrupted or error free operation."
+      },
+      "liability": {
+        "title": "Limitation of liability",
+        "body": "To the fullest extent permitted by law, Triko will not be liable for indirect, incidental, special, or consequential damages. Where liability cannot be excluded, it will be limited to the minimum extent permitted by law."
+      },
+      "changes": {
+        "title": "Changes to these Terms",
+        "body": "We may update these Terms from time to time. The updated date at the top shows when changes were last made. Continued use after changes means you accept the updated Terms."
+      },
+      "law": {
+        "title": "Governing law",
+        "body": "These Terms are governed by the laws applicable to the entity operating the Triko website, without regard to conflict of law rules."
+      },
+      "contact": {
+        "title": "Contact",
+        "p1": "For questions about these Terms, contact us at",
+        "p2": "For privacy information, see our",
+        "privacyLink": "Privacy Policy",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This is a high quality template. For best accuracy, tailor returns, shipping, legal entity details, and consumer rights for your jurisdiction."
+    }
+  },
+  "ExchangePolicy": {
+    "meta": {
+      "title": "Exchange Policy",
+      "description": "Triko exchange rules and how to request an exchange."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Exchange Policy",
+      "description": "Triko does not accept returns. We offer exchanges for selected items under the conditions below.",
+      "windowLabel": "Window:",
+      "windowDays": "5 days from delivery",
+      "notePills": "Underwear is not exchangeable"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Exchange policy contents",
+      "items": {
+        "overview": "Overview",
+        "eligible": "Eligible items",
+        "conditions": "Conditions",
+        "how": "How to request"
+      }
+    },
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "p1": "We do not accept returns. Exchanges are available only for specific categories within the allowed window.",
+        "calloutTitle": "Important",
+        "calloutBody": "For hygiene reasons, underwear cannot be exchanged."
+      },
+      "eligible": {
+        "title": "Eligible items",
+        "items": [
+          "Pajamas can be exchanged within 5 days of delivery",
+          "Kimonos can be exchanged within 5 days of delivery"
+        ]
+      },
+      "conditions": {
+        "title": "Exchange conditions",
+        "items": [
+          "Item must be in original condition",
+          "Item must be unused and undamaged",
+          "Underwear is not eligible for exchange"
+        ]
+      },
+      "how": {
+        "title": "How to request an exchange",
+        "steps": [
+          "Visit our store or email us",
+          "Include your order number and the item you want to exchange",
+          "After confirmation, we will share the next steps"
+        ]
+      }
+    },
+    "cta": {
+      "email": "Email:",
+      "terms": "View Terms"
+    },
+    "footer": {
+      "noteTitle": "Note",
+      "noteBody": "The exchange window starts from the delivery date. Used or damaged items are not eligible."
+    }
+  },
+  "ShippingPolicy": {
+    "meta": {
+      "title": "Shipping Policy",
+      "description": "Delivery timelines for Tbilisi, regions, and international orders."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Shipping Policy",
+      "description": "Estimated delivery timelines for Tbilisi, regions, and international orders.",
+      "tbilisiPill": "Tbilisi: before 15:00 — next day",
+      "regionsPill": "Regions: 3–4 business days",
+      "internationalPill": "International: depends on local post"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Shipping policy contents",
+      "items": {
+        "tbilisi": "Tbilisi",
+        "regions": "Regions",
+        "international": "International orders",
+        "support": "Questions and contact"
+      }
+    },
+    "sections": {
+      "tbilisi": {
+        "title": "Tbilisi",
+        "body": "For orders placed before 15:00 in Tbilisi, delivery is made the next day.",
+        "calloutTitle": "Note",
+        "calloutBody": "Orders placed after 15:00 may be delivered on the next business day."
+      },
+      "regions": {
+        "title": "Regions",
+        "body": "For regions, delivery typically takes 3–4 business days."
+      },
+      "international": {
+        "title": "International orders",
+        "body": "International delivery timelines depend on your local postal service."
+      },
+      "support": {
+        "title": "Questions and contact",
+        "body": "If you have any questions about your order or delivery, contact us at:"
+      }
+    },
+    "cta": {
+      "terms": "View Terms"
     }
   }
 }

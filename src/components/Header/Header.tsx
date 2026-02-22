@@ -1,14 +1,11 @@
-// src/components/Header/Header.tsx
-
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import Navbar from "./Navbar";
 import { getCartState } from "@/lib/cart/actions";
 import type { SafeUser } from "@/types/auth";
-import DesktopNavBar from "./BottomNavBar";
-
-// adjust this import to your real file path
 import { getVisibleGroups } from "@/lib/db/groups";
+import Banner from "./Banner";
+import { computeCartBadgeCount } from "@/lib/cart/count";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,24 +16,27 @@ export default async function Header({ locale }: { locale: "en" | "ka" }) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const safeUser: SafeUser | undefined = user && {
-    id: user.id,
-    email: user.email ?? "",
-    full_name: String(user.user_metadata?.full_name ?? ""),
-  };
+  const safeUser: SafeUser | null = user
+    ? {
+        id: user.id,
+        email: user.email ?? "",
+        full_name: String(user.user_metadata?.full_name ?? ""),
+      }
+    : null;
 
-  // new groups for the desktop bottom bar
   const groups = await getVisibleGroups();
-const state = await getCartState();
-  return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 shadow-lg">
-      <Navbar user={safeUser} locale={locale} groups={groups ?? []} cartCount={state.cart.items_count} />
+  const state = await getCartState();
 
-      <DesktopNavBar
+  const badgeCount = computeCartBadgeCount(state.items);
+
+  return (
+    <header className="sticky top-0 z-1000 bg-white/80 backdrop-blur supports-backdrop-filter:bg-white/70 shadow-lg">
+      <Banner locale={locale} />
+      <Navbar
+        user={safeUser}
         locale={locale}
         groups={groups ?? []}
-        maxVisible={6}
-        basePath="/groups"
+        cartCount={badgeCount}
       />
     </header>
   );

@@ -26,7 +26,7 @@ import {
   readBoolean,
 } from "@/utils/type-guards";
 
-import { isDev, getPublicSiteUrl, getCallbackUrl } from "@/utils/runtime";
+import { getPublicSiteUrl, getCallbackUrl } from "@/utils/runtime";
 import type { DbOrderItem } from "@/types/orders";
 
 export const runtime = "nodejs";
@@ -43,6 +43,8 @@ function mustHttpsBaseUrl(raw: string): string {
   return u.toString().replace(/\/$/, "");
 }
 
+/* ---------------- RPC parse ---------------- */
+
 type BogPrepareOkAlready = {
   ok: true;
   already: true;
@@ -58,6 +60,7 @@ type BogPrepareOkNew = {
   idempotency_key: string;
   currency: string;
   total: number;
+  shipping_total?: number; // optional for backward compat
   public_status_token: string;
 };
 
@@ -97,6 +100,7 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
   }
 
   const already = readBoolean(raw, "already");
+
   if (already === true) {
     const bog_order_id = readString(raw, "bog_order_id");
     const redirect_url = readString(raw, "redirect_url");
@@ -119,7 +123,17 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
     return { ok: false, status: 500, message: "Invalid prepare response" };
   }
 
-  return { ok: true, already: false, idempotency_key, currency, total, public_status_token };
+  const shipping_total = readNumberStrict(raw, "shipping_total") ?? undefined;
+
+  return {
+    ok: true,
+    already: false,
+    idempotency_key,
+    currency,
+    total,
+    shipping_total,
+    public_status_token,
+  };
 }
 
 function parseBogFinalizeResult(raw: unknown): BogFinalizeResult {
@@ -162,6 +176,8 @@ function buildReturnUrl(args: {
   u.searchParams.set("token", args.publicStatusToken);
   return u.toString();
 }
+
+type OrderShippingRow = { shipping_total: number };
 
 export async function POST(req: NextRequest) {
   try {
@@ -216,6 +232,27 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // shipping_total: prefer RPC, fallback to orders table (for backward compat)
+    let shippingTotal: number | null = prep.shipping_total ?? null;
+
+    if (shippingTotal === null) {
+      const { data: ord, error: ordErr } = await supabase
+        .from("orders")
+        .select("shipping_total")
+        .eq("id", orderId)
+        .maybeSingle()
+        .overrideTypes<OrderShippingRow, { merge: false }>();
+
+      if (ordErr || !ord) {
+        return NextResponse.json<BogCreateOrderApiResponse>(
+          { ok: false, message: "Order not found" },
+          { status: 400 },
+        );
+      }
+
+      shippingTotal = toNumber(ord.shipping_total);
+    }
+
     const idempotencyKey = prep.idempotency_key;
     const currency = prep.currency;
     const orderTotal = prep.total;
@@ -263,12 +300,24 @@ export async function POST(req: NextRequest) {
       publicStatusToken,
     });
 
-    const basket: BogBasketItem[] = items.map((it) => ({
-      product_id: String(it.fina_id),
-      quantity: it.quantity,
-      unit_price: toNumber(it.unit_price),
-      description: it.product_name ?? undefined,
-    }));
+    const basket: BogBasketItem[] = [
+      ...items.map((it) => ({
+        product_id: String(it.fina_id),
+        quantity: it.quantity,
+        unit_price: toNumber(it.unit_price),
+        description: it.product_name ?? undefined,
+      })),
+      ...(shippingTotal > 0
+        ? [
+            {
+              product_id: "shipping",
+              quantity: 1,
+              unit_price: shippingTotal,
+              description: "Shipping",
+            },
+          ]
+        : []),
+    ];
 
     const totalTetri = toTetri(orderTotal);
     const basketTetri = sumBasketTetri(basket);
@@ -340,12 +389,12 @@ export async function POST(req: NextRequest) {
 
     if (finErr) {
       console.error("[BOG] finalize rpc failed", finErr);
+      // Still return redirect URL, so user can proceed.
       return NextResponse.json<BogCreateOrderApiResponse>({
         ok: true,
         bogOrderId,
         redirectUrl,
         detailsUrl,
-        raw: isDev() ? bog : undefined,
       });
     }
 
@@ -358,7 +407,6 @@ export async function POST(req: NextRequest) {
         bogOrderId,
         redirectUrl,
         detailsUrl,
-        raw: isDev() ? bog : undefined,
       });
     }
 
@@ -367,17 +415,9 @@ export async function POST(req: NextRequest) {
       bogOrderId: fin.bog_order_id ?? bogOrderId,
       redirectUrl: fin.redirect_url ?? redirectUrl,
       detailsUrl: fin.details_url ?? detailsUrl,
-      raw: isDev() ? bog : undefined,
     });
-  } catch (e) {
+  } catch (e: unknown) {
     console.error("[BOG] create-order-for-order fatal:", e);
-
-    if (!isDev()) {
-      return NextResponse.json<BogCreateOrderApiResponse>(
-        { ok: false, message: userSafeErrorMessage() },
-        { status: 500 },
-      );
-    }
 
     if (axios.isAxiosError(e)) {
       const ax = e as AxiosError<unknown>;
@@ -392,9 +432,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json<BogCreateOrderApiResponse>(
-      { ok: false, message: msg },
+      { ok: false, message: userSafeErrorMessage() },
       { status: 500 },
     );
   }

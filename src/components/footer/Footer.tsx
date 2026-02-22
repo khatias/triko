@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowRight, ChevronDown } from "lucide-react";
+
 import SocialMedia from "../socialMedia/SocialMedia";
 import StoreLocations from "../locations/StoreLocations";
-import { linkCls, headCls } from "../UI/primitives";
+
 export default async function Footer() {
   const locale = await getLocale();
   const t = await getTranslations("Footer");
@@ -17,9 +19,7 @@ export default async function Footer() {
       links: [
         { label: t("links.about"), href: withLocale("/aboutUs") },
         { label: t("links.contact"), href: withLocale("/contact") },
-        { label: t("links.shipping"), href: withLocale("/shipping-returns") },
-        { label: t("links.sizeGuide"), href: withLocale("/size-guide") },
-        { label: t("links.faq"), href: withLocale("/faq") },
+        { label: t("links.shipping"), href: withLocale("/shipping-policy") },
       ],
     },
     orders: {
@@ -27,36 +27,11 @@ export default async function Footer() {
       links: [
         {
           label: t("links.orderStatus") ?? "Order Status",
-          href: withLocale("/orders"),
-        },
-        {
-          label: t("links.shipping") ?? "Shipping Information",
-          href: withLocale("/shipping-returns"),
+          href: withLocale("/profile/orders"),
         },
         {
           label: t("links.returns") ?? "Returns & Exchanges",
-          href: withLocale("/shipping-returns#returns"),
-        },
-        {
-          label: t("links.trackOrder") ?? "Track Your Order",
-          href: withLocale("/orders/track"),
-        },
-      ],
-    },
-    services: {
-      title: t("nav.services") ?? "Services",
-      links: [
-        {
-          label: t("links.giftCards") ?? "Gift Cards",
-          href: withLocale("/gift-cards"),
-        },
-        {
-          label: t("links.offers") ?? "Offers & Events",
-          href: withLocale("/offers"),
-        },
-        {
-          label: t("links.contact") ?? "Contact Us",
-          href: withLocale("/contact"),
+          href: withLocale("/exchange-policy"),
         },
       ],
     },
@@ -69,90 +44,118 @@ export default async function Footer() {
     },
   } as const;
 
-  const sections = [
-    footerNav.help,
-    footerNav.orders,
-    footerNav.services,
-  ] as const;
+  const sections = [footerNav.help, footerNav.orders, footerNav.legal];
   const idFrom = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
   return (
-    <footer
-      role="contentinfo"
-      className="mt-20  bg-gradient-to-b from-[#fafafa] to-white text-zinc-700"
-    >
-      <div />
-
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32">
-        <div className="hidden md:grid py-14 md:grid-cols-4 gap-x-10 gap-y-8">
-          {sections.map(({ title, links }) => (
-            <nav
-              key={title}
-              aria-labelledby={`footer-${idFrom(title)}`}
-              className="min-w-0"
-            >
-              <h3 className={headCls} id={`footer-${idFrom(title)}`}>
-                {title}{" "}
-              </h3>
-              <ul className="mt-5 space-y-3.5">
-                {links.map(({ label, href }) => (
-                  <li key={href}>
-                    <Link prefetch={false} href={href} className={linkCls}>
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-
-          <section
-            aria-label={t("brand.storesAria") ?? "Store Locations"}
-            className="min-w-0"
-          >
-            <h3 className={headCls}>{t("brand.storeTitle") ?? "Stores"}</h3>
-            <div className="mt-5">
-              <StoreLocations locale={locale} t={t} />
+    <footer role="contentinfo" className="bg-white pt-10">
+      {/* The "Elevated Sheet" look: 
+        Massive rounded top corners, soft gray background, and a subtle inner shadow/border.
+      */}
+      <div className="bg-[#fcfcfc] rounded-t-[2.5rem] md:rounded-t-[3rem] border-t border-x border-neutral-200/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,1)] mx-2 md:mx-4 lg:mx-8 px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-8 transition-all">
+        <div className="max-w-350 mx-auto">
+          {/* =========================================
+              TOP: NEWSLETTER "HERO"
+              ========================================= */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10 mb-20 md:mb-28">
+            <div className="max-w-xl">
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 mb-4">
+                {t("Newsletter.title") ?? "Let's stay in touch."}
+              </h2>
+              <p className="text-[16px] text-neutral-500 leading-relaxed max-w-md">
+                {t("Newsletter.description") ?? "Subscribe to our newsletter for exclusive offers, early access to new collections, and styling tips."}
+              </p>
             </div>
-          </section>
-        </div>
 
-        <div className="md:hidden py-10">
-          <section
-            aria-label={t("brand.storesAria") ?? "Store Locations"}
-            className="mb-6"
-          >
-            <h3 className={headCls}>{t("brand.storeTitle") ?? "Stores"}</h3>
-            <div className="mt-4">
-              <StoreLocations locale={locale} t={t} />
-            </div>
-          </section>
+            {/* Premium Pill-Shaped Newsletter Input */}
+            <form className="w-full lg:w-105 relative flex items-center bg-white rounded-full p-1.5 border border-neutral-200/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] focus-within:border-rose-300 focus-within:ring-4 focus-within:ring-rose-600/10 transition-all duration-300">
+              <input
+                type="email"
+                placeholder={t("Newsletter.placeholder") ?? "Enter your email"}
+                className="flex-1 bg-transparent px-5 py-3 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none w-full"
+                required
+              />
+              <button
+                type="submit"
+                aria-label="Subscribe"
+                className="group flex items-center justify-center gap-2 h-12 px-6 bg-neutral-900 hover:bg-rose-600 text-white font-semibold text-[14px] rounded-full transition-all duration-300 shadow-sm"
+              >
+                <span>{t("Newsletter.button") ?? "Subscribe"}</span>
+                <ArrowRight
+                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                  strokeWidth={2.5}
+                />
+              </button>
+            </form>
+          </div>
 
-          <div className="rounded-2xl border border-zinc-200/80 overflow-hidden">
-            {sections.map(({ title, links }, idx) => (
-              <details key={title} className="group">
-                <summary
-                  className={[
-                    "flex items-center justify-between px-4 py-4 cursor-pointer select-none",
-                    ,
-                    "[&::-webkit-details-marker]:hidden",
-                    idx !== 0 ? "border-t border-zinc-200/70" : "",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fdd5a2]/50",
-                    headCls,
-                  ].join(" ")}
+          {/* =========================================
+              MIDDLE: NAVIGATION GRID
+              ========================================= */}
+          {/* Desktop Grid */}
+          <div className="hidden md:grid grid-cols-4 gap-12 lg:gap-16">
+            {sections.map(({ title, links }) => (
+              <nav key={title} aria-labelledby={`footer-${idFrom(title)}`}>
+                <h3
+                  id={`footer-${idFrom(title)}`}
+                  className="text-[13px] font-bold text-neutral-900 mb-6"
                 >
-                  <span>{title}</span>
-                  {/* plus/minus icon (CSS only) */}
-                  <span aria-hidden className="relative ml-3 h-5 w-5">
-                    <span className="absolute left-1/2 top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 bg-zinc-900 transition-opacity group-open:opacity-0" />
-                    <span className="absolute left-1/2 top-1/2 h-0.5 w-4 -translate-x-1/2 -translate-y-1/2 bg-zinc-900" />
-                  </span>
-                </summary>
+                  {title}
+                </h3>
+                <ul className="space-y-1.5 flex flex-col items-start">
+                  {links.map(({ label, href }) => (
+                    <li key={href} className="w-full">
+                      <Link
+                        prefetch={false}
+                        href={href}
+                        // "Stripe-style" Pill Hover Effect
+                        className="relative block w-full px-3 py-2 -ml-3 text-[14px] font-medium text-neutral-500 rounded-lg transition-all duration-200 hover:bg-neutral-200/50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:bg-neutral-200/50"
+                      >
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
 
-                <ul className="px-4 pb-4 space-y-3">
+            {/* Stores Column */}
+            <section aria-label={t("brand.storesAria") ?? "Store Locations"}>
+              <h3 className="text-[13px] font-bold text-neutral-900 mb-6">
+                {t("brand.storeTitle") ?? "Stores"}
+              </h3>
+              <div className="text-[14px] font-medium text-neutral-500 px-3 -ml-3">
+                <StoreLocations locale={locale} t={t} />
+              </div>
+            </section>
+          </div>
+
+          {/* Mobile Accordion (Ultra-Clean, No Borders) */}
+          <div className="md:hidden flex flex-col gap-2">
+            {sections.map(({ title, links }) => (
+              <details
+                key={title}
+                className="group bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden"
+              >
+                <summary className="flex items-center justify-between p-5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden outline-none">
+                  <span className="text-[14px] font-bold text-neutral-900">
+                    {title}
+                  </span>
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-neutral-50 group-open:bg-rose-50 transition-colors duration-300">
+                    <ChevronDown
+                      className="h-4 w-4 text-neutral-500 group-open:text-rose-600 transition-transform duration-300 group-open:-rotate-180"
+                      strokeWidth={2.5}
+                    />
+                  </div>
+                </summary>
+                <ul className="px-5 pb-5 space-y-3">
                   {links.map(({ label, href }) => (
                     <li key={href}>
-                      <Link prefetch={false} href={href} className={linkCls}>
+                      <Link
+                        prefetch={false}
+                        href={href}
+                        className="text-[14px] font-medium text-neutral-500 hover:text-rose-600 transition-colors block py-1"
+                      >
                         {label}
                       </Link>
                     </li>
@@ -160,39 +163,38 @@ export default async function Footer() {
                 </ul>
               </details>
             ))}
-          </div>
-        </div>
 
-        {/* ===== Bottom bar ===== */}
-        <div className="border-t border-zinc-200 py-6">
-          <div className="grid gap-4 sm:grid-cols-3 sm:items-center">
-            <p className="text-center sm:text-left text-[12px] leading-5 text-zinc-500">
-              © {year} Triko. {t("legal.allRights")}
-            </p>
-
-            <ul
-              aria-label={footerNav.legal.title}
-              className="order-3 sm:order-none flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[12px] leading-5 text-zinc-500"
+            <section
+              className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-5 mt-2"
+              aria-label={t("brand.storesAria") ?? "Store Locations"}
             >
-              {footerNav.legal.links.map(({ label, href }, i) => (
-                <li key={href} className="flex items-center">
-                  {i > 0 && <span className="px-2 text-zinc-300">·</span>}
-                  <Link
-                    prefetch={false}
-                    href={href}
-                    className="hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fdd5a2]/50 rounded"
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <div className="flex justify-center sm:justify-end">
-              {/* Give icons a bit of breathing room without forcing their own styles */}
-              <div className="inline-flex items-center gap-3 rounded-full px-2 py-1">
-                <SocialMedia />
+              <h3 className="text-[14px] font-bold text-neutral-900 mb-3">
+                {t("brand.storeTitle") ?? "Stores"}
+              </h3>
+              <div className="text-[14px] font-medium text-neutral-500">
+                <StoreLocations locale={locale} t={t} />
               </div>
+            </section>
+          </div>
+
+          {/* =========================================
+              BOTTOM: SLEEK DIVIDER & COPYRIGHT
+              ========================================= */}
+          <div className="mt-16 md:mt-24 pt-8 border-t border-neutral-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Logo & Copyright */}
+            <div className="flex items-center gap-3">
+              <span className="text-[16px] font-black tracking-tight text-neutral-900">
+                TRIKO.
+              </span>
+              <span className="h-4 w-px bg-neutral-300 hidden md:block" />
+              <p className="text-[13px] font-medium text-neutral-400">
+                © {year} {t("legal.allRights") ?? "All rights reserved."}
+              </p>
+            </div>
+
+            {/* Social Icons inside a sleek floating pill */}
+            <div className="flex justify-center bg-white border border-neutral-200/80 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <SocialMedia />
             </div>
           </div>
         </div>
