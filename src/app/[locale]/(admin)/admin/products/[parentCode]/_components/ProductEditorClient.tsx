@@ -292,12 +292,7 @@ export default function ProductEditorClient({
           </div>
         </div>
         <div className="p-6">
-          <PhotoEditor
-            photos={photos}
-            setPhotos={setPhotos}
-            parentCode={row.parent_code}
-            locale={locale}
-          />
+   <PhotoEditor photos={photos} setPhotos={setPhotos} parentCode={row.parent_code} />
         </div>
       </div>
 
