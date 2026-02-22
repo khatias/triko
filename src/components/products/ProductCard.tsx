@@ -1,9 +1,10 @@
+// src/components/products/ProductCard.tsx
 "use client";
 
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useMemo } from "react";
-import type { CatalogGroupedProductCard } from "@/lib/db/products";
+import type { CatalogGroupedProductCard, Variant } from "@/lib/db/products";
 import {
   displayTitle,
   formatPrice,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/helpers";
 import { useTranslations } from "next-intl";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
-import { getFinaIdFromVariant } from "@/utils/fina/ids";
+import { getBundleFinaIdsFromVariant, getFinaIdFromVariant } from "@/utils/fina/ids";
 
 function formatRange(
   min: number | null | undefined,
@@ -24,12 +25,26 @@ function formatRange(
 
   if (a == null && b == null) return null;
 
-  // if only one side exists, fallback to that
   const lo = a ?? b!;
   const hi = b ?? a!;
 
   if (lo === hi) return formatPrice(lo, currency ?? null);
   return `${formatPrice(lo, currency ?? null)}–${formatPrice(hi, currency ?? null)}`;
+}
+
+function coerceVariants(raw: unknown): Variant[] {
+  if (Array.isArray(raw)) return raw as Variant[];
+
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as Variant[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
 }
 
 export default function ProductCard({
@@ -56,10 +71,11 @@ export default function ProductCard({
       | undefined,
   );
 
-  const sizeRows = useMemo(
-    () => buildSizes(product.variants ?? null),
+  const variants = useMemo(
+    () => coerceVariants(product.variants),
     [product.variants],
   );
+  const sizeRows = useMemo(() => buildSizes(variants ?? null), [variants]);
 
   const delayClass =
     revealDelay === 0
@@ -68,12 +84,13 @@ export default function ProductCard({
         ? "reveal-delay-1"
         : "reveal-delay-2";
 
-  const { onAdd, isPending, pendingFinaId, err, toast } = useAddToCart({
-    locale,
-    successMessage: p("addedToCart"),
-  });
+  // ✅ single + bundle share same toast + error UX
+  const { onAdd, onAddBundle, isPending, pendingFinaId, err, toast } =
+    useAddToCart({
+      locale,
+      successMessage: p("addedToCart"),
+    });
 
-  // discount-aware price rendering (needs fields from view)
   const hasDiscount = Boolean(product.has_discount);
   const effectiveLabel = formatRange(
     product.min_price,
@@ -85,7 +102,18 @@ export default function ProductCard({
     product.max_list_price,
     product.currency,
   );
-  console.log(product);
+
+  // ✅ bundle meta written onto BOTH cart_items rows by DB fn
+  const bundleMeta = useMemo(
+    () => ({
+      parentCode: product.parent_code ?? null,
+      titleEn: displayTitle(product, "en"),
+      titleKa: displayTitle(product, "ka"),
+      imageUrl: photo ?? null,
+    }),
+    [product, photo],
+  );
+
   return (
     <div className={`group animate-reveal ${delayClass}`}>
       <div className="relative">
@@ -96,7 +124,6 @@ export default function ProductCard({
         ) : null}
 
         <Link href={`/products/${product.parent_code}`} className="block">
-          {/* IMAGE BOX */}
           <div className="relative aspect-4/5 overflow-hidden bg-[#F7F7F7] ring-1 ring-stone-100 transition-all duration-700 group-hover:ring-stone-200">
             {photo ? (
               <>
@@ -113,15 +140,12 @@ export default function ProductCard({
                   priority={false}
                 />
 
-                {/* glossy sweep */}
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                   <div className="absolute -inset-y-10 -left-1/2 w-1/3 rotate-12 bg-white/25 blur-[2px] animate-shine group-hover:[animation-play-state:running]" />
                 </div>
 
-                {/* vignette */}
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-black/0 to-black/0 opacity-70" />
 
-                {/* SALE BADGE */}
                 {hasDiscount ? (
                   <div className="absolute left-4 top-4 rounded-full bg-white/70 backdrop-blur-xl px-3 py-1 text-[9px] font-bold uppercase tracking-[0.28em] text-stone-900 ring-1 ring-white/30 shadow-sm">
                     Sale
@@ -151,13 +175,24 @@ export default function ProductCard({
                     sizeRows.slice(0, 8).map((row) => {
                       const v = row.variant;
 
-                      const disabledBase = !row.inStock || !v || isPending;
+                      const singleId = v ? getFinaIdFromVariant(v) : null;
+                      const bundleIds = v ? getBundleFinaIdsFromVariant(v) : null;
 
-                      const finaId = v ? getFinaIdFromVariant(v) : null;
-                      const disabled = disabledBase || finaId == null;
+                      const disabled =
+                        !row.inStock ||
+                        !v ||
+                        isPending ||
+                        (singleId == null && bundleIds == null);
 
-                      const isThisPending =
-                        finaId != null && pendingFinaId === finaId && isPending;
+                      const isSinglePending =
+                        singleId != null &&
+                        pendingFinaId === singleId &&
+                        isPending;
+
+                      const isBundlePending =
+                        bundleIds != null &&
+                        pendingFinaId === bundleIds.top &&
+                        isPending;
 
                       return (
                         <button
@@ -167,7 +202,17 @@ export default function ProductCard({
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (!disabled && v) onAdd(v);
+
+                            if (!v || disabled) return;
+
+                            // single
+                            if (singleId != null) {
+                              onAdd(v);
+                              return;
+                            }
+
+                            // bundle (top + bottom) -> SAME toast/err UX
+                            onAddBundle(v, bundleMeta);
                           }}
                           className={[
                             "px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-tight ring-1",
@@ -177,11 +222,9 @@ export default function ProductCard({
                               : "ring-black/5 text-stone-900 hover:bg-stone-900 hover:text-white",
                           ].join(" ")}
                           aria-label={`Add size ${row.label} to bag`}
-                          title={
-                            disabled ? "Not available" : `Add ${row.label}`
-                          }
+                          title={disabled ? "Not available" : `Add ${row.label}`}
                         >
-                          {isThisPending ? "…" : row.label}
+                          {isSinglePending || isBundlePending ? "…" : row.label}
                         </button>
                       );
                     })
@@ -211,7 +254,7 @@ export default function ProductCard({
                   {title}
                 </h3>
                 <p className="text-[10px] font-light uppercase tracking-[0.3em] text-stone-400">
-                  {product.variants?.[0]?.name ?? "Permanent collection"}
+                  {variants?.[0]?.name ?? "Permanent collection"}
                 </p>
               </div>
 
