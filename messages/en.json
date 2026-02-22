@@ -87,7 +87,8 @@
     "joinUs": "Join Us",
     "seeMore": "See More",
     "viewAll": "View All",
-    "all": "All products"
+    "all": "All products",
+    "searchPlaceholder": "Search .."
   },
 
   "Footer": {

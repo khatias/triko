@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 function clampQuery(v: string) {
   return v.replace(/\s+/g, " ").trim().slice(0, 80);
@@ -27,7 +28,7 @@ export default function HeaderSearchToggle({
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
-
+const t = useTranslations("Header");
   const localePrefix = useMemo(
     () => `/${getLocaleFromPath(pathname)}`,
     [pathname],
@@ -113,7 +114,7 @@ export default function HeaderSearchToggle({
           ref={inputRef}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Search products..."
+          placeholder={t("searchPlaceholder")}
           className="flex-1 bg-transparent text-[15px] font-medium text-neutral-900 placeholder:text-neutral-400 outline-none w-full"
         />
         {value && (
@@ -174,7 +175,7 @@ export default function HeaderSearchToggle({
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Search products..."
+        placeholder={t("searchPlaceholder")}
         className={[
           "h-full bg-transparent text-sm font-medium text-neutral-900 placeholder:text-neutral-400 outline-none transition-all duration-300",
           open
