@@ -222,7 +222,7 @@
   },
   "Errors": {
     "required": "This field is required",
-    "ivanlidCredentials": "Email or password is incorrect",
+    "invalidCredentials": "Email or password is incorrect",
     "emailRequired": "Email is required",
     "emailTooLong": "Email is too long",
     "invalidEmail": "Email format is incorrect",
@@ -245,7 +245,7 @@
     "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
     "rate_limited": "Too many attempts. Please wait a moment and try again.",
     "server_error": "Server error. Please try again later.",
-    "unknown": "Somthing Went Wron. Please try again.",
+    "unknown": "Something went wrong. Please try again.",
     "network": "Network error. Please try again.",
     "timeout": "Request timed out. Please try again.",
     "fullNameRequired": "This field is required.",
@@ -268,7 +268,7 @@
     "regionTooLong": "Region is too long.",
     "regionMustContainLettersOrNumbers": "Please enter a valid region.",
     "phoneInvalidCharacters": "Only digits  are allowed.",
-
+    "botDetected": "Our system suspects you may not be human. If this is an error, please try again later.",
     "AUTH_REQUIRED": "Please sign in to continue.",
     "CART_EMPTY": "Your cart is empty.",
     "CART_ITEM_INVALID_QTY": "One of the items has an invalid quantity. Please refresh your cart.",
