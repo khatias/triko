@@ -18,7 +18,6 @@ export type ShopGroup = {
   idx: number;
   group_id: number;
   parent_group_id: number | null;
-  fina_name: string | null;
   name_en: string | null;
   name_ka: string | null;
   slug_en: string | null;
@@ -35,11 +34,8 @@ export async function getVisibleGroups(): Promise<ShopGroup[]> {
 
   const { data, error } = await supabase
     .from(GROUPS_VIEW)
-    .select(
-      "group_id, parent_group_id, fina_name, name_en, name_ka, slug_en, sort_order",
-    )
+    .select("group_id, parent_group_id, name_en, name_ka, slug_en, sort_order")
     .eq("is_visible", true)
-
     .order("sort_order", { ascending: true });
 
   if (error) {
@@ -57,7 +53,7 @@ export async function getGroupBySlug(
 
   const { data, error } = await supabase
     .from(GROUPS_VIEW)
-    .select("group_id, fina_name, name_en, name_ka, slug_en, sort_order")
+    .select("group_id, parent_group_id, name_en, name_ka, slug_en, sort_order")
     .eq("slug_en", slugEn)
     .maybeSingle();
 

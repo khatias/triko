@@ -1,14 +1,17 @@
+export const revalidate = 60;
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Locale } from "@/lib/helpers";
 import ProductCard from "@/components/products/ProductCard";
-import { getGroupBySlug } from "@/lib/db/groups";
+import { getGroupBySlug, getVisibleGroups } from "@/lib/db/groups";
 import { getCatalogProductsGrouped } from "@/lib/db/products";
 import { wrap } from "@/components/UI/primitives";
 import { RESERVED_TOP_LEVEL_SLUGS } from "@/lib/helpers";
 import { pickGroupName } from "@/lib/helpers";
 import { getTranslations } from "next-intl/server";
 import EmptyState from "@/components/UI/EmptyState";
+import { collectDescendantGroupIds } from "@/lib/groups-tree";
 
 type Props = {
   params: Promise<{ locale: Locale; category: string }>;
@@ -23,13 +26,24 @@ export default async function CategorySlugPage({ params }: Props) {
   const group = await getGroupBySlug(category);
   if (!group) notFound();
 
+  const allGroups = await getVisibleGroups();
+  const groupIds = collectDescendantGroupIds(allGroups, group.group_id);
+
   const { items: products } = await getCatalogProductsGrouped({
-    groupId: group.group_id,
+    groupIds,
     page: 1,
     pageSize: 48,
   });
 
   const groupName = pickGroupName(group, locale);
+  const byId = new Map(allGroups.map((g) => [g.group_id, g]));
+  const parentGroup =
+    group.parent_group_id != null
+      ? (byId.get(group.parent_group_id) ?? null)
+      : null;
+
+  const parentName = parentGroup ? pickGroupName(parentGroup, locale) : null;
+  const parentSlug = parentGroup?.slug_en ?? null;
 
   return (
     <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
@@ -41,6 +55,19 @@ export default async function CategorySlugPage({ params }: Props) {
           >
             {h("home")}
           </Link>
+
+          {parentGroup && parentName && parentSlug ? (
+            <>
+              <span className="mx-3">/</span>
+              <Link
+                href={`/${locale}/${parentSlug}`}
+                className="hover:text-stone-900 transition-colors"
+              >
+                {parentName}
+              </Link>
+            </>
+          ) : null}
+
           <span className="mx-3">/</span>
           <span className="text-stone-900">{groupName}</span>
         </nav>

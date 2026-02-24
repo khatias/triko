@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 ========================= */
 
 export type Variant = {
-  fina_id: number | null; 
+  fina_id: number | null;
   top_fina_id?: number | null;
   bottom_fina_id?: number | null;
 
@@ -33,11 +33,9 @@ export type CatalogGroupedProductCard = {
 
   currency: string | null;
 
-  // effective range
   min_price: number | null;
   max_price: number | null;
 
-  // original(list) range
   min_list_price: number | null;
   max_list_price: number | null;
 
@@ -64,7 +62,11 @@ export type CatalogPageResult = {
 type GetCatalogProductsGroupedArgs = {
   page?: number;
   pageSize?: number;
+
+  // ✅ supports parent + descendants
   groupId?: number | null;
+  groupIds?: number[] | null;
+
   q?: string | null;
 };
 
@@ -87,11 +89,9 @@ export type CatalogProductDetail = {
 
   currency: string | null;
 
-  // effective range
   min_price: number | null;
   max_price: number | null;
 
-  // original(list) range
   min_list_price: number | null;
   max_list_price: number | null;
 
@@ -101,6 +101,38 @@ export type CatalogProductDetail = {
 
   variants: Variant[];
 };
+
+/* =========================
+   Helpers
+========================= */
+
+function normalizeGroupIds(args: GetCatalogProductsGroupedArgs): number[] {
+  const out: number[] = [];
+
+  if (Array.isArray(args.groupIds)) {
+    for (const x of args.groupIds) {
+      if (typeof x === "number" && Number.isFinite(x)) out.push(x);
+    }
+  }
+
+  if (typeof args.groupId === "number" && Number.isFinite(args.groupId)) {
+    out.push(args.groupId);
+  }
+
+  return Array.from(new Set(out));
+}
+
+function uniqueKeepOrder(list: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of list) {
+    if (!x) continue;
+    if (seen.has(x)) continue;
+    seen.add(x);
+    out.push(x);
+  }
+  return out;
+}
 
 /* =========================
    Queries
@@ -143,15 +175,19 @@ export async function getCatalogProductsGrouped(
     )
     .order("parent_code", { ascending: true });
 
-  if (typeof args.groupId === "number") {
-    query = query.eq("group_id", args.groupId);
+  // ✅ FIX: groupId OR groupIds
+  const gids = normalizeGroupIds(args);
+  if (gids.length === 1) {
+    query = query.eq("group_id", gids[0]);
+  } else if (gids.length > 1) {
+    query = query.in("group_id", gids);
   }
 
   const rawQ = (args.q ?? "").trim();
   if (rawQ) {
     const q = rawQ
-      .replace(/[%_]/g, "\\$&") // escape ILIKE wildcards
-      .replace(/,/g, " ") // commas break .or() list
+      .replace(/[%_]/g, "\\$&")
+      .replace(/,/g, " ")
       .replace(/\s+/g, " ")
       .slice(0, 80);
 
@@ -236,17 +272,6 @@ export async function getCatalogProductDetail(
   }
 
   return (data ?? null) as CatalogProductDetail | null;
-}
-function uniqueKeepOrder(list: string[]) {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const x of list) {
-    if (!x) continue;
-    if (seen.has(x)) continue;
-    seen.add(x);
-    out.push(x);
-  }
-  return out;
 }
 
 export async function getProductsByParentCodes(
