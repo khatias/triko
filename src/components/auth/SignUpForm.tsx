@@ -70,7 +70,7 @@ export default function SignUpForm() {
     });
 
     if (!result.ok) {
-      setErrorMessage(result.message ?? tForm("errors.unknown"));
+      setErrorMessage(result.message ?? tErrors("unknown"));
 
       // keep email + name, clear sensitive fields
       reset(
