@@ -546,7 +546,19 @@
     "previous": "Previous",
     "page": "Page",
     "filters": "Filters",
+    "clear": "Clear All",
+    "category": "Category",
+    "categories": "Categories",
+    "allCategories": "All Categories",
     "sortBy": "Sort by",
+    "recommended": "Recommended",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "size":"Size",
+    "priceRange": "Price range",
+    "min":"min",
+    "max":"max",
+    "showResults": "Show results",
     "noImages": "No image available.",
     "backToStart": "Back to start",
     "loadMore": "Load more",
@@ -554,8 +566,10 @@
     "explorePiece": "Explore Piece",
     "rollToZoom": "Roll over to zoom",
     "noProductsFound": "No products found matching your criteria."
+    
   },
   "Products": {
+    "title": "Products",
     "meta": {
       "title": "Products — Triko",
       "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."

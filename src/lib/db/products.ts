@@ -62,12 +62,14 @@ export type CatalogPageResult = {
 type GetCatalogProductsGroupedArgs = {
   page?: number;
   pageSize?: number;
-
-  // ✅ supports parent + descendants
   groupId?: number | null;
   groupIds?: number[] | null;
-
   q?: string | null;
+
+  sizes?: string[] | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  sort?: "price_asc" | "price_desc" | "newest" | null;
 };
 
 export type CatalogProductDetail = {
@@ -148,10 +150,8 @@ export async function getCatalogProductsGrouped(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = supabase
-    .from("shop_catalog_parent_view")
-    .select(
-      `
+  let query = supabase.from("shop_catalog_parent_view").select(
+    `
         parent_code,
         name,
         title_ka,
@@ -171,11 +171,20 @@ export async function getCatalogProductsGrouped(
         group_name_en,
         group_name_ka
       `,
-      { count: "exact" },
-    )
-    .order("parent_code", { ascending: true });
+    { count: "exact" },
+  );
 
-  // ✅ FIX: groupId OR groupIds
+  // Apply sorting dynamically
+  if (args.sort === "price_asc") {
+    query = query.order("min_price", { ascending: true });
+  } else if (args.sort === "price_desc") {
+    query = query.order("min_price", { ascending: false });
+  } else {
+    // Default or "newest"
+    query = query.order("parent_code", { ascending: true });
+  }
+
+  // Group / Category Filter
   const gids = normalizeGroupIds(args);
   if (gids.length === 1) {
     query = query.eq("group_id", gids[0]);
@@ -183,6 +192,7 @@ export async function getCatalogProductsGrouped(
     query = query.in("group_id", gids);
   }
 
+  // Search Filter
   const rawQ = (args.q ?? "").trim();
   if (rawQ) {
     const q = rawQ
@@ -202,6 +212,22 @@ export async function getCatalogProductsGrouped(
         `parent_code.ilike.%${q}%`,
       ].join(","),
     );
+  }
+
+
+  if (args.sizes && args.sizes.length > 0) {
+    const sizeConditions = args.sizes.map(
+      (s) => `variants.cs.[{"size": "${s}"}]`,
+    );
+    query = query.or(sizeConditions.join(","));
+  }
+
+  // Price Range Filters
+  if (typeof args.minPrice === "number") {
+    query = query.gte("min_price", args.minPrice);
+  }
+  if (typeof args.maxPrice === "number") {
+    query = query.lte("min_price", args.maxPrice);
   }
 
   const { data, error, count } = await query.range(from, to);
@@ -227,7 +253,6 @@ export async function getCatalogProductsGrouped(
     totalPages,
   };
 }
-
 export async function getCatalogProductDetail(
   parentCode: string,
 ): Promise<CatalogProductDetail | null> {
