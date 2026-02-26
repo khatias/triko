@@ -526,6 +526,7 @@
       "contactSupport": "Contact Support",
       "variantLabel": "Size",
       "productAlt": "Product",
+      "noOrders": "You have not placed any orders yet.",
       "shipping": {
         "confirmedLabel": "Confirmed",
         "confirmedDesc": "Order received",
