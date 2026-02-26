@@ -15,11 +15,11 @@ import { fetchAdminDashboard } from "../_quries/dashboard";
 import { formatDate, formatPrice } from "@/lib/helpers";
 
 type Props = {
-  params: { locale: string } | Promise<{ locale: string }>;
+  params: Promise<{ locale: string }>;
 };
 
 export default async function AdminDashboardPage({ params }: Props) {
-  const { locale } = await Promise.resolve(params);
+  const { locale } = await params;
 
   const t = await getTranslations({
     locale,

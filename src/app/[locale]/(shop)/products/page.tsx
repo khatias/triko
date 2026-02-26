@@ -12,6 +12,8 @@ import FiltersDrawer from "@/components/products/FiltersDrawer";
 import Filter from "@/components/products/Filter";
 import { collectDescendantGroupIds } from "@/lib/groups-tree";
 
+export const revalidate = 60;
+
 type PageProps = {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
@@ -76,20 +78,22 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   const pageSize = 12;
   const currentPage = clampPositiveInt(spRaw.page ?? "1", 1);
 
-  const groups = await getVisibleGroups();
-
   const q = clampQuery(spRaw.q ?? "");
   const sizes = spRaw.sizes ? spRaw.sizes.split(",") : null;
   const minPrice = spRaw.minPrice ? Number(spRaw.minPrice) : null;
   const maxPrice = spRaw.maxPrice ? Number(spRaw.maxPrice) : null;
   const sort = (spRaw.sort as "price_asc" | "price_desc" | "newest") || null;
 
-  const h = await getTranslations({ locale, namespace: "Helpers" });
-  const p = await getTranslations({ locale, namespace: "Products" });
+  // 1. Fetch translations and groups in parallel
+  const [groups, h, p] = await Promise.all([
+    getVisibleGroups(),
+    getTranslations({ locale, namespace: "Helpers" }),
+    getTranslations({ locale, namespace: "Products" })
+  ]);
 
   const selectedId = parseIntOrNull(spRaw.categoryId);
-
   let groupIds: number[] | null = null;
+  
   if (selectedId != null) {
     const rows: GroupRow[] = groups.map((g) => ({
       group_id: g.group_id,
@@ -100,6 +104,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
     groupIds = [selectedId, ...descendants];
   }
 
+  // 2. Fetch the data using the calculated groupIds
   const data = (await getCatalogProductsGrouped({
     page: currentPage,
     pageSize,
@@ -121,14 +126,11 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   const base = `/${locale}`;
   const primaryHref = `/${locale}/products`;
 
-  // ✅ Shared header layout to avoid CLS differences between empty + non-empty states
   function HeaderBar() {
     return (
       <header className="border-b border-stone-100">
-        {/* ✅ lock height to prevent header reflow on hydration */}
         <div className={`${wrap} h-20 flex items-center`}>
           <nav className="w-full flex items-center justify-between text-[10px] font-medium uppercase tracking-wider">
-            {/* left: prev/next */}
             <div className="flex gap-8 text-stone-400 min-w-40">
               <Link
                 href={prevHref}
@@ -155,18 +157,15 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
               </Link>
             </div>
 
-            {/* center: page x / y */}
             <div className="hidden md:block text-stone-500 tabular-nums min-w-35 text-center">
               {h("page")} {currentPage}{" "}
               <span className="text-stone-200 mx-2">/</span> {totalPages}
             </div>
 
-            {/* right: drawer slot with reserved width so it doesn't shift */}
             <div className="lg:hidden min-w-14 flex justify-end">
               <FiltersDrawer groups={groups} />
             </div>
 
-            {/* on large screens keep the same reserved width (empty) to prevent layout change across breakpoints */}
             <div className="hidden lg:block min-w-14" aria-hidden />
           </nav>
         </div>
@@ -178,12 +177,10 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
     return (
       <div className="min-h-screen bg-white text-stone-900">
         <HeaderBar />
-
         <main className={`${wrap} py-14 lg:flex lg:gap-12`}>
           <aside className="hidden lg:block w-70 shrink-0">
             <Filter groups={groups} />
           </aside>
-
           <div className="flex-1">
             <EmptyState
               title={p("empty.title")}
@@ -203,7 +200,6 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   return (
     <div className="min-h-screen bg-white text-stone-900">
       <HeaderBar />
-
       <main className={`${wrap} py-14 flex flex-col lg:flex-row gap-12`}>
         <aside className="hidden lg:block w-70 shrink-0">
           <Filter groups={groups} />
@@ -216,7 +212,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
                 key={row.parent_code || idx}
                 product={row}
                 locale={locale}
-                revealDelay={0}
+                revealDelay={idx % 3} 
               />
             ))}
           </div>

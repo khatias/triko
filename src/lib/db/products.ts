@@ -1,4 +1,13 @@
 import { createClient } from "@/utils/supabase/server";
+// import postgres from 'postgres';
+
+// Direct connection optimized for VPS and Supabase Pooler
+// const sql = postgres(process.env.DATABASE_URL!, {
+//   max: 10,
+//   idle_timeout: 20,
+//   connect_timeout: 10,
+//   prepare: false // Required for Supabase Transaction Mode (Port 6543)
+// });
 
 /* =========================
    Types
@@ -8,11 +17,9 @@ export type Variant = {
   fina_id: number | null;
   top_fina_id?: number | null;
   bottom_fina_id?: number | null;
-
   code: string | null;
   name: string;
   size: string | null;
-
   price: number | null;
   list_price: number | null;
   has_discount: boolean | null;
@@ -23,31 +30,22 @@ export type Variant = {
 export type CatalogGroupedProductCard = {
   parent_code: string;
   name: string;
-
   title_ka: string | null;
   title_en: string | null;
   description_ka: string | null;
   description_en: string | null;
-
   photos: unknown | null;
-
   currency: string | null;
-
   min_price: number | null;
   max_price: number | null;
-
   min_list_price: number | null;
   max_list_price: number | null;
-
   has_discount: boolean | null;
-
   total_stock?: number | null;
-
   group_id?: number | null;
   group_name?: string | null;
   group_name_en?: string | null;
   group_name_ka?: string | null;
-
   variants?: Variant[] | null;
 };
 
@@ -65,7 +63,6 @@ type GetCatalogProductsGroupedArgs = {
   groupId?: number | null;
   groupIds?: number[] | null;
   q?: string | null;
-
   sizes?: string[] | null;
   minPrice?: number | null;
   maxPrice?: number | null;
@@ -74,33 +71,23 @@ type GetCatalogProductsGroupedArgs = {
 
 export type CatalogProductDetail = {
   parent_code: string;
-
   group_id: number | null;
   group_name: string | null;
   group_name_en: string | null;
   group_name_ka: string | null;
-
   name: string;
-
   title_ka: string | null;
   title_en: string | null;
   description_ka: string | null;
   description_en: string | null;
-
   photos: unknown | null;
-
   currency: string | null;
-
   min_price: number | null;
   max_price: number | null;
-
   min_list_price: number | null;
   max_list_price: number | null;
-
   has_discount: boolean | null;
-
   total_stock: number | null;
-
   variants: Variant[];
 };
 
@@ -110,17 +97,14 @@ export type CatalogProductDetail = {
 
 function normalizeGroupIds(args: GetCatalogProductsGroupedArgs): number[] {
   const out: number[] = [];
-
   if (Array.isArray(args.groupIds)) {
     for (const x of args.groupIds) {
       if (typeof x === "number" && Number.isFinite(x)) out.push(x);
     }
   }
-
   if (typeof args.groupId === "number" && Number.isFinite(args.groupId)) {
     out.push(args.groupId);
   }
-
   return Array.from(new Set(out));
 }
 
@@ -150,7 +134,8 @@ export async function getCatalogProductsGrouped(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = supabase.from("shop_catalog_parent_view").select(
+  // CHANGED: Pointing to shop_catalog_fast for performance
+  let query = supabase.from("shop_catalog_fast").select(
     `
         parent_code,
         name,
@@ -174,17 +159,14 @@ export async function getCatalogProductsGrouped(
     { count: "exact" },
   );
 
-  // Apply sorting dynamically
   if (args.sort === "price_asc") {
     query = query.order("min_price", { ascending: true });
   } else if (args.sort === "price_desc") {
     query = query.order("min_price", { ascending: false });
   } else {
-    // Default or "newest"
     query = query.order("parent_code", { ascending: true });
   }
 
-  // Group / Category Filter
   const gids = normalizeGroupIds(args);
   if (gids.length === 1) {
     query = query.eq("group_id", gids[0]);
@@ -192,7 +174,6 @@ export async function getCatalogProductsGrouped(
     query = query.in("group_id", gids);
   }
 
-  // Search Filter
   const rawQ = (args.q ?? "").trim();
   if (rawQ) {
     const q = rawQ
@@ -214,7 +195,6 @@ export async function getCatalogProductsGrouped(
     );
   }
 
-
   if (args.sizes && args.sizes.length > 0) {
     const sizeConditions = args.sizes.map(
       (s) => `variants.cs.[{"size": "${s}"}]`,
@@ -222,7 +202,6 @@ export async function getCatalogProductsGrouped(
     query = query.or(sizeConditions.join(","));
   }
 
-  // Price Range Filters
   if (typeof args.minPrice === "number") {
     query = query.gte("min_price", args.minPrice);
   }
@@ -253,13 +232,15 @@ export async function getCatalogProductsGrouped(
     totalPages,
   };
 }
+
 export async function getCatalogProductDetail(
   parentCode: string,
 ): Promise<CatalogProductDetail | null> {
   const supabase = await createClient();
 
+  // CHANGED: Pointing to shop_catalog_fast
   const { data, error } = await supabase
-    .from("shop_catalog_parent_view")
+    .from("shop_catalog_fast")
     .select(
       `
         parent_code,
@@ -307,8 +288,9 @@ export async function getProductsByParentCodes(
 
   const supabase = await createClient();
 
+  // CHANGED: Pointing to shop_catalog_fast
   const { data, error } = await supabase
-    .from("shop_catalog_parent_view")
+    .from("shop_catalog_fast")
     .select(
       `
       parent_code,
@@ -334,7 +316,7 @@ export async function getProductsByParentCodes(
     )
     .in("parent_code", codes);
 
-  if (error) {
+ if (error) {
     console.error("getProductsByParentCodes error:", {
       message: error.message,
       code: error.code,
@@ -345,7 +327,6 @@ export async function getProductsByParentCodes(
   }
 
   const rows = (data ?? []) as CatalogGroupedProductCard[];
-
   const map = new Map<string, CatalogGroupedProductCard>();
   for (const r of rows) {
     if (!map.has(r.parent_code)) map.set(r.parent_code, r);
