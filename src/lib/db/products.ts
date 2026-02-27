@@ -156,7 +156,6 @@ export async function getCatalogProductsGrouped(
         group_name_en,
         group_name_ka
       `,
-    { count: "exact" },
   );
 
   if (args.sort === "price_asc") {
@@ -316,7 +315,7 @@ export async function getProductsByParentCodes(
     )
     .in("parent_code", codes);
 
- if (error) {
+  if (error) {
     console.error("getProductsByParentCodes error:", {
       message: error.message,
       code: error.code,
