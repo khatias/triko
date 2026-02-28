@@ -3,7 +3,7 @@ name: Deploy Next.js to VPS
 on:
   push:
     branches:
-      - fix-cleanup-2 # Trigger deployment only when this branch is updated
+      - fix-cleanup-2
 
 jobs:
   deploy:
@@ -16,10 +16,24 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            # 1. Load Node environment for this automated SSH session
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:/usr/local/bin
+
+            # 2. Go to the app folder
             cd /var/www/my-app
+
+            # 3. Force Git to throw away local server changes so it doesn't crash
+            git reset --hard HEAD
+            git clean -fd
+
+            # 4. Pull the latest code from GitHub
             git fetch origin
             git checkout fix-cleanup-2
             git reset --hard origin/fix-cleanup-2
+
+            # 5. Build and deploy
             npm install
             npm run build
             pm2 restart triko-store
