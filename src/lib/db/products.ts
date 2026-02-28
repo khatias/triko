@@ -156,6 +156,7 @@ export async function getCatalogProductsGrouped(
         group_name_en,
         group_name_ka
       `,
+    { count: "exact" },
   );
 
   if (args.sort === "price_asc") {
