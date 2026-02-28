@@ -39,3 +39,5 @@ supabase/temp/
 .env*
 .vscode/
 supabase/.temp/
+
+ecosystem.config.js
