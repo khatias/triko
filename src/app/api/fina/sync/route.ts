@@ -77,7 +77,6 @@ export async function POST(req: Request) {
     if (jobsErr) throw jobsErr;
     if (!jobs || jobs.length === 0) return NextResponse.json({ ok: true, processed: 0, dryRun });
 
-    // Only required for REAL run, not for dry run
     const baseUrl = dryRun ? "" : mustEnv("FINA_BASE_URL").replace(/\/+$/, "");
     const token = dryRun ? "" : mustEnv("FINA_TOKEN");
     const storeId = dryRun ? 0 : Number(mustEnv("FINA_STORE_ID"));
