@@ -54,6 +54,10 @@ function boolHeader(req: Request, name: string): boolean {
   return v === "1" || v === "true" || v === "yes";
 }
 
+function envBool(name: string): boolean {
+  return (process.env[name] ?? "").trim().toLowerCase() === "true";
+}
+
 export async function POST(req: Request) {
   try {
     const expected = process.env.FINA_SYNC_SECRET;
@@ -63,7 +67,6 @@ export async function POST(req: Request) {
     }
 
     const dryRun = boolHeader(req, "x-dry-run");
-
     const supabase = getSupabaseAdmin();
 
     const { data: jobs, error: jobsErr } = await supabase
@@ -77,11 +80,28 @@ export async function POST(req: Request) {
     if (jobsErr) throw jobsErr;
     if (!jobs || jobs.length === 0) return NextResponse.json({ ok: true, processed: 0, dryRun });
 
-    const baseUrl = dryRun ? "" : mustEnv("FINA_BASE_URL").replace(/\/+$/, "");
-    const token = dryRun ? "" : mustEnv("FINA_TOKEN");
-    const storeId = dryRun ? 0 : Number(mustEnv("FINA_STORE_ID"));
-    const finaUserId = dryRun ? 0 : Number(mustEnv("FINA_USER_ID"));
-    const defaultCustomerId = dryRun ? 0 : Number(mustEnv("FINA_DEFAULT_CUSTOMER_ID"));
+    // Kill switch: real run requires FINA_ENABLED=true
+    if (!dryRun && !envBool("FINA_ENABLED")) {
+      return NextResponse.json({ ok: false, error: "FINA_DISABLED" }, { status: 400 });
+    }
+
+    // Only required for REAL run
+    let baseUrl = "";
+    let token = "";
+    let storeId = 0;
+    let finaUserId = 0;
+    let defaultCustomerId = 0;
+
+    if (!dryRun) {
+      baseUrl = mustEnv("FINA_BASE_URL").replace(/\/+$/, "");
+      token = mustEnv("FINA_TOKEN");
+      storeId = Number(mustEnv("FINA_STORE_ID"));
+      finaUserId = Number(mustEnv("FINA_USER_ID"));
+      defaultCustomerId = Number(mustEnv("FINA_DEFAULT_CUSTOMER_ID"));
+      if (!Number.isFinite(storeId) || !Number.isFinite(finaUserId) || !Number.isFinite(defaultCustomerId)) {
+        throw new Error("FINA ids must be numbers");
+      }
+    }
 
     let processed = 0;
 
@@ -147,7 +167,7 @@ export async function POST(req: Request) {
           project: 0,
           customer: defaultCustomerId,
           is_vat: true,
-          make_entry: true,
+          make_entry: false, // ✅ safest for first real test
           pay_type: 1,
           price_type: 3,
           w_type: 3,
@@ -163,7 +183,7 @@ export async function POST(req: Request) {
           services: [],
         };
 
-        // -------- DRY RUN: do not call Fina --------
+        // DRY RUN
         if (dryRun) {
           await supabase
             .from("fina_outbox")
@@ -177,7 +197,7 @@ export async function POST(req: Request) {
           continue;
         }
 
-        // -------- REAL RUN: call Fina --------
+        // REAL RUN
         const resp = await fetch(`${baseUrl}/api/operation/saveDocProductOut`, {
           method: "POST",
           headers: {
@@ -236,4 +256,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: msg }, { status: 500 });
   }
 }
-
