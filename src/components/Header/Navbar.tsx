@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChevronDown } from "lucide-react";
 
-import logo from "../../assets/logo.png";
+import logo from "../../assets/Logo4.png";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import AccountMenu from "./AccountMenu";
 import { wrap } from "../UI/primitives";
@@ -189,7 +189,7 @@ export default function Navbar({
               ref={closeBtnRef}
               type="button"
               onClick={closeMobile}
-              className="p-2 -mr-2 text-neutral-400 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 rounded-full"
+              className="p-2 -mr-2 text-neutral-400 hover:text-neutral-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc6759] rounded-full"
               aria-label="Close menu"
               tabIndex={isMobileOpen ? 0 : -1}
             >
@@ -211,8 +211,8 @@ export default function Navbar({
                 className={[
                   "flex items-center py-3 text-xl font-bold tracking-tight transition-colors",
                   isActivePath(`/${locale}/products`)
-                    ? "text-rose-600"
-                    : "text-neutral-900 hover:text-rose-600",
+                    ? "text-[#fc6759]"
+                    : "text-neutral-900 hover:text-[#fc6759]",
                 ].join(" ")}
               >
                 {t("all")}
@@ -243,8 +243,8 @@ export default function Navbar({
                         className={[
                           "flex-1 py-3 text-xl font-bold tracking-tight transition-colors",
                           parentActive
-                            ? "text-rose-600"
-                            : "text-neutral-900 hover:text-rose-600",
+                            ? "text-[#fc6759]"
+                            : "text-neutral-900 hover:text-[#fc6759]",
                         ].join(" ")}
                       >
                         {pickGroupName(parent, locale)}
@@ -298,7 +298,7 @@ export default function Navbar({
                                   className={[
                                     "text-base transition-colors",
                                     active
-                                      ? "text-rose-600 font-semibold"
+                                      ? "text-[#fc6759] font-semibold"
                                       : "text-neutral-500 hover:text-neutral-900",
                                   ].join(" ")}
                                 >
@@ -356,14 +356,14 @@ export default function Navbar({
           <Link
             href={`/${locale}`}
             aria-label="Home"
-            className="transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 rounded-sm"
+            className="transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc6759] rounded-sm"
           >
             <Image
               src={logo}
               alt="Logo"
-              width={100}
-              height={50}
-              className="h-10 w-auto object-contain"
+              width={200}
+              height={100}
+              className="h-30 w-auto object-contain"
               priority
             />
           </Link>
@@ -393,7 +393,7 @@ export default function Navbar({
                 >
                   {pickGroupName(parent, locale)}
                   <span
-                    className={`absolute bottom-0 left-0 h-0.5 w-full bg-rose-600 transition-transform duration-300 ease-out origin-left ${
+                    className={`absolute bottom-0 left-0 h-0.5 w-full bg-[#fc6759] transition-transform duration-300 ease-out origin-left ${
                       isActive
                         ? "scale-x-100"
                         : "scale-x-0 group-hover:scale-x-100"
@@ -415,7 +415,7 @@ export default function Navbar({
             >
               {t("all")}
               <span
-                className={`absolute bottom-0 left-0 h-0.5 w-full bg-rose-600 transition-transform duration-300 ease-out origin-left ${
+                className={`absolute bottom-0 left-0 h-0.5 w-full bg-[#fc6759] transition-transform duration-300 ease-out origin-left ${
                   isActivePath(`/${locale}/products`)
                     ? "scale-x-100"
                     : "scale-x-0 group-hover:scale-x-100"
@@ -439,7 +439,7 @@ export default function Navbar({
           >
             <ShoppingCartIcon className="h-6 w-6 stroke-2" />
             {safeCartCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+              <span className="absolute -top-1 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#fc6759] px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
                 {formatBadgeCount(safeCartCount)}
               </span>
             )}
@@ -468,10 +468,10 @@ export default function Navbar({
                   onClick={() => setActiveMenu(null)}
                   className="group flex flex-col items-center justify-center rounded-xl px-6 py-4 transition-all hover:bg-neutral-50"
                 >
-                  <span className="text-sm font-semibold text-neutral-600 transition-colors group-hover:text-rose-600">
+                  <span className="text-sm font-semibold text-neutral-600 transition-colors group-hover:text-[#fc6759]">
                     {pickGroupName(child, locale)}
                   </span>
-                  <div className="h-0.5 w-4 bg-neutral-200 mt-2 transition-all duration-300 group-hover:w-full group-hover:bg-rose-600 rounded-full" />
+                  <div className="h-0.5 w-4 bg-neutral-200 mt-2 transition-all duration-300 group-hover:w-full group-hover:bg-[#fc6759] rounded-full" />
                 </Link>
               );
             })}
@@ -482,7 +482,7 @@ export default function Navbar({
       <div className="lg:hidden flex items-center justify-between h-16 px-5 bg-white">
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 -ml-2 text-neutral-800 hover:bg-neutral-50 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600"
+          className="p-2 -ml-2 text-neutral-800 hover:bg-neutral-50 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#fc6759]"
           type="button"
           aria-label="Open menu"
         >
@@ -499,7 +499,7 @@ export default function Navbar({
             alt="Logo"
             width={80}
             height={40}
-            className="h-8 w-auto object-contain"
+            className="h-20 w-auto object-contain"
             priority
           />
         </Link>
@@ -514,7 +514,7 @@ export default function Navbar({
           >
             <ShoppingCartIcon className="h-6 w-6 stroke-[1.5]" />
             {safeCartCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[9px] font-bold text-white shadow-sm">
+              <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#fc6759] px-1 text-[9px] font-bold text-white shadow-sm">
                 {formatBadgeCount(safeCartCount)}
               </span>
             )}
