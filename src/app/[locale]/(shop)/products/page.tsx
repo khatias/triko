@@ -84,16 +84,15 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   const maxPrice = spRaw.maxPrice ? Number(spRaw.maxPrice) : null;
   const sort = (spRaw.sort as "price_asc" | "price_desc" | "newest") || null;
 
-  // 1. Fetch translations and groups in parallel
   const [groups, h, p] = await Promise.all([
     getVisibleGroups(),
     getTranslations({ locale, namespace: "Helpers" }),
-    getTranslations({ locale, namespace: "Products" })
+    getTranslations({ locale, namespace: "Products" }),
   ]);
 
   const selectedId = parseIntOrNull(spRaw.categoryId);
   let groupIds: number[] | null = null;
-  
+
   if (selectedId != null) {
     const rows: GroupRow[] = groups.map((g) => ({
       group_id: g.group_id,
@@ -104,7 +103,6 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
     groupIds = [selectedId, ...descendants];
   }
 
-  // 2. Fetch the data using the calculated groupIds
   const data = (await getCatalogProductsGrouped({
     page: currentPage,
     pageSize,
@@ -117,11 +115,14 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   })) as CatalogPageResult;
 
   const items = data.items?.filter(Boolean) ?? [];
-  const totalPages = Math.max(1, data.totalPages ?? 1);
+
+  // ✅ NEW: no totalPages, use hasNextPage
+  const hasPrevPage = currentPage > 1;
+  const hasNextPage = Boolean(data.hasNextPage);
 
   const sp = buildQueryParams(spRaw);
   const prevHref = buildHref(sp, Math.max(1, currentPage - 1));
-  const nextHref = buildHref(sp, Math.min(totalPages, currentPage + 1));
+  const nextHref = buildHref(sp, currentPage + 1); // ✅ don't clamp
 
   const base = `/${locale}`;
   const primaryHref = `/${locale}/products`;
@@ -136,7 +137,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
                 href={prevHref}
                 prefetch={false}
                 className={
-                  currentPage === 1
+                  !hasPrevPage
                     ? "opacity-20 pointer-events-none"
                     : "hover:text-stone-900 transition-colors"
                 }
@@ -148,7 +149,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
                 href={nextHref}
                 prefetch={false}
                 className={
-                  currentPage === totalPages
+                  !hasNextPage
                     ? "opacity-20 pointer-events-none"
                     : "hover:text-stone-900 transition-colors"
                 }
@@ -157,9 +158,9 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
               </Link>
             </div>
 
+            {/* ✅ remove totalPages display (or change it) */}
             <div className="hidden md:block text-stone-500 tabular-nums min-w-35 text-center">
-              {h("page")} {currentPage}{" "}
-              <span className="text-stone-200 mx-2">/</span> {totalPages}
+              {h("page")} {currentPage}
             </div>
 
             <div className="lg:hidden min-w-14 flex justify-end">
@@ -212,7 +213,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
                 key={row.parent_code || idx}
                 product={row}
                 locale={locale}
-                revealDelay={idx % 3} 
+                revealDelay={idx % 3}
               />
             ))}
           </div>
@@ -222,7 +223,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
               href={prevHref}
               prefetch={false}
               className={`text-xs uppercase tracking-wider ${
-                currentPage === 1
+                !hasPrevPage
                   ? "opacity-20 pointer-events-none"
                   : "text-stone-500 hover:text-stone-900 transition-colors"
               }`}
@@ -234,7 +235,7 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
               href={nextHref}
               prefetch={false}
               className={`text-xs uppercase tracking-wider ${
-                currentPage === totalPages
+                !hasNextPage
                   ? "opacity-20 pointer-events-none"
                   : "text-stone-500 hover:text-stone-900 transition-colors"
               }`}
