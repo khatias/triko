@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, Phone } from "lucide-react";
 
 import SocialMedia from "../socialMedia/SocialMedia";
 import StoreLocations from "../locations/StoreLocations";
@@ -47,11 +47,12 @@ export default async function Footer() {
   const sections = [footerNav.help, footerNav.orders, footerNav.legal];
   const idFrom = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
+  // ✅ phone config (single source of truth)
+  const phoneNumber = "+995 593 49 11 44";
+  const phoneHref = "tel:+995593491144";
+
   return (
     <footer role="contentinfo" className="bg-white pt-10">
-      {/* Adjusted Wrapper: Removed text-white, added text-stone-900 for high-contrast readability.
-        Softened the inset shadow so it doesn't look like a harsh white line.
-      */}
       <div className="bg-orange-300 text-stone-900 rounded-t-[2.5rem] md:rounded-t-[3rem] border-t border-x border-orange-400/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] mx-2 md:mx-4 lg:mx-8 px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-8 transition-all">
         <div className="max-w-350 mx-auto">
           {/* =========================================
@@ -129,7 +130,7 @@ export default async function Footer() {
             </section>
           </div>
 
-          {/* Mobile Accordion (Ultra-Clean, Softened for Orange Bg) */}
+          {/* Mobile Accordion */}
           <div className="md:hidden flex flex-col gap-2">
             {sections.map(({ title, links }) => (
               <details
@@ -177,10 +178,10 @@ export default async function Footer() {
           </div>
 
           {/* =========================================
-              BOTTOM: SLEEK DIVIDER & COPYRIGHT
+              BOTTOM: DIVIDER & COPYRIGHT
               ========================================= */}
           <div className="mt-16 md:mt-24 pt-8 border-t border-orange-400/50 flex flex-col md:flex-row items-center justify-between gap-6">
-            {/* Logo & Copyright */}
+            {/* Left: Brand + Copyright */}
             <div className="flex items-center gap-3">
               <span className="text-[16px] font-black tracking-tight text-stone-900">
                 TRIKO.
@@ -191,9 +192,24 @@ export default async function Footer() {
               </p>
             </div>
 
-            {/* Social Icons inside a sleek floating pill */}
-            <div className="flex justify-center bg-white/90 border border-orange-400/40 text-stone-900 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
-              <SocialMedia />
+            {/* Right: Phone pill + Social pill */}
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <a
+                href={phoneHref}
+                className="inline-flex items-center gap-2 rounded-full bg-white/90 border border-orange-400/40 px-4 py-3 text-[13px] font-semibold text-stone-900 shadow-sm hover:shadow-md transition-shadow"
+                aria-label={t("contact.callAria") ?? "Call us"}
+              >
+                <Phone className="h-4 w-4 text-stone-700" />
+                <span className="text-stone-700">
+                  {t("contact.call") ?? "Call"}
+                </span>
+                <span className="h-4 w-px bg-orange-400/60" />
+                <span>{phoneNumber}</span>
+              </a>
+
+              <div className="flex justify-center bg-white/90 border border-orange-400/40 text-stone-900 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
+                <SocialMedia />
+              </div>
             </div>
           </div>
         </div>

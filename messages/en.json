@@ -98,6 +98,10 @@
       "storeTitle": "Our Stores",
       "storesAria": "Store locations"
     },
+    "contact": {
+      "call": "Call",
+      "callAria": "Call us"
+    },
     "Newsletter": {
       "title": "Let's stay in touch.",
       "description": "Subscribe to our newsletter for exclusive offers and  early access to new collections,",
@@ -173,6 +177,8 @@
     "resetPasswordSubtitle": "Choose a new password and confirm it below.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
+    "preferToCall": "Prefer to call? Reach us at: ",
+     "trustHint": "We’ll never share your email with anyone else.",
     "fields": {
       "fullName": "Full Name",
       "fullNamePlaceholder": "Enter your full name",

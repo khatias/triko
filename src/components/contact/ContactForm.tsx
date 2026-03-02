@@ -9,6 +9,8 @@ import { InputField, TextAreaField } from "@/components/form/Field";
 import SubmitButton from "@/components/form/SubmitButton";
 import { MailIcon, MessageIcon, UserIcon } from "@/components/form/icons";
 
+import { Phone } from "lucide-react";
+
 export type FormData = {
   name: string;
   email: string;
@@ -50,7 +52,7 @@ const ContactForm: FC = () => {
       {/* soft background flair */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-6 -z-10 blur-2xl opacity-60 "
+        className="pointer-events-none absolute -inset-6 -z-10 blur-2xl opacity-60"
         style={{
           background:
             "radial-gradient(60% 40% at 20% 10%, rgba(244,63,94,.12), transparent 60%), radial-gradient(40% 30% at 80% 20%, rgba(99,102,241,.10), transparent 60%), radial-gradient(60% 40% at 50% 100%, rgba(16,185,129,.10), transparent 60%)",
@@ -61,6 +63,24 @@ const ContactForm: FC = () => {
         title={tForm("contactTitle")}
         subtitle={tForm("contactSubtitle")}
       >
+        {/* --- Prefer to call (better placement: right under title/subtitle) --- */}
+        <div className="mt-2 mb-4 rounded-xl border border-zinc-200/70 bg-white/60 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {tForm("preferToCall") || "Prefer to talk to someone directly?"}
+            </p>
+
+            <a
+              href="tel:+12345678900"
+              className="group inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 dark:text-zinc-100 dark:hover:bg-zinc-900/60 transition"
+            >
+              <Phone className="h-4 w-4 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              +995 593 49 11 44
+            </a>
+          </div>
+        </div>
+        {/* --- end prefer to call --- */}
+
         {/* Honeypot */}
         <input
           type="text"
@@ -142,11 +162,11 @@ const ContactForm: FC = () => {
         />
 
         <div className="relative">
-          <SubmitButton loading={isSubmitting} disabled={!isValid} >
-            
+          <SubmitButton loading={isSubmitting} disabled={!isValid}>
             {isSubmitting ? tForm("actions.sending") : tForm("actions.send")}
           </SubmitButton>
-          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500 ">
+
+          <p className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
             {/* trust hint icon */}
             <svg
               width="16"
@@ -165,6 +185,7 @@ const ContactForm: FC = () => {
                 strokeLinejoin="round"
               />
             </svg>
+            {tForm("trustHint") || "Your data is secure"}
           </p>
         </div>
       </FormCard>

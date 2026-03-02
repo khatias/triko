@@ -9,7 +9,7 @@ export default function SubmitButton({
     <button
       type="submit"
       disabled={props.disabled || loading}
-      className="group w-full rounded-xl px-6 py-3.5 font-semibold text-white bg-red-400 hover:bg-red-500 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-400 active:scale-[.99] disabled:opacity-60 disabled:cursor-not-allowed"
+      className="group w-full rounded-xl px-6 py-3.5 font-semibold text-white bg-[#fc6759] hover:bg-[#fc4a3a] transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-400 active:scale-[.99] disabled:opacity-60 disabled:cursor-not-allowed"
       {...props}
     >
       <span className="inline-flex items-center justify-center gap-2">
