@@ -178,7 +178,7 @@
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
     "preferToCall": "Prefer to call? Reach us at: ",
-     "trustHint": "We’ll never share your email with anyone else.",
+    "trustHint": "We’ll never share your email with anyone else.",
     "fields": {
       "fullName": "Full Name",
       "fullNamePlaceholder": "Enter your full name",
@@ -819,7 +819,8 @@
       "needAttention": "{count} need attention",
       "hiddenCount": "{count} hidden",
       "liveCount": "{count} live",
-
+      "clearFilters": "Clear filters",
+      "reset": "Reset",
       "tabs": { "inbox": "Inbox", "hidden": "Hidden", "live": "Live" },
 
       "filtersTitle": "Filters and Search",
@@ -853,8 +854,6 @@
         "title": "Title",
         "desc": "Description"
       },
-
-      "reset": "Reset filters",
 
       "empty": {
         "title": "No products found",
