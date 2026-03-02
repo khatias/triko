@@ -12,11 +12,7 @@ export default function StatusStrip() {
       {separator}
       <span>{t("featureLeft")}</span>
       {separator}
-      <span>{t("featureRight")}</span>
-      {separator}
-      <span className="text-blue-600">{t("scarcity")}</span>
-      {separator}
-      <span className="font-mono opacity-40">{t("locationCode")}</span>
+      <span className="text-blue-600">{t("featureRight")}</span>
       {separator}
     </div>
   );
