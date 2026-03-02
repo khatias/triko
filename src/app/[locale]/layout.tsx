@@ -4,7 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import { Montserrat, Noto_Sans_Georgian } from "next/font/google";
+import { Inter, Montserrat, Noto_Sans_Georgian } from "next/font/google"; // ✅ add Inter
 import Header from "@/components/Header/Header";
 import Footer from "@/components/footer/Footer";
 
@@ -29,6 +29,12 @@ const montserrat = Montserrat({
   subsets: ["latin"],
 });
 
+// ✅ Add this
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
 function assertLocale(locale: string): asserts locale is Locale {
   if (!routing.locales.includes(locale as Locale)) notFound();
 }
@@ -47,8 +53,6 @@ export async function generateMetadata({
     title: t("meta.title"),
     description: t("meta.description"),
     icons: { icon: "/favicon-v4.ico" },
-    // Optional (recommended for absolute URLs in OG tags):
-    // metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://triko.ge"),
   };
 }
 
@@ -61,11 +65,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${notoSansGeorgian.variable} ${montserrat.variable} antialiased bg-white text-zinc-900`}
+        className={`${notoSansGeorgian.variable} ${montserrat.variable} ${inter.variable} antialiased bg-white text-zinc-900`}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PublicOnly>
-            {/* <Banner locale={locale} /> */}
             <Header locale={locale} />
           </PublicOnly>
 
