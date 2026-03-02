@@ -43,7 +43,7 @@ export default async function ProfileLayout({
   }
 
   return (
-    <main className="min-h-[60vh] container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10 mb-40">
+    <main className="min-h-screen container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10 mb-40">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <aside className="hidden lg:block lg:col-span-3">
           <SidebarNav fullName={fullName} />
