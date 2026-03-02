@@ -1,6 +1,4 @@
 # .github/workflows/deploy.yml
-# Full fixed deploy script: safe update, clean build, restart with updated env,
-# retry health checks, and strong diagnostics on failure.
 
 name: Deploy Next.js to VPS
 
@@ -22,7 +20,6 @@ jobs:
           script: |
             set -euo pipefail
 
-            # ---- CONFIG ----
             APP_DIR="/var/www/my-app"
             WEB_APP="triko-store"
             SYNC_APP="triko-sync"
@@ -33,12 +30,12 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH=$PATH:/usr/local/bin
-
             node -v
             npm -v
 
-            echo "---- before deploy ----"
             cd "$APP_DIR"
+
+            echo "---- before deploy ----"
             OLD_SHA="$(git rev-parse HEAD || true)"
             echo "OLD_SHA=${OLD_SHA}"
             pm2 status || true
@@ -52,16 +49,12 @@ jobs:
             git --no-pager log -1 --oneline
 
             echo "---- decide whether to restart sync ----"
-            # Restart sync only if files likely related to sync changed.
-            # Adjust patterns to match your repo.
             CHANGED="$(git diff --name-only "${OLD_SHA}" "${NEW_SHA}" || true)"
             echo "$CHANGED" > /tmp/changed_files.txt || true
-
             NEED_SYNC_RESTART="no"
             if grep -Eiq '(^triko-sync/|sync|fina|jobs|cron|pm2|ecosystem\.config\.js|package\.json|package-lock\.json)' /tmp/changed_files.txt; then
               NEED_SYNC_RESTART="yes"
             fi
-
             echo "NEED_SYNC_RESTART=${NEED_SYNC_RESTART}"
 
             echo "---- stop web before building (prevents missing chunk issues) ----"
@@ -72,19 +65,63 @@ jobs:
             rm -rf .next
 
             echo "---- install dependencies ----"
-            # If you have a lockfile, prefer npm ci:
             if [ -f package-lock.json ]; then
               npm ci
             else
               npm install
             fi
 
-            echo "---- build with env from ecosystem.config.js ----"
-            # IMPORTANT: your ecosystem config must contain all env vars needed for build
+            echo "---- load env FROM ecosystem.config.js for build ----"
+            # This makes the build environment match what PM2 uses at runtime.
+            # It exports env for the app named WEB_APP (triko-store).
+            eval "$(
+              node - <<'NODE'
+              const fs = require("fs");
+              const path = require("path");
+
+              const appName = process.env.WEB_APP_NAME || "triko-store";
+              const p = path.join(process.cwd(), "ecosystem.config.js");
+
+              if (!fs.existsSync(p)) {
+                console.error("ecosystem.config.js not found at", p);
+                process.exit(1);
+              }
+
+              // Load ecosystem config (CommonJS)
+              const cfg = require(p);
+              const apps = cfg.apps || cfg;
+              const arr = Array.isArray(apps) ? apps : (apps.apps || []);
+              const app = arr.find(a => a && a.name === appName) || arr[0];
+
+              if (!app) {
+                console.error("No apps found in ecosystem.config.js");
+                process.exit(1);
+              }
+
+              // Prefer env_production, fallback to env
+              const env = Object.assign({}, app.env || {}, app.env_production || {});
+              // Print export statements (shell-safe)
+              for (const [k, v] of Object.entries(env)) {
+                if (v === undefined || v === null) continue;
+                const s = String(v);
+                // Single-quote escape for bash: ' -> '\'' 
+                const safe = s.replace(/'/g, `'\\''`);
+                process.stdout.write(`export ${k}='${safe}'\n`);
+              }
+              NODE
+            )"
+
+            # Ensure basic things are set (ecosystem may already include them)
+            export NODE_ENV="${NODE_ENV:-production}"
+            export PORT="${PORT:-3000}"
+
+            echo "Loaded env for build (showing a few non-sensitive keys):"
+            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_RESEND: !!process.env.RESEND_API_KEY })"
+
+            echo "---- build ----"
             npm run build
 
             echo "---- restart web (update env) ----"
-            # --update-env ensures PM2 refreshes env values from ecosystem/config
             pm2 restart "$WEB_APP" --update-env
             pm2 save || true
             pm2 status || true
@@ -99,7 +136,6 @@ jobs:
             fi
 
             echo "---- local upstream readiness (bypass nginx) ----"
-            # This confirms the Node server is actually listening.
             READY="no"
             for i in $(seq 1 30); do
               if curl -fsS "http://127.0.0.1:${PORT}/" >/dev/null; then
@@ -113,9 +149,7 @@ jobs:
 
             if [ "$READY" != "yes" ]; then
               echo "FAILED: upstream never became ready on 127.0.0.1:${PORT}"
-              echo "---- pm2 status ----"
               pm2 status || true
-              echo "---- pm2 logs (${WEB_APP}) ----"
               pm2 logs "$WEB_APP" --lines 200 --nostream || true
               exit 1
             fi
@@ -132,14 +166,10 @@ jobs:
 
               echo "health check got ${CODE} ($i/30)"
 
-              # On a few attempts, print diagnostics without failing immediately
               if [ "$i" = "5" ] || [ "$i" = "15" ] || [ "$i" = "25" ]; then
-                echo "---- debug snapshot ----"
                 pm2 status || true
                 pm2 describe "$WEB_APP" || true
-                echo "---- pm2 logs (${WEB_APP}) ----"
                 pm2 logs "$WEB_APP" --lines 120 --nostream || true
-                echo "---- nginx error log (last 80) ----"
                 sudo tail -n 80 /var/log/nginx/error.log || true
               fi
 
@@ -148,11 +178,8 @@ jobs:
 
             if [ "$OK" != "yes" ]; then
               echo "FAILED: ${HEALTH_URL} never became healthy"
-              echo "---- pm2 status ----"
               pm2 status || true
-              echo "---- pm2 logs (${WEB_APP}) ----"
               pm2 logs "$WEB_APP" --lines 250 --nostream || true
-              echo "---- nginx error log (last 120) ----"
               sudo tail -n 120 /var/log/nginx/error.log || true
               exit 1
             fi
