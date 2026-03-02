@@ -16,21 +16,66 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
+
             export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            export PATH=$PATH:/usr/local/bin
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
+            # Use stable production Node
+            nvm use 20
 
             cd /var/www/my-app
 
-            # Notice git clean -fd is completely GONE from here
-            git reset --hard HEAD
+            echo "---- before deploy ----"
+            OLD_SHA="$(git rev-parse HEAD 2>/dev/null || true)"
+            echo "OLD_SHA=$OLD_SHA"
+            pm2 ls || true
+
+            echo "---- update code ----"
             git fetch origin
             git checkout fix-cleanup-2
             git reset --hard origin/fix-cleanup-2
 
-            npm install
-            
-            # This extracts the variables directly from ecosystem.config.js to power the build!
-            node -e "const { execSync } = require('child_process'); const config = require('./ecosystem.config.js'); const env = config.apps[0].env; execSync('npm run build', { env: Object.assign({}, process.env, env), stdio: 'inherit' });"
-            
-            pm2 restart triko-store
+            NEW_SHA="$(git rev-parse HEAD)"
+            echo "NEW_SHA=$NEW_SHA"
+            git log -1 --oneline
+
+            echo "---- stop web before building (prevents missing chunk issues) ----"
+            pm2 stop triko-store || true
+
+            echo "---- clean build output ----"
+            rm -rf .next
+
+            echo "---- install dependencies ----"
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+
+            echo "---- build with env from ecosystem.config.js ----"
+            node -e "const { execSync } = require('child_process'); const config = require('./ecosystem.config.js'); const env = config.apps.find(a => a.name === 'triko-store').env; execSync('npm run build', { env: { ...process.env, ...env }, stdio: 'inherit' });"
+
+            echo "---- start web ----"
+            pm2 start ecosystem.config.js --only triko-store
+            pm2 save
+
+            echo "---- optional: restart triko-sync only if relevant files changed ----"
+            if [ -n "$OLD_SHA" ]; then
+              CHANGED="$(git diff --name-only "$OLD_SHA" "$NEW_SHA" || true)"
+              echo "$CHANGED"
+
+              # Adjust this list if your sync imports other files
+              if echo "$CHANGED" | grep -Eiq '(^|/)(fina-master-sync\.mjs|ecosystem\.config\.js|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|supabase/|db/|src/utils/|src/lib/)'; then
+                echo "Changes affect sync -> restarting triko-sync"
+                pm2 restart triko-sync || true
+              else
+                echo "No sync-related changes -> leaving triko-sync running"
+              fi
+            else
+              echo "No OLD_SHA found (first deploy?) -> not restarting triko-sync"
+            fi
+
+            echo "---- health check ----"
+            curl -f https://beta.triko.ge >/dev/null
+            echo "✅ Deploy complete"
