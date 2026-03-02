@@ -1,11 +1,3 @@
-# .github/workflows/deploy.yml
-# Full fixed deploy script:
-# - loads env from server-only ecosystem.config.js BEFORE build
-# - builds
-# - restarts pm2 with --update-env
-# - waits for upstream to come up
-# - health check follows redirects (so 307 is OK)
-
 name: Deploy Next.js to VPS
 
 on:
@@ -13,12 +5,16 @@ on:
     branches:
       - fix-cleanup-2
 
+concurrency:
+  group: deploy-triko-vps
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: SSH into VPS and deploy
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
@@ -26,12 +22,20 @@ jobs:
           script: |
             set -euo pipefail
 
-            # ---- CONFIG ----
             APP_DIR="/var/www/my-app"
             WEB_APP="triko-store"
             SYNC_APP="triko-sync"
             PORT="3000"
             HEALTH_URL="https://beta.triko.ge/"
+            ENV_FILE="${APP_DIR}/.env.local"
+            LOCK_FILE="/tmp/deploy_triko.lock"
+
+            echo "---- acquire deploy lock ----"
+            exec 9>"$LOCK_FILE"
+            if ! flock -n 9; then
+              echo "Another deploy is running. Exiting."
+              exit 1
+            fi
 
             echo "---- load nvm/node ----"
             export NVM_DIR="$HOME/.nvm"
@@ -42,15 +46,22 @@ jobs:
 
             cd "$APP_DIR"
 
+            echo "---- verify env file exists (server-only) ----"
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "Missing $ENV_FILE on server. Refusing to deploy."
+              exit 1
+            fi
+
             echo "---- before deploy ----"
             OLD_SHA="$(git rev-parse HEAD || true)"
             echo "OLD_SHA=${OLD_SHA}"
             pm2 status || true
 
             echo "---- update code ----"
-            git fetch origin
-            git checkout fix-cleanup-2
+            git fetch --prune origin
+            git checkout -f fix-cleanup-2
             git reset --hard origin/fix-cleanup-2
+
             NEW_SHA="$(git rev-parse HEAD)"
             echo "NEW_SHA=${NEW_SHA}"
             git --no-pager log -1 --oneline
@@ -60,57 +71,55 @@ jobs:
             printf "%s\n" "$CHANGED" > /tmp/changed_files.txt || true
 
             NEED_SYNC_RESTART="no"
-            if grep -Eiq '(^triko-sync/|sync|fina|jobs|cron|pm2|ecosystem\.config\.js|package\.json|package-lock\.json)' /tmp/changed_files.txt; then
+            if grep -Eiq '(^triko-sync/|sync|fina|jobs|cron|pm2|package\.json|package-lock\.json)' /tmp/changed_files.txt; then
               NEED_SYNC_RESTART="yes"
             fi
             echo "NEED_SYNC_RESTART=${NEED_SYNC_RESTART}"
 
-            echo "---- stop web before building ----"
-            pm2 stop "$WEB_APP" || true
-            pm2 status || true
+            rollback() {
+              echo "---- ROLLBACK: deployment failed, restoring OLD_SHA=${OLD_SHA} ----"
+              if [ -n "${OLD_SHA}" ]; then
+                git reset --hard "${OLD_SHA}" || true
+              fi
+              rm -rf .next || true
+              export NODE_ENV=production
+              set -a
+              . "$ENV_FILE"
+              set +a
+              npm ci --include=dev || npm install --include=dev || true
+              npm run build || true
+              pm2 restart "$WEB_APP" --update-env || true
+              pm2 save || true
+              pm2 status || true
+            }
 
-            echo "---- clean build output ----"
-            rm -rf .next
+            trap rollback ERR
 
-            echo "---- install dependencies ----"
+            echo "---- install dependencies (include dev deps for build) ----"
+            # Tailwind v4 + postcss plugin is often in devDependencies, and build needs it.
             if [ -f package-lock.json ]; then
-              npm ci
+              npm ci --include=dev
             else
-              npm install
+              npm install --include=dev
             fi
 
-            echo "---- load env FROM ecosystem.config.js for build ----"
-            # IMPORTANT: ecosystem.config.js is server-only and contains secrets.
-            # We export its env into this SSH session so `next build` sees them.
-            eval "$(
-              WEB_APP_NAME="$WEB_APP" node -e "const fs=require('fs');const path=require('path');
-                const appName=process.env.WEB_APP_NAME||'triko-store';
-                const p=path.join(process.cwd(),'ecosystem.config.js');
-                if(!fs.existsSync(p)){console.error('ecosystem.config.js not found at',p);process.exit(1);}
-                const cfg=require(p);
-                const apps=cfg.apps||cfg;
-                const arr=Array.isArray(apps)?apps:(apps.apps||[]);
-                const app=arr.find(a=>a&&a.name===appName);
-                if(!app){console.error('App not found in ecosystem.config.js:',appName);process.exit(1);}
-                const env=Object.assign({},app.env||{},app.env_production||{});
-                for(const [k,v] of Object.entries(env)){
-                  if(v===undefined||v===null) continue;
-                  const s=String(v).replace(/'/g,\"'\\\\''\");
-                  process.stdout.write('export '+k+\"='\"+s+\"'\\n\");
-                }"
-            )"
-
-            export NODE_ENV="${NODE_ENV:-production}"
-            export PORT="${PORT:-3000}"
+            echo "---- load env from .env.local for build (safe) ----"
+            export NODE_ENV=production
+            export PORT="$PORT"
+            set -a
+            . "$ENV_FILE"
+            set +a
 
             echo "Env loaded (non-sensitive check):"
-            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_RESEND: !!process.env.RESEND_API_KEY })"
+            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL })"
 
-            echo "---- build ----"
+            echo "---- build (no downtime yet) ----"
+            rm -rf .next
             npm run build
 
             echo "---- restart web (update env) ----"
-            pm2 restart "$WEB_APP" --update-env
+            # Prefer reload for smoother restart; fallback to restart if reload not supported
+            pm2 reload "$WEB_APP" --update-env || pm2 restart "$WEB_APP" --update-env
             pm2 save || true
             pm2 status || true
 
@@ -134,7 +143,6 @@ jobs:
               echo "waiting for upstream... ($i/30)"
               sleep 1
             done
-
             if [ "$READY" != "yes" ]; then
               echo "FAILED: upstream never became ready on 127.0.0.1:${PORT}"
               pm2 status || true
@@ -145,26 +153,20 @@ jobs:
             echo "---- nginx/domain health check (follow redirects) ----"
             OK="no"
             for i in $(seq 1 30); do
-              # -L follows 307/308/301/302 redirects so final code becomes 200
               CODE="$(curl -sS -L -o /dev/null -w "%{http_code}" "${HEALTH_URL}" || true)"
               if [ "$CODE" = "200" ]; then
                 echo "OK: ${HEALTH_URL} returned ${CODE}"
                 OK="yes"
                 break
               fi
-
               echo "health check got ${CODE} ($i/30)"
-
               if [ "$i" = "5" ] || [ "$i" = "15" ] || [ "$i" = "25" ]; then
                 pm2 status || true
-                pm2 describe "$WEB_APP" || true
                 pm2 logs "$WEB_APP" --lines 120 --nostream || true
                 sudo tail -n 80 /var/log/nginx/error.log || true
               fi
-
               sleep 1
             done
-
             if [ "$OK" != "yes" ]; then
               echo "FAILED: ${HEALTH_URL} never became healthy"
               pm2 status || true
@@ -173,4 +175,5 @@ jobs:
               exit 1
             fi
 
+            trap - ERR
             echo "---- deploy done ----"
