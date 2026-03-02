@@ -140,7 +140,7 @@ export default function ProductCard({
                     "group-hover:scale-[1.10] group-hover:rotate-[0.35deg] group-hover:translate-y-[-1.5%]",
                   ].join(" ")}
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  // priority={false}
+                  priority={false}
                 />
 
                 <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">

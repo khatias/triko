@@ -1,13 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-// import postgres from 'postgres';
-
-// Direct connection optimized for VPS and Supabase Pooler
-// const sql = postgres(process.env.DATABASE_URL!, {
-//   max: 10,
-//   idle_timeout: 20,
-//   connect_timeout: 10,
-//   prepare: false // Required for Supabase Transaction Mode (Port 6543)
-// });
 
 /* =========================
    Types
@@ -51,10 +42,15 @@ export type CatalogGroupedProductCard = {
 
 export type CatalogPageResult = {
   items: CatalogGroupedProductCard[];
-  total: number;
   page: number;
   pageSize: number;
-  totalPages: number;
+
+  // We removed exact count to avoid heavy COUNT(*)
+  total?: number | null;
+  totalPages?: number | null;
+
+  // Simple pagination signal
+  hasNextPage: boolean;
 };
 
 type GetCatalogProductsGroupedArgs = {
@@ -134,30 +130,27 @@ export async function getCatalogProductsGrouped(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  // CHANGED: Pointing to shop_catalog_fast for performance
-  let query = supabase.from("shop_catalog_fast").select(
-    `
-        parent_code,
-        name,
-        title_ka,
-        title_en,
-        description_ka,
-        description_en,
-        photos,
-        currency,
-        min_price,
-        max_price,
-        min_list_price,
-        max_list_price,
-        has_discount,
-        variants,
-        group_id,
-        group_name,
-        group_name_en,
-        group_name_ka
-      `,
-    { count: "exact" },
-  );
+  // No count: removed { count: "exact" }
+  let query = supabase.from("shop_catalog_fast").select(`
+    parent_code,
+    name,
+    title_ka,
+    title_en,
+    description_ka,
+    description_en,
+    photos,
+    currency,
+    min_price,
+    max_price,
+    min_list_price,
+    max_list_price,
+    has_discount,
+    variants,
+    group_id,
+    group_name,
+    group_name_en,
+    group_name_ka
+  `);
 
   if (args.sort === "price_asc") {
     query = query.order("min_price", { ascending: true });
@@ -196,6 +189,7 @@ export async function getCatalogProductsGrouped(
   }
 
   if (args.sizes && args.sizes.length > 0) {
+    // note: relies on variants jsonb containing objects with "size"
     const sizeConditions = args.sizes.map(
       (s) => `variants.cs.[{"size": "${s}"}]`,
     );
@@ -209,7 +203,8 @@ export async function getCatalogProductsGrouped(
     query = query.lte("min_price", args.maxPrice);
   }
 
-  const { data, error, count } = await query.range(from, to);
+  // removed: count
+  const { data, error } = await query.range(from, to);
 
   if (error) {
     console.error("getCatalogProductsGrouped error:", {
@@ -221,15 +216,15 @@ export async function getCatalogProductsGrouped(
     throw new Error("Failed to fetch grouped catalog products");
   }
 
-  const total = count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const items = (data ?? []) as CatalogGroupedProductCard[];
 
   return {
-    items: (data ?? []) as CatalogGroupedProductCard[],
-    total,
+    items,
     page,
     pageSize,
-    totalPages,
+    total: null,
+    totalPages: null,
+    hasNextPage: items.length === pageSize,
   };
 }
 
@@ -238,7 +233,6 @@ export async function getCatalogProductDetail(
 ): Promise<CatalogProductDetail | null> {
   const supabase = await createClient();
 
-  // CHANGED: Pointing to shop_catalog_fast
   const { data, error } = await supabase
     .from("shop_catalog_fast")
     .select(
@@ -288,31 +282,30 @@ export async function getProductsByParentCodes(
 
   const supabase = await createClient();
 
-  // CHANGED: Pointing to shop_catalog_fast
   const { data, error } = await supabase
     .from("shop_catalog_fast")
     .select(
       `
-      parent_code,
-      name,
-      title_ka,
-      title_en,
-      description_ka,
-      description_en,
-      photos,
-      currency,
-      min_price,
-      max_price,
-      min_list_price,
-      max_list_price,
-      has_discount,
-      group_id,
-      group_name,
-      group_name_en,
-      group_name_ka,
-      total_stock,
-      variants
-    `,
+        parent_code,
+        name,
+        title_ka,
+        title_en,
+        description_ka,
+        description_en,
+        photos,
+        currency,
+        min_price,
+        max_price,
+        min_list_price,
+        max_list_price,
+        has_discount,
+        group_id,
+        group_name,
+        group_name_en,
+        group_name_ka,
+        total_stock,
+        variants
+      `,
     )
     .in("parent_code", codes);
 
