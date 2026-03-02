@@ -207,7 +207,7 @@ export default function CategoryAccordion({
                   `}
                 >
                   <h3 className="text-xl font-black uppercase tracking-widest text-white/90">
-                    {group.name_en}
+                    {pickGroupName(group, locale)}
                   </h3>
                 </div>
 
@@ -220,15 +220,16 @@ export default function CategoryAccordion({
                 >
                   <div className="w-full rounded-3xl border border-white/20 bg-black/20 p-6 backdrop-blur-md shadow-2xl">
                     <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-white/80 drop-shadow">
-                      0{group.group_id} — {group.name_en}
+                      0{group.group_id} — {pickGroupName(group, locale)}
                     </span>
 
                     <h3 className="text-4xl font-black uppercase leading-none text-white drop-shadow-lg">
-                      {group.name_en}
+                    
+                    {pickGroupName(group, locale)}
                     </h3>
 
                     <Link
-                      href={group.slug_en ? `/shop/${group.slug_en}` : "#"}
+                      href={group.slug_en ? `/${group.slug_en}` : "#"}
                       className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase text-[#383333] transition-colors active:scale-95 active:bg-[#FFDE85]"
                     >
                       Explore <ArrowUpRightIcon className="h-4 w-4" />
