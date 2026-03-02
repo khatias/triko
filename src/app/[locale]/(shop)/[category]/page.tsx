@@ -79,7 +79,7 @@ export default async function CategorySlugPage({ params }: Props) {
         {products.length === 0 ? (
           <EmptyState title={h("noProductsFound")} className="mt-20" />
         ) : (
-          <div className="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((p, idx) => (
               <ProductCard
                 key={p.parent_code || idx}

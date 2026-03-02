@@ -12,7 +12,7 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDown } from "lucide-react";
-
+import logoMobile from '../../assets/logo.png'
 import logo from "../../assets/Logo4.png";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import AccountMenu from "./AccountMenu";
@@ -492,14 +492,14 @@ export default function Navbar({
         <Link
           href={`/${locale}`}
           aria-label="Home"
-          className="absolute left-1/2 -translate-x-1/2"
+          className="absolute left-1/3 -translate-x-1/2"
         >
           <Image
-            src={logo}
+            src={logoMobile}
             alt="Logo"
             width={80}
-            height={40}
-            className="h-20 w-auto object-contain"
+            height={20}
+            className="h-10 w-auto object-contain"
             priority
           />
         </Link>
