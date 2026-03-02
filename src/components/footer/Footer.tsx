@@ -49,40 +49,40 @@ export default async function Footer() {
 
   return (
     <footer role="contentinfo" className="bg-white pt-10">
-      {/* The "Elevated Sheet" look: 
-        Massive rounded top corners, soft gray background, and a subtle inner shadow/border.
+      {/* Adjusted Wrapper: Removed text-white, added text-stone-900 for high-contrast readability.
+        Softened the inset shadow so it doesn't look like a harsh white line.
       */}
-      <div className="bg-[#fcfcfc] rounded-t-[2.5rem] md:rounded-t-[3rem] border-t border-x border-neutral-200/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,1)] mx-2 md:mx-4 lg:mx-8 px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-8 transition-all">
+      <div className="bg-orange-300 text-stone-900 rounded-t-[2.5rem] md:rounded-t-[3rem] border-t border-x border-orange-400/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.3)] mx-2 md:mx-4 lg:mx-8 px-6 md:px-12 lg:px-20 pt-16 md:pt-24 pb-8 transition-all">
         <div className="max-w-350 mx-auto">
           {/* =========================================
               TOP: NEWSLETTER "HERO"
               ========================================= */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10 mb-20 md:mb-28">
             <div className="max-w-xl">
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900 mb-4">
-                {t("Newsletter.title") ?? "Let's stay in touch."}
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-stone-900 mb-4">
+                {t("Newsletter.title")}
               </h2>
-              <p className="text-[16px] text-neutral-500 leading-relaxed max-w-md">
-                {t("Newsletter.description") ?? "Subscribe to our newsletter for exclusive offers, early access to new collections, and styling tips."}
+              <p className="text-[16px] text-stone-700 leading-relaxed max-w-md">
+                {t("Newsletter.description")}
               </p>
             </div>
 
             {/* Premium Pill-Shaped Newsletter Input */}
-            <form className="w-full lg:w-105 relative flex items-center bg-white rounded-full p-1.5 border border-neutral-200/80 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] focus-within:border-rose-300 focus-within:ring-4 focus-within:ring-rose-600/10 transition-all duration-300">
+            <form className="w-full lg:w-105 relative flex items-center bg-white/95 rounded-full p-1.5 border border-orange-400/30 shadow-sm focus-within:border-stone-900 focus-within:ring-4 focus-within:ring-stone-900/10 transition-all duration-300">
               <input
                 type="email"
                 placeholder={t("Newsletter.placeholder") ?? "Enter your email"}
-                className="flex-1 bg-transparent px-5 py-3 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none w-full"
+                className="flex-1 bg-transparent px-5 py-3 text-[15px] text-stone-900 placeholder:text-stone-500 outline-none w-full"
                 required
               />
               <button
                 type="submit"
                 aria-label="Subscribe"
-                className="group flex items-center justify-center gap-2 h-12 px-6 bg-neutral-900 hover:bg-rose-600 text-white font-semibold text-[14px] rounded-full transition-all duration-300 shadow-sm"
+                className="group flex items-center justify-center gap-2 h-12 px-6 bg-stone-900 hover:bg-stone-800 text-orange-50 font-semibold text-[14px] rounded-full transition-all duration-300 shadow-sm"
               >
                 <span>{t("Newsletter.button") ?? "Subscribe"}</span>
                 <ArrowRight
-                  className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                  className="h-4 w-4 text-orange-50 transition-transform duration-300 group-hover:translate-x-1"
                   strokeWidth={2.5}
                 />
               </button>
@@ -98,7 +98,7 @@ export default async function Footer() {
               <nav key={title} aria-labelledby={`footer-${idFrom(title)}`}>
                 <h3
                   id={`footer-${idFrom(title)}`}
-                  className="text-[13px] font-bold text-neutral-900 mb-6"
+                  className="text-[13px] font-bold text-stone-900 mb-6"
                 >
                   {title}
                 </h3>
@@ -108,8 +108,7 @@ export default async function Footer() {
                       <Link
                         prefetch={false}
                         href={href}
-                        // "Stripe-style" Pill Hover Effect
-                        className="relative block w-full px-3 py-2 -ml-3 text-[14px] font-medium text-neutral-500 rounded-lg transition-all duration-200 hover:bg-neutral-200/50 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600 focus-visible:bg-neutral-200/50"
+                        className="relative block w-full px-3 py-2 -ml-3 text-[14px] font-medium text-stone-700 rounded-lg transition-all duration-200 hover:bg-orange-400/30 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:bg-orange-400/30"
                       >
                         {label}
                       </Link>
@@ -121,29 +120,29 @@ export default async function Footer() {
 
             {/* Stores Column */}
             <section aria-label={t("brand.storesAria") ?? "Store Locations"}>
-              <h3 className="text-[13px] font-bold text-neutral-900 mb-6">
+              <h3 className="text-[13px] font-bold text-stone-900 mb-6">
                 {t("brand.storeTitle") ?? "Stores"}
               </h3>
-              <div className="text-[14px] font-medium text-neutral-500 px-3 -ml-3">
+              <div className="text-[14px] font-medium text-stone-700 px-3 -ml-3">
                 <StoreLocations locale={locale} t={t} />
               </div>
             </section>
           </div>
 
-          {/* Mobile Accordion (Ultra-Clean, No Borders) */}
+          {/* Mobile Accordion (Ultra-Clean, Softened for Orange Bg) */}
           <div className="md:hidden flex flex-col gap-2">
             {sections.map(({ title, links }) => (
               <details
                 key={title}
-                className="group bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden"
+                className="group bg-orange-200/50 rounded-2xl border border-orange-400/40 overflow-hidden"
               >
                 <summary className="flex items-center justify-between p-5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden outline-none">
-                  <span className="text-[14px] font-bold text-neutral-900">
+                  <span className="text-[14px] font-bold text-stone-900">
                     {title}
                   </span>
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-neutral-50 group-open:bg-rose-50 transition-colors duration-300">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-orange-300 group-open:bg-stone-900 transition-colors duration-300">
                     <ChevronDown
-                      className="h-4 w-4 text-neutral-500 group-open:text-rose-600 transition-transform duration-300 group-open:-rotate-180"
+                      className="h-4 w-4 text-stone-800 group-open:text-orange-50 transition-transform duration-300 group-open:-rotate-180"
                       strokeWidth={2.5}
                     />
                   </div>
@@ -154,7 +153,7 @@ export default async function Footer() {
                       <Link
                         prefetch={false}
                         href={href}
-                        className="text-[14px] font-medium text-neutral-500 hover:text-rose-600 transition-colors block py-1"
+                        className="text-[14px] font-medium text-stone-700 hover:text-stone-900 transition-colors block py-1"
                       >
                         {label}
                       </Link>
@@ -165,13 +164,13 @@ export default async function Footer() {
             ))}
 
             <section
-              className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-5 mt-2"
+              className="bg-orange-200/50 rounded-2xl border border-orange-400/40 p-5 mt-2"
               aria-label={t("brand.storesAria") ?? "Store Locations"}
             >
-              <h3 className="text-[14px] font-bold text-neutral-900 mb-3">
+              <h3 className="text-[14px] font-bold text-stone-900 mb-3">
                 {t("brand.storeTitle") ?? "Stores"}
               </h3>
-              <div className="text-[14px] font-medium text-neutral-500">
+              <div className="text-[14px] font-medium text-stone-700">
                 <StoreLocations locale={locale} t={t} />
               </div>
             </section>
@@ -180,20 +179,20 @@ export default async function Footer() {
           {/* =========================================
               BOTTOM: SLEEK DIVIDER & COPYRIGHT
               ========================================= */}
-          <div className="mt-16 md:mt-24 pt-8 border-t border-neutral-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="mt-16 md:mt-24 pt-8 border-t border-orange-400/50 flex flex-col md:flex-row items-center justify-between gap-6">
             {/* Logo & Copyright */}
             <div className="flex items-center gap-3">
-              <span className="text-[16px] font-black tracking-tight text-neutral-900">
+              <span className="text-[16px] font-black tracking-tight text-stone-900">
                 TRIKO.
               </span>
-              <span className="h-4 w-px bg-neutral-300 hidden md:block" />
-              <p className="text-[13px] font-medium text-neutral-400">
+              <span className="h-4 w-px bg-orange-400/80 hidden md:block" />
+              <p className="text-[13px] font-medium text-stone-700">
                 © {year} {t("legal.allRights") ?? "All rights reserved."}
               </p>
             </div>
 
             {/* Social Icons inside a sleek floating pill */}
-            <div className="flex justify-center bg-white border border-neutral-200/80 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <div className="flex justify-center bg-white/90 border border-orange-400/40 text-stone-900 rounded-full px-4 py-2 shadow-sm hover:shadow-md transition-shadow duration-300">
               <SocialMedia />
             </div>
           </div>
