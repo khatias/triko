@@ -1,5 +1,4 @@
 # .github/workflows/deploy.yml
-
 name: Deploy Next.js to VPS
 
 on:
@@ -28,7 +27,7 @@ jobs:
 
             echo "---- load nvm/node ----"
             export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             export PATH=$PATH:/usr/local/bin
             node -v
             npm -v
@@ -50,14 +49,15 @@ jobs:
 
             echo "---- decide whether to restart sync ----"
             CHANGED="$(git diff --name-only "${OLD_SHA}" "${NEW_SHA}" || true)"
-            echo "$CHANGED" > /tmp/changed_files.txt || true
+            printf "%s\n" "$CHANGED" > /tmp/changed_files.txt || true
+
             NEED_SYNC_RESTART="no"
             if grep -Eiq '(^triko-sync/|sync|fina|jobs|cron|pm2|ecosystem\.config\.js|package\.json|package-lock\.json)' /tmp/changed_files.txt; then
               NEED_SYNC_RESTART="yes"
             fi
             echo "NEED_SYNC_RESTART=${NEED_SYNC_RESTART}"
 
-            echo "---- stop web before building (prevents missing chunk issues) ----"
+            echo "---- stop web before building ----"
             pm2 stop "$WEB_APP" || true
             pm2 status || true
 
@@ -72,51 +72,31 @@ jobs:
             fi
 
             echo "---- load env FROM ecosystem.config.js for build ----"
-            # This makes the build environment match what PM2 uses at runtime.
-            # It exports env for the app named WEB_APP (triko-store).
+            # No heredoc. Single node -e that prints `export KEY='VALUE'` lines.
+            # Then we eval them to set env for this SSH session so `next build` sees them.
             eval "$(
-              node - <<'NODE'
-              const fs = require("fs");
-              const path = require("path");
-
-              const appName = process.env.WEB_APP_NAME || "triko-store";
-              const p = path.join(process.cwd(), "ecosystem.config.js");
-
-              if (!fs.existsSync(p)) {
-                console.error("ecosystem.config.js not found at", p);
-                process.exit(1);
-              }
-
-              // Load ecosystem config (CommonJS)
-              const cfg = require(p);
-              const apps = cfg.apps || cfg;
-              const arr = Array.isArray(apps) ? apps : (apps.apps || []);
-              const app = arr.find(a => a && a.name === appName) || arr[0];
-
-              if (!app) {
-                console.error("No apps found in ecosystem.config.js");
-                process.exit(1);
-              }
-
-              // Prefer env_production, fallback to env
-              const env = Object.assign({}, app.env || {}, app.env_production || {});
-              // Print export statements (shell-safe)
-              for (const [k, v] of Object.entries(env)) {
-                if (v === undefined || v === null) continue;
-                const s = String(v);
-                // Single-quote escape for bash: ' -> '\'' 
-                const safe = s.replace(/'/g, `'\\''`);
-                process.stdout.write(`export ${k}='${safe}'\n`);
-              }
-              NODE
+              WEB_APP_NAME="$WEB_APP" node -e "const fs=require('fs');const path=require('path');
+                const appName=process.env.WEB_APP_NAME||'triko-store';
+                const p=path.join(process.cwd(),'ecosystem.config.js');
+                if(!fs.existsSync(p)){console.error('ecosystem.config.js not found at',p);process.exit(1);}
+                const cfg=require(p);
+                const apps=cfg.apps||cfg;
+                const arr=Array.isArray(apps)?apps:(apps.apps||[]);
+                const app=arr.find(a=>a&&a.name===appName);
+                if(!app){console.error('App not found in ecosystem.config.js:',appName);process.exit(1);}
+                const env=Object.assign({},app.env||{},app.env_production||{});
+                for(const [k,v] of Object.entries(env)){
+                  if(v===undefined||v===null) continue;
+                  const s=String(v).replace(/'/g,\"'\\\\''\");
+                  process.stdout.write('export '+k+\"='\"+s+\"'\\n\");
+                }"
             )"
 
-            # Ensure basic things are set (ecosystem may already include them)
             export NODE_ENV="${NODE_ENV:-production}"
             export PORT="${PORT:-3000}"
 
-            echo "Loaded env for build (showing a few non-sensitive keys):"
-            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_RESEND: !!process.env.RESEND_API_KEY })"
+            echo "Env loaded (non-sensitive check):"
+            node -e "console.log({NODE_ENV:process.env.NODE_ENV,PORT:process.env.PORT,HAS_RESEND:!!process.env.RESEND_API_KEY})"
 
             echo "---- build ----"
             npm run build
