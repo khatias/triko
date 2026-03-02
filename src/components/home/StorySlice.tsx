@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { ArrowUpRightIcon } from "@heroicons/react/24/solid";
 
@@ -65,7 +65,7 @@ export default function StorySlice() {
           <div className="relative flex w-full lg:w-1/2 lg:pl-20">
             <div className="relative z-10 w-[85%] border border-white/10 bg-black aspect-3/4 sm:w-[75%]">
               <Image
-                src="https://agmtedbqerhsjdttekpb.supabase.co/storage/v1/object/public/site/hero/main.jpg"
+                src="https://jtllowjuurijdjllkzam.supabase.co/storage/v1/object/public/site/hero/main-1771309246047.jpg"
                 alt={t("title")}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -75,7 +75,7 @@ export default function StorySlice() {
             <div className="absolute bottom-10 right-0 z-20 hidden w-[45%] border-8 border-[#383333] bg-[#383333] aspect-square sm:block lg:-right-4">
               <div className="relative h-full w-full border border-white/10">
                 <Image
-                  src="https://agmtedbqerhsjdttekpb.supabase.co/storage/v1/object/public/site/hero/main.jpg"
+                  src="https://jtllowjuurijdjllkzam.supabase.co/storage/v1/object/public/site/hero/main-1771309246047.jpg"
                   alt="Texture detail"
                   fill
                   sizes="33vw"

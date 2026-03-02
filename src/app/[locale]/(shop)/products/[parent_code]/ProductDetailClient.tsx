@@ -387,7 +387,7 @@ export default function ProductDetailClient({
                             heroLoaded ? "opacity-100" : "opacity-0",
                           ].join(" ")}
                           style={{
-                            transform: isZooming ? "scale(1.18)" : "scale(1)",
+                            transform: isZooming ? "scale(2)" : "scale(1)",
                             transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
                           }}
                           onLoadingComplete={() => setHeroLoaded(true)}
@@ -403,7 +403,7 @@ export default function ProductDetailClient({
 
                     {/* ✅ arrows visible on mobile */}
                     <div className="absolute left-5 right-5 bottom-5 flex items-center justify-between z-20">
-                      <div className="rounded-full bg-white/80 backdrop-blur px-4 py-2 border border-stone-200">
+                      <div className="hidden md:block rounded-full bg-white/80 backdrop-blur px-4 py-2 border border-stone-200">
                         <span className="text-[9px] uppercase tracking-[0.22em] text-stone-600 font-black">
                           {h("rollToZoom")}
                         </span>

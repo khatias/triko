@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowUpRightIcon } from "@heroicons/react/24/solid";
 import { Section } from "../UI/primitives";
 import { useMemo, useState } from "react";
@@ -207,7 +207,7 @@ export default function CategoryAccordion({
                   `}
                 >
                   <h3 className="text-xl font-black uppercase tracking-widest text-white/90">
-                    {pickGroupName(group, locale)}
+                    {group.name_en}
                   </h3>
                 </div>
 
