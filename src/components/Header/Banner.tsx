@@ -28,7 +28,7 @@ export default async function Banner({ locale }: Props) {
   const showCta = Boolean(ctaLabel?.trim());
 
   return (
-    <div className="w-full bg-[#fcf5e8] py-2 text-center">
+    <div className="w-full bg-orange-300 py-1 text-center">
       <Section className="flex items-center justify-between ">
         <div className="flex flex-1 flex-wrap items-center justify-center lg:justify-start text-xs font-medium tracking-wide ">
           <span>
@@ -36,7 +36,7 @@ export default async function Banner({ locale }: Props) {
             {showCta && (
               <Link
                 href={href}
-                className="ml-3 inline-flex items-center font-bold text-rose-400 hover:text-rose-300 transition-colors"
+                className="ml-3 inline-flex items-center font-bold text-[#fc6759] hover:text-[#c64e43] transition-colors"
               >
                 {ctaLabel} &rarr;
               </Link>
