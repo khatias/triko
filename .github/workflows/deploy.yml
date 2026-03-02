@@ -4,8 +4,9 @@
 # - triko-sync  (fina-master-sync.mjs worker)
 #
 # Key properties:
-# - No `source .env.local` (safe dotenv parsing; avoids "command not found" from spaces)
+# - No `source .env.local` (safe parsing, no shell execution)
 # - No `eval`
+# - No external deps like dotenv (works even when npm omits devDependencies)
 # - Deploy lock (prevents concurrent deploys)
 # - Rollback on failure
 # - Build before restart (reduced downtime)
@@ -50,7 +51,7 @@ jobs:
             ENV_FILE="${APP_DIR}/.env.local"
             LOCK_FILE="/tmp/deploy_triko.lock"
 
-            # For Supabase timeouts on some VPS (ipv6 routing/dns). Safe default.
+            # Helps Supabase connect timeouts on some VPS (ipv6 routing/dns).
             DEFAULT_NODE_OPTIONS="--dns-result-order=ipv4first"
 
             echo "---- acquire deploy lock ----"
@@ -75,7 +76,12 @@ jobs:
               exit 1
             fi
 
-            # Helper: load env safely from .env.local using dotenv (no shell execution)
+            # Helper: load env safely from .env.local WITHOUT executing it as shell
+            # Supports:
+            # - KEY=VALUE
+            # - KEY="VALUE with spaces"
+            # - KEY='VALUE'
+            # Ignores comments/blank lines and ignores invalid lines safely.
             load_env() {
               export NODE_ENV=production
               export PORT="$PORT"
@@ -84,20 +90,41 @@ jobs:
               umask 077
               ENV_EXPORTS="/tmp/env_exports_triko.sh"
 
-              # Ensure dotenv exists (install as dev dep if missing)
-              node -e "require('dotenv')" >/dev/null 2>&1 || npm i -D dotenv
-
               node - <<'NODE' > "$ENV_EXPORTS"
             const fs = require("fs");
-            const dotenv = require("dotenv");
 
             const p = process.env.ENV_FILE;
             const raw = fs.readFileSync(p, "utf8");
-            const parsed = dotenv.parse(raw);
 
-            for (const [k, v] of Object.entries(parsed)) {
-              const escaped = String(v).replace(/'/g, `'\\''`);
-              process.stdout.write(`export ${k}='${escaped}'\n`);
+            function unquote(v) {
+              v = v.trim();
+              if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+                return v.slice(1, -1);
+              }
+              return v;
+            }
+
+            for (const line of raw.split(/\r?\n/)) {
+              const s = line.trim();
+              if (!s || s.startsWith("#")) continue;
+
+              const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+              if (!m) continue;
+
+              const key = m[1];
+              let val = m[2] ?? "";
+
+              // strip inline comments for unquoted values: KEY=value # comment
+              if (!val.startsWith('"') && !val.startsWith("'")) {
+                const idx = val.indexOf(" #");
+                if (idx !== -1) val = val.slice(0, idx);
+              }
+
+              val = unquote(val);
+
+              // safe bash export (single quotes + escaping)
+              const escaped = String(val).replace(/'/g, `'\\''`);
+              process.stdout.write(`export ${key}='${escaped}'\n`);
             }
             NODE
 
@@ -105,7 +132,6 @@ jobs:
               . "$ENV_EXPORTS"
               rm -f "$ENV_EXPORTS"
 
-              # Ensure NODE_OPTIONS has ipv4first (unless you explicitly set something else in .env.local)
               if [ -z "${NODE_OPTIONS:-}" ]; then
                 export NODE_OPTIONS="$DEFAULT_NODE_OPTIONS"
               fi
@@ -130,7 +156,6 @@ jobs:
             printf "%s\n" "$CHANGED" > /tmp/changed_files.txt || true
 
             NEED_SYNC_RESTART="no"
-            # Restart sync if its file or likely dependencies changed
             if grep -Eiq '(^triko-sync/|^fina-master-sync\.mjs$|sync|fina|jobs|cron|pm2|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)' /tmp/changed_files.txt; then
               NEED_SYNC_RESTART="yes"
             fi
@@ -144,24 +169,18 @@ jobs:
 
               rm -rf .next || true
 
-              # deps (include dev deps for build tools like tailwind/postcss)
+              # deps (build needs dev deps for tailwind/postcss in many setups)
               if [ -f package-lock.json ]; then
                 npm ci --include=dev || npm install --include=dev || true
               else
                 npm install --include=dev || true
               fi
 
-              # env (safe)
               load_env || true
 
               npm run build || true
-
-              # restart web always on rollback
               pm2 restart "$WEB_APP" --update-env || true
-
-              # restart sync only if it's already present (don't fail rollback if missing)
               pm2 restart "$SYNC_APP" --update-env || true
-
               pm2 save || true
               pm2 status || true
             }
@@ -169,7 +188,6 @@ jobs:
             trap rollback ERR
 
             echo "---- install dependencies (include dev deps for build) ----"
-            # Tailwind v4/postcss plugin often in devDependencies. Build needs dev deps.
             if [ -f package-lock.json ]; then
               npm ci --include=dev
             else
@@ -187,18 +205,30 @@ jobs:
             npm run build
 
             echo "---- restart web (update env) ----"
-            # restart is safest for Server Actions stability
             pm2 restart "$WEB_APP" --update-env
             pm2 save || true
 
             echo "---- ensure sync is running (and restart if needed) ----"
             # IMPORTANT: worker should be fork / 1 instance (avoid double-processing)
             if pm2 describe "$SYNC_APP" >/dev/null 2>&1; then
-              if [ "$NEED_SYNC_RESTART" = "yes" ]; then
-                echo "Sync-related changes detected -> restarting ${SYNC_APP}"
-                pm2 restart "$SYNC_APP" --update-env || true
+              # If it's currently in cluster mode, replace with fork mode
+              MODE="$(pm2 describe "$SYNC_APP" | awk -F': ' '/exec mode/ {print $2; exit}' | tr -d '\r')"
+              if echo "$MODE" | grep -qi "cluster"; then
+                echo "triko-sync is in cluster mode -> recreating as single fork process"
+                pm2 delete "$SYNC_APP" || true
+                pm2 start "${APP_DIR}/fina-master-sync.mjs" \
+                  --name "$SYNC_APP" \
+                  --interpreter node \
+                  --time \
+                  --max-restarts 10 \
+                  --restart-delay 3000
               else
-                echo "No sync-related changes -> leaving ${SYNC_APP} running"
+                if [ "$NEED_SYNC_RESTART" = "yes" ]; then
+                  echo "Sync-related changes detected -> restarting ${SYNC_APP}"
+                  pm2 restart "$SYNC_APP" --update-env || true
+                else
+                  echo "No sync-related changes -> leaving ${SYNC_APP} running"
+                fi
               fi
             else
               echo "${SYNC_APP} not found in PM2. Starting it now (single instance)..."
