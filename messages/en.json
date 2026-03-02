@@ -287,7 +287,8 @@
 
     "oos_reserved_temporarily": "Temporarily unavailable because another customer is checking out. Please try again in a few minutes.",
     "oos_no_stock": "Sold out.",
-    "oos_insufficient": "Not enough stock available right now."
+    "oos_insufficient": "Not enough stock available right now.",
+    "fullNameInvalid": "Please enter a valid full name."
   },
   "Login": {
     "meta": {

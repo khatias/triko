@@ -12,16 +12,14 @@ function normalizeGePhoneToNational9(raw: string): string | null {
 
   return null;
 }
-export const fullNameSchema = (t: (k: string) => string) =>
+export const nameSchema = (t: (k: string) => string) =>
   requiredString(t("fullNameRequired"))
     .trim()
     .min(1, { message: t("fullNameRequired") })
     .transform(normalizeWhitespace)
-    .refine((v) => v.split(" ").filter(Boolean).length >= 2, {
-      message: t("fullNamePleaseFirstLast"),
-    })
+    // optional: keep this if you want at least one letter in the name
     .refine((v) => /[\p{L}]/u.test(v), {
-      message: t("fullNamePleaseFirstLast"),
+      message: t("fullNameInvalid"),
     });
 
 export function makeGeorgiaPhoneSchema(params: {
