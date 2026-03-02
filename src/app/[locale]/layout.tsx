@@ -4,11 +4,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-
 import Header from "@/components/Header/Header";
 import Footer from "@/components/footer/Footer";
-import { Montserrat, Noto_Sans_Georgian } from "next/font/google";
-
+import { Noto_Sans_Georgian } from "next/font/google";
 import { Toaster } from "sonner";
 import PublicOnly from "@/components/PublicOnly";
 import "../globals.css";
@@ -20,18 +18,8 @@ type Props = {
   params: { locale: string } | Promise<{ locale: string }>;
 };
 
-// ✅ ONE body font that supports BOTH latin + georgian
-const bodyFont = Noto_Sans_Georgian({
-  variable: "--font-body",
+const noto = Noto_Sans_Georgian({
   subsets: ["latin", "georgian"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-// ✅ Optional: keep Montserrat only for headings/buttons if you use it
-const headingFont = Montserrat({
-  variable: "--font-heading",
-  subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
@@ -65,9 +53,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body
-        className={`${bodyFont.variable} ${headingFont.variable} antialiased bg-white text-zinc-900`}
-      >
+      <body className={`${noto.className} antialiased bg-white text-zinc-900`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <PublicOnly>
             <Header locale={locale} />
