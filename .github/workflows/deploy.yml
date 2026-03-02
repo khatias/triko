@@ -1,4 +1,11 @@
 # .github/workflows/deploy.yml
+# Full fixed deploy script:
+# - loads env from server-only ecosystem.config.js BEFORE build
+# - builds
+# - restarts pm2 with --update-env
+# - waits for upstream to come up
+# - health check follows redirects (so 307 is OK)
+
 name: Deploy Next.js to VPS
 
 on:
@@ -19,6 +26,7 @@ jobs:
           script: |
             set -euo pipefail
 
+            # ---- CONFIG ----
             APP_DIR="/var/www/my-app"
             WEB_APP="triko-store"
             SYNC_APP="triko-sync"
@@ -72,8 +80,8 @@ jobs:
             fi
 
             echo "---- load env FROM ecosystem.config.js for build ----"
-            # No heredoc. Single node -e that prints `export KEY='VALUE'` lines.
-            # Then we eval them to set env for this SSH session so `next build` sees them.
+            # IMPORTANT: ecosystem.config.js is server-only and contains secrets.
+            # We export its env into this SSH session so `next build` sees them.
             eval "$(
               WEB_APP_NAME="$WEB_APP" node -e "const fs=require('fs');const path=require('path');
                 const appName=process.env.WEB_APP_NAME||'triko-store';
@@ -96,7 +104,7 @@ jobs:
             export PORT="${PORT:-3000}"
 
             echo "Env loaded (non-sensitive check):"
-            node -e "console.log({NODE_ENV:process.env.NODE_ENV,PORT:process.env.PORT,HAS_RESEND:!!process.env.RESEND_API_KEY})"
+            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_RESEND: !!process.env.RESEND_API_KEY })"
 
             echo "---- build ----"
             npm run build
@@ -134,11 +142,12 @@ jobs:
               exit 1
             fi
 
-            echo "---- nginx/domain health check (retry) ----"
+            echo "---- nginx/domain health check (follow redirects) ----"
             OK="no"
             for i in $(seq 1 30); do
-              CODE="$(curl -sS -o /dev/null -w "%{http_code}" "${HEALTH_URL}" || true)"
-              if [ "$CODE" = "200" ] || [ "$CODE" = "301" ] || [ "$CODE" = "302" ]; then
+              # -L follows 307/308/301/302 redirects so final code becomes 200
+              CODE="$(curl -sS -L -o /dev/null -w "%{http_code}" "${HEALTH_URL}" || true)"
+              if [ "$CODE" = "200" ]; then
                 echo "OK: ${HEALTH_URL} returned ${CODE}"
                 OK="yes"
                 break
