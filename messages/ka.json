@@ -351,8 +351,8 @@
       "readButton": "წაიკითხე ჩვენი ისტორია",
       "title": "ჩვენი მიზანი",
       "slogan1": "ჩვენი მიზანია შევქმნათ პროდუქტი",
-      "slogan2": "ყველასთვის",
-      "slogan3": "ხარისხის, დათმობის ",
+      "slogan2": "ყველასთვის,",
+      "slogan3": "ხარისხის დათმობის ",
       "slogan4": "  გარეშე"
     },
     "philosophy": {
@@ -385,21 +385,6 @@
           "title": "თბილისი · გალერია თბილისი",
           "address": "შოთა რუსთაველის გამზირი 2/4, მე-3 სართული",
           "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
-        },
-        "store2": {
-          "title": "თბილისი · თბილისი მოლი",
-          "address": "მე-16 კმ, დავით აღმაშენებლის ხეივანი, მე-2 სართული",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Tbilisi+Mall+16km+Agmashenebeli+Ave"
-        },
-        "store3": {
-          "title": "თბილისი · გლდანი მოლი",
-          "address": "მეტრო ახმეტელის მიმდებარედ, II სართული",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Gldani+Mall+Tbilisi"
-        },
-        "store4": {
-          "title": "ქუთაისი",
-          "address": "თამარ მეფის 14 (კინო ჯორჯიას კორპუსის მე-2 სართული)",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Kutaisi+Tamar+Mepe+14"
         }
       }
     },
@@ -554,7 +539,7 @@
     "previous": "წინა",
     "page": "გვერდი",
     "filters": "ფილტრები",
-    "clear":"გასუფთავება",
+    "clear": "გასუფთავება",
     "category": "კატეგორია",
     "categories": "კატეგორიები",
     "allCategories": "ყველა კატეგორია",
@@ -562,7 +547,7 @@
     "recommended": "რეკომენდირებული",
     "priceLowHigh": "ფასი: ზრდადობით",
     "priceHighLow": "ფასი: კლებადობით",
-    "size":"ზომა",
+    "size": "ზომა",
     "priceRange": "ფასის დიაპაზონი",
     "min": "მინ",
     "max": "მაქს",

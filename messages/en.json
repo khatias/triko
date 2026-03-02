@@ -380,21 +380,6 @@
           "title": "Tbilisi · Galleria Tbilisi",
           "address": "2/4 Shota Rustaveli Ave, 3rd floor",
           "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
-        },
-        "store2": {
-          "title": "Tbilisi · Tbilisi Mall",
-          "address": "16th km, Davit Aghmashenebeli Ave, 2nd floor",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Tbilisi+Mall+16km+Agmashenebeli+Ave"
-        },
-        "store3": {
-          "title": "Tbilisi · Gldani Mall",
-          "address": "Near Akhmeteli metro, 2nd floor",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Gldani+Mall+Tbilisi"
-        },
-        "store4": {
-          "title": "Kutaisi",
-          "address": "14 Tamar Mepe St (Cinema Georgia building, 2nd floor)",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Kutaisi+Tamar+Mepe+14"
         }
       }
     },
@@ -555,10 +540,10 @@
     "recommended": "Recommended",
     "priceLowHigh": "Price: Low to High",
     "priceHighLow": "Price: High to Low",
-    "size":"Size",
+    "size": "Size",
     "priceRange": "Price range",
-    "min":"min",
-    "max":"max",
+    "min": "min",
+    "max": "max",
     "showResults": "Show results",
     "noImages": "No image available.",
     "backToStart": "Back to start",
@@ -567,7 +552,6 @@
     "explorePiece": "Explore Piece",
     "rollToZoom": "Roll over to zoom",
     "noProductsFound": "No products found matching your criteria."
-    
   },
   "Products": {
     "title": "Products",
