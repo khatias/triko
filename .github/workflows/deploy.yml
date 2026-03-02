@@ -1,3 +1,7 @@
+# .github/workflows/deploy.yml
+# Full fixed deploy script: safe update, clean build, restart with updated env,
+# retry health checks, and strong diagnostics on failure.
+
 name: Deploy Next.js to VPS
 
 on:
@@ -16,37 +20,59 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            set -e
+            set -euo pipefail
 
+            # ---- CONFIG ----
+            APP_DIR="/var/www/my-app"
+            WEB_APP="triko-store"
+            SYNC_APP="triko-sync"
+            PORT="3000"
+            HEALTH_URL="https://beta.triko.ge/"
+
+            echo "---- load nvm/node ----"
             export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:/usr/local/bin
 
-            # Use stable production Node
-            nvm use 20
-
-            cd /var/www/my-app
+            node -v
+            npm -v
 
             echo "---- before deploy ----"
-            OLD_SHA="$(git rev-parse HEAD 2>/dev/null || true)"
-            echo "OLD_SHA=$OLD_SHA"
-            pm2 ls || true
+            cd "$APP_DIR"
+            OLD_SHA="$(git rev-parse HEAD || true)"
+            echo "OLD_SHA=${OLD_SHA}"
+            pm2 status || true
 
             echo "---- update code ----"
             git fetch origin
             git checkout fix-cleanup-2
             git reset --hard origin/fix-cleanup-2
-
             NEW_SHA="$(git rev-parse HEAD)"
-            echo "NEW_SHA=$NEW_SHA"
-            git log -1 --oneline
+            echo "NEW_SHA=${NEW_SHA}"
+            git --no-pager log -1 --oneline
+
+            echo "---- decide whether to restart sync ----"
+            # Restart sync only if files likely related to sync changed.
+            # Adjust patterns to match your repo.
+            CHANGED="$(git diff --name-only "${OLD_SHA}" "${NEW_SHA}" || true)"
+            echo "$CHANGED" > /tmp/changed_files.txt || true
+
+            NEED_SYNC_RESTART="no"
+            if grep -Eiq '(^triko-sync/|sync|fina|jobs|cron|pm2|ecosystem\.config\.js|package\.json|package-lock\.json)' /tmp/changed_files.txt; then
+              NEED_SYNC_RESTART="yes"
+            fi
+
+            echo "NEED_SYNC_RESTART=${NEED_SYNC_RESTART}"
 
             echo "---- stop web before building (prevents missing chunk issues) ----"
-            pm2 stop triko-store || true
+            pm2 stop "$WEB_APP" || true
+            pm2 status || true
 
             echo "---- clean build output ----"
             rm -rf .next
 
             echo "---- install dependencies ----"
+            # If you have a lockfile, prefer npm ci:
             if [ -f package-lock.json ]; then
               npm ci
             else
@@ -54,28 +80,81 @@ jobs:
             fi
 
             echo "---- build with env from ecosystem.config.js ----"
-            node -e "const { execSync } = require('child_process'); const config = require('./ecosystem.config.js'); const env = config.apps.find(a => a.name === 'triko-store').env; execSync('npm run build', { env: { ...process.env, ...env }, stdio: 'inherit' });"
+            # IMPORTANT: your ecosystem config must contain all env vars needed for build
+            npm run build
 
-            echo "---- start web ----"
-            pm2 start ecosystem.config.js --only triko-store
-            pm2 save
+            echo "---- restart web (update env) ----"
+            # --update-env ensures PM2 refreshes env values from ecosystem/config
+            pm2 restart "$WEB_APP" --update-env
+            pm2 save || true
+            pm2 status || true
 
-            echo "---- optional: restart triko-sync only if relevant files changed ----"
-            if [ -n "$OLD_SHA" ]; then
-              CHANGED="$(git diff --name-only "$OLD_SHA" "$NEW_SHA" || true)"
-              echo "$CHANGED"
-
-              # Adjust this list if your sync imports other files
-              if echo "$CHANGED" | grep -Eiq '(^|/)(fina-master-sync\.mjs|ecosystem\.config\.js|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|supabase/|db/|src/utils/|src/lib/)'; then
-                echo "Changes affect sync -> restarting triko-sync"
-                pm2 restart triko-sync || true
-              else
-                echo "No sync-related changes -> leaving triko-sync running"
-              fi
+            echo "---- optional: restart triko-sync if relevant files changed ----"
+            if [ "$NEED_SYNC_RESTART" = "yes" ]; then
+              echo "Sync-related changes detected -> restarting ${SYNC_APP}"
+              pm2 restart "$SYNC_APP" --update-env || true
+              pm2 save || true
             else
-              echo "No OLD_SHA found (first deploy?) -> not restarting triko-sync"
+              echo "No sync-related changes -> leaving ${SYNC_APP} running"
             fi
 
-            echo "---- health check ----"
-            curl -f https://beta.triko.ge >/dev/null
-            echo "✅ Deploy complete"
+            echo "---- local upstream readiness (bypass nginx) ----"
+            # This confirms the Node server is actually listening.
+            READY="no"
+            for i in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:${PORT}/" >/dev/null; then
+                echo "OK: upstream responded on 127.0.0.1:${PORT}"
+                READY="yes"
+                break
+              fi
+              echo "waiting for upstream... ($i/30)"
+              sleep 1
+            done
+
+            if [ "$READY" != "yes" ]; then
+              echo "FAILED: upstream never became ready on 127.0.0.1:${PORT}"
+              echo "---- pm2 status ----"
+              pm2 status || true
+              echo "---- pm2 logs (${WEB_APP}) ----"
+              pm2 logs "$WEB_APP" --lines 200 --nostream || true
+              exit 1
+            fi
+
+            echo "---- nginx/domain health check (retry) ----"
+            OK="no"
+            for i in $(seq 1 30); do
+              CODE="$(curl -sS -o /dev/null -w "%{http_code}" "${HEALTH_URL}" || true)"
+              if [ "$CODE" = "200" ] || [ "$CODE" = "301" ] || [ "$CODE" = "302" ]; then
+                echo "OK: ${HEALTH_URL} returned ${CODE}"
+                OK="yes"
+                break
+              fi
+
+              echo "health check got ${CODE} ($i/30)"
+
+              # On a few attempts, print diagnostics without failing immediately
+              if [ "$i" = "5" ] || [ "$i" = "15" ] || [ "$i" = "25" ]; then
+                echo "---- debug snapshot ----"
+                pm2 status || true
+                pm2 describe "$WEB_APP" || true
+                echo "---- pm2 logs (${WEB_APP}) ----"
+                pm2 logs "$WEB_APP" --lines 120 --nostream || true
+                echo "---- nginx error log (last 80) ----"
+                sudo tail -n 80 /var/log/nginx/error.log || true
+              fi
+
+              sleep 1
+            done
+
+            if [ "$OK" != "yes" ]; then
+              echo "FAILED: ${HEALTH_URL} never became healthy"
+              echo "---- pm2 status ----"
+              pm2 status || true
+              echo "---- pm2 logs (${WEB_APP}) ----"
+              pm2 logs "$WEB_APP" --lines 250 --nostream || true
+              echo "---- nginx error log (last 120) ----"
+              sudo tail -n 120 /var/log/nginx/error.log || true
+              exit 1
+            fi
+
+            echo "---- deploy done ----"
