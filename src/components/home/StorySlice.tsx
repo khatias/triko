@@ -9,7 +9,7 @@ export default function StorySlice() {
   return (
     <section className="mx-auto max-w-400 px-4 py-16 sm:px-8 sm:py-24">
       {/* The Architectural Block: Zero curves, sharp borders */}
-      <div className="relative w-full border border-white/10 bg-[#383333] px-6 py-16 sm:p-20 lg:p-24">
+      <div className="relative w-full border border-white/10 bg-[#7a5ea0] px-6 py-16 sm:p-20 lg:p-24">
         {/* Massive Background Watermark */}
         <div className="pointer-events-none absolute -left-10 top-0 select-none opacity-[0.03]">
           <h2 className="whitespace-nowrap text-[25vw] font-black uppercase leading-none text-white">
@@ -22,8 +22,8 @@ export default function StorySlice() {
           {/* Left Half: The Manifesto */}
           <div className="flex w-full flex-col items-start justify-center lg:w-1/2 lg:pr-20">
             <div className="mb-6 flex items-center gap-4">
-              <span className="h-0.5 w-12 bg-[#FFDE85]" />
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#FFDE85]">
+              <span className="h-0.5 w-12 bg-white" />
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-white">
                 {t("Cardtitle")}
               </span>
             </div>
@@ -39,9 +39,9 @@ export default function StorySlice() {
             <div className="mt-10 max-w-xl">
               <p className="text-2xl font-medium leading-relaxed text-white text-balance sm:text-3xl lg:leading-snug">
                 {t("slogan1")}{" "}
-                <span className="text-[#FFDE85]">{t("slogan2")}</span>{" "}
-                <span className="text-white/70">{t("slogan3")}</span>{" "}
-                <span className="text-white/70">{t("slogan4")}</span>
+                <span className="text-white">{t("slogan2")}</span>{" "}
+                <span className="text-white">{t("slogan3")}</span>{" "}
+                <span className="text-white">{t("slogan4")}</span>
               </p>
             </div>
 
@@ -49,7 +49,7 @@ export default function StorySlice() {
             <div className="mt-14">
               <Link
                 href="/aboutUs"
-                className="group flex w-fit items-stretch border border-[#FFDE85] bg-transparent text-[#FFDE85] transition-colors duration-300 hover:bg-[#FFDE85] hover:text-[#383333]"
+                className="group flex w-fit items-stretch border border-white bg-transparent text-white transition-colors duration-300 hover:bg-[#ffcde9] "
               >
                 <span className="flex items-center px-8 py-4 text-sm font-bold uppercase tracking-[0.2em]">
                   {t("readButton")}
