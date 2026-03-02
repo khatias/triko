@@ -49,7 +49,7 @@ export default function CategoryAccordion({
   return (
     <Section className="py-8 sm:py-12">
       <div className="mb-10 flex items-center justify-between px-2">
-        <h2 className="text-3xl font-black uppercase text-[#383333] sm:text-5xl">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-[#FF5C5C] ">
           {t("title")}
         </h2>
         <span className="hidden text-xs font-bold uppercase tracking-widest text-stone-400 sm:block">
@@ -142,7 +142,7 @@ export default function CategoryAccordion({
                         href={group.slug_en ? `/${group.slug_en}` : "#"}
                         className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase text-[#383333] transition-colors hover:bg-[#FFDE85]"
                       >
-                        {t("explore") } <ArrowUpRightIcon className="h-4 w-4" />
+                        {t("explore")} <ArrowUpRightIcon className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
