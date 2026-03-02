@@ -4,7 +4,11 @@ import { createServerClient } from "@supabase/ssr";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
-const intl = createMiddleware(routing);
+const intl = createMiddleware({
+  locales: routing.locales,
+  defaultLocale: routing.defaultLocale,
+  localeDetection: false,
+});
 
 const CART_COOKIE = "cart_token";
 
