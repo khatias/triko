@@ -25,7 +25,12 @@ type PageProps = {
 };
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { locale, parent_code } = await params;
+  const { locale, parent_code: raw } = await params;
+
+  // Fix URL encoding issues:
+  // - decode %xx sequences
+  // - convert spaces back to "+" (some routers/servers treat "+" as space)
+  const parent_code = decodeURIComponent(raw).replaceAll(" ", "+");
 
   const [h, product] = await Promise.all([
     getTranslations({ locale, namespace: "Helpers" }),
