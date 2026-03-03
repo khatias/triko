@@ -1,5 +1,6 @@
-// app/api/callback/route.ts
+// src/app/api/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
@@ -24,6 +25,26 @@ function inferLocaleFromPath(path: string) {
   return seg === "en" ? "en" : "ka";
 }
 
+async function getOriginSafe() {
+  // 1) Prefer explicit env (best + stable)
+  const envOrigin =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    process.env.PUBLIC_SITE_URL;
+
+  if (envOrigin && envOrigin.startsWith("http")) return envOrigin.replace(/\/+$/, "");
+
+  // 2) Fallback to forwarded headers (behind Cloudflare/Nginx)
+  const h = await headers();
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+
+  if (host) return `${proto}://${host}`;
+
+  // 3) Last resort hard fallback
+  return "https://beta.triko.ge";
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
 
@@ -33,12 +54,14 @@ export async function GET(req: NextRequest) {
 
   const locale = inferLocaleFromPath(redirectPath);
 
+  const origin = await getOriginSafe();
+
   if (!code) {
-    return NextResponse.redirect(new URL(`/login?error=missing_code`, req.url));
+    return NextResponse.redirect(new URL(`/login?error=missing_code`, origin));
   }
 
   // default redirect, we may override Location later if admin
-  const res = NextResponse.redirect(new URL(redirectPath, req.url));
+  const res = NextResponse.redirect(new URL(redirectPath, origin));
 
   const supabase = await createClient();
 
@@ -47,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     if (exchangeError) {
       console.error("exchangeCodeForSession error:", exchangeError);
-      return NextResponse.redirect(new URL(`/login?error=oauth_exchange`, req.url));
+      return NextResponse.redirect(new URL(`/login?error=oauth_exchange`, origin));
     }
 
     const {
@@ -57,7 +80,7 @@ export async function GET(req: NextRequest) {
 
     if (getUserErr || !user?.id) {
       console.error("auth.getUser error:", getUserErr);
-      return NextResponse.redirect(new URL(`/login?error=user_fetch`, req.url));
+      return NextResponse.redirect(new URL(`/login?error=user_fetch`, origin));
     }
 
     const userId = user.id;
@@ -81,7 +104,7 @@ export async function GET(req: NextRequest) {
           first_name: "",
           last_name: "",
           avatar_url: null,
-          role: "customer", // adjust default if you want
+          role: "customer",
         },
       ]);
 
@@ -104,7 +127,8 @@ export async function GET(req: NextRequest) {
 
     const isAdmin = role === "admin";
     if (isAdmin) {
-      res.headers.set("Location", new URL(`/${locale}/admin`, req.url).toString());
+      // IMPORTANT: build URL from safe origin, not req.url
+      res.headers.set("Location", new URL(`/${locale}/admin`, origin).toString());
     }
 
     const token = req.cookies.get(CART_COOKIE)?.value ?? null;
@@ -131,7 +155,6 @@ export async function GET(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("OAuth callback error:", message);
-    return NextResponse.redirect(new URL(`/login?error=callback_exception`, req.url));
+    return NextResponse.redirect(new URL(`/login?error=callback_exception`, origin));
   }
 }
-
