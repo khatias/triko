@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  useTransition,
-  KeyboardEvent,
-  useCallback,
-} from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Search, X, Filter, Loader2 } from "lucide-react";
@@ -32,43 +26,33 @@ export default function OrdersFilters({
 
   const [isPending, startTransition] = useTransition();
 
-  // 1. Keep local state in sync with URL props
+  // Local state initialized directly from props
   const [filters, setFilters] = useState({
-    status: status || "paid",
-    shippingStatus: shippingStatus || "",
-    q: q || "",
-    limit: limit || "50",
+    status,
+    shippingStatus,
+    q,
+    limit,
   });
 
+  // Sync local state when URL changes (e.g., back button or server-side update)
   useEffect(() => {
-    setFilters({
-      status: status || "paid",
-      shippingStatus: shippingStatus || "",
-      q: q || "",
-      limit: limit || "50",
-    });
+    setFilters({ status, shippingStatus, q, limit });
   }, [status, shippingStatus, q, limit]);
 
-  // 2. Centralized Navigation Logic
+  // Centralized navigation logic
   const navigate = useCallback(
-    (updatedFilters: typeof filters) => {
+    (updated: typeof filters) => {
       const p = new URLSearchParams();
 
-      // Always include status and limit as they have defaults
-      p.set("status", updatedFilters.status || "paid");
-      p.set("limit", updatedFilters.limit || "50");
+      // We explicitly set the status (even "all") to avoid server-side defaults
+      p.set("status", updated.status);
+      p.set("limit", updated.limit);
 
-      if (updatedFilters.shippingStatus) {
-        p.set("shipping_status", updatedFilters.shippingStatus);
-      }
+      if (updated.shippingStatus)
+        p.set("shipping_status", updated.shippingStatus);
 
-      const cleanQ = updatedFilters.q.trim();
-      if (cleanQ) {
-        p.set("q", cleanQ);
-      }
-
-      // Reset pagination on filter change
-      p.delete("page");
+      const cleanQ = updated.q.trim();
+      if (cleanQ) p.set("q", cleanQ);
 
       startTransition(() => {
         router.push(`${pathname}?${p.toString()}`);
@@ -77,15 +61,10 @@ export default function OrdersFilters({
     [pathname, router],
   );
 
-  // 3. Handlers
   const handleSelectChange = (key: keyof typeof filters, value: string) => {
     const next = { ...filters, [key]: value };
     setFilters(next);
-    navigate(next); // Apply immediately for dropdowns
-  };
-
-  const handleApplySearch = () => {
-    navigate(filters);
+    navigate(next); // Apply dropdowns immediately
   };
 
   const handleClear = () => {
@@ -94,14 +73,10 @@ export default function OrdersFilters({
     navigate(reset);
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleApplySearch();
-  };
-
   return (
     <div className="rounded-xl border bg-white p-4 shadow-sm dark:bg-zinc-950 dark:border-zinc-800">
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
-        {/* Search Input */}
+        {/* Search */}
         <div className="flex-1 space-y-1.5">
           <label className="text-xs font-medium text-zinc-500">
             {t("searchLabel")}
@@ -113,13 +88,13 @@ export default function OrdersFilters({
               className="h-9 w-full rounded-md border border-zinc-200 bg-transparent pl-9 pr-3 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:border-zinc-800 dark:focus:ring-white"
               value={filters.q}
               onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => e.key === "Enter" && navigate(filters)}
               placeholder={t("searchPlaceholder")}
             />
           </div>
         </div>
 
-        {/* Payment Status Dropdown */}
+        {/* Payment Status */}
         <div className="w-full space-y-1.5 md:w-44">
           <label className="text-xs font-medium text-zinc-500">
             {t("paymentLabel")}
@@ -137,7 +112,7 @@ export default function OrdersFilters({
           </select>
         </div>
 
-        {/* Shipping Status Dropdown */}
+        {/* Shipping Status */}
         <div className="w-full space-y-1.5 md:w-44">
           <label className="text-xs font-medium text-zinc-500">
             {t("shippingLabel")}
@@ -157,7 +132,7 @@ export default function OrdersFilters({
           </select>
         </div>
 
-        {/* Limit Dropdown */}
+        {/* Limit */}
         <div className="w-20 space-y-1.5">
           <label className="text-xs font-medium text-zinc-500">
             {t("rowsLabel")}
@@ -175,10 +150,10 @@ export default function OrdersFilters({
           </select>
         </div>
 
-        {/* Action Buttons */}
+        {/* Actions */}
         <div className="flex gap-2 pt-2 md:pt-0">
           <button
-            onClick={handleApplySearch}
+            onClick={() => navigate(filters)}
             disabled={isPending}
             type="button"
             className="inline-flex h-9 items-center justify-center rounded-md bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
@@ -196,7 +171,6 @@ export default function OrdersFilters({
             disabled={isPending}
             type="button"
             className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 px-3 text-sm font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800"
-            title={t("resetTitle")}
           >
             <X className="h-4 w-4" />
           </button>
