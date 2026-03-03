@@ -685,7 +685,7 @@
       "topandBottomCantBeSame": "Top and bottom pieces cannot be the same.",
     "availableSzies": "Available sizes",
     "sizePreview": "Size preview",
-    "searchPlaceholder":"Search parent code"
+    "searchPlaceholder":"search by parentCode"
     },
     "Orders": {
       "title": "Orders",
@@ -762,7 +762,8 @@
       "orders": "Orders",
       "products": "Products",
       "groups": "Groups",
-      "site": "Site parameters"
+      "site": "Site parameters",
+      "sets": "Sets"
     },
     "groups": {
       "title": "Groups",
