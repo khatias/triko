@@ -765,7 +765,7 @@
       "total": "სულ ",
       "finaName": "ფინას სახელი",
       "noGroups": "კატეგორიები ვერ მოიძებნა.",
-       "active": "აქტიური",
+      "active": "აქტიური",
       "inactive": "არააქტიური",
       "activeHint": "ფრონტზე ჩანს",
       "featuredTitle": "მთავარ გვერდზე",
@@ -838,7 +838,17 @@
       "ctaLabelEN": " CTA (ინგლისური)",
       "ctaLabelKA": " CTA (ქართული)",
       "ctaURL": " CTA URL",
-      "usePath": "შეიყვანეთ მხოლოდ შიდა ლინკი (მაგ: /products) სრული URL-ის ნაცვლად"
+      "usePath": "შეიყვანეთ მხოლოდ შიდა ლინკი (მაგ: /products) სრული URL-ის ნაცვლად",
+      "featuredProductsTitle": "გამორჩეული პროდუქტები",
+      "featuredProductsDesc": "მთავარი გვერდის გამორჩეული პროდუქტები parent_code, რიგი და აქტიურობა.",
+      "featuredProductsAddPlaceholder": "parent_code მაგალითად X262",
+      "noItems": "ჩანაწერი არ არის",
+      "add": "დამატება",
+
+      "featuredOrder": "რიგი",
+      "searchLabel": "ძებნა",
+      "total": "სულ",
+      "actions": "ქმედებები"
     },
     "Products": {
       "title": "პროდუქტების მართვა",

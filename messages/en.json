@@ -828,7 +828,16 @@
       "ctaLabelEN": "CTA Label En",
       "ctaLabelKA": "CTA Label Ka",
       "ctaURL": "CTA URL",
-      "usePath": "Use internal path (e.g. /products) instead of full URL"
+      "usePath": "Use internal path (e.g. /products) instead of full URL",
+      "featuredProductsTitle": "Featured products",
+      "featuredProductsDesc": "Manage home featured products by parent_code, order and active state.",
+      "featuredProductsAddPlaceholder": "parent_code e.g. X262",
+      "noItems": "No items",
+      "add": "Add",
+      "featuredOrder": "Order",
+      "searchLabel": "Search",
+      "total": "Total",
+      "actions": "Actions"
     },
     "Products": {
       "title": "Product Management",
