@@ -10,23 +10,59 @@ import { computeCartBadgeCount } from "@/lib/cart/count";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+type JwtClaims = {
+  sub: string;
+  email?: string;
+  user_metadata?: {
+    full_name?: string;
+  };
+};
+
+function isJwtClaims(value: unknown): value is JwtClaims {
+  if (!value || typeof value !== "object") return false;
+
+  const v = value as Record<string, unknown>;
+  if (typeof v.sub !== "string") return false;
+
+  if ("email" in v && v.email !== undefined && typeof v.email !== "string")
+    return false;
+
+  if ("user_metadata" in v && v.user_metadata !== undefined) {
+    if (!v.user_metadata || typeof v.user_metadata !== "object") return false;
+
+    const um = v.user_metadata as Record<string, unknown>;
+    if (
+      "full_name" in um &&
+      um.full_name !== undefined &&
+      typeof um.full_name !== "string"
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export default async function Header({ locale }: { locale: "en" | "ka" }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const safeUser: SafeUser | null = user
+  const { data, error } = await supabase.auth.getClaims();
+
+  // getClaims failure should not break the whole header render
+  if (error) console.warn("Header: getClaims error:", error);
+
+  const rawClaims: unknown = data?.claims;
+
+  const safeUser: SafeUser | null = isJwtClaims(rawClaims)
     ? {
-        id: user.id,
-        email: user.email ?? "",
-        full_name: String(user.user_metadata?.full_name ?? ""),
+        id: rawClaims.sub,
+        email: rawClaims.email ?? "",
+        full_name: rawClaims.user_metadata?.full_name ?? "",
       }
     : null;
 
   const groups = await getVisibleGroups();
   const state = await getCartState();
-
   const badgeCount = computeCartBadgeCount(state.items);
 
   return (

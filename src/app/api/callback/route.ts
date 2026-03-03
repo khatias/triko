@@ -32,7 +32,8 @@ async function getOriginSafe() {
     process.env.NEXT_PUBLIC_BASE_URL ||
     process.env.PUBLIC_SITE_URL;
 
-  if (envOrigin && envOrigin.startsWith("http")) return envOrigin.replace(/\/+$/, "");
+  if (envOrigin && envOrigin.startsWith("http"))
+    return envOrigin.replace(/\/+$/, "");
 
   // 2) Fallback to forwarded headers (behind Cloudflare/Nginx)
   const h = await headers();
@@ -66,24 +67,27 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
 
   try {
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
 
     if (exchangeError) {
       console.error("exchangeCodeForSession error:", exchangeError);
-      return NextResponse.redirect(new URL(`/login?error=oauth_exchange`, origin));
+      return NextResponse.redirect(
+        new URL(`/login?error=oauth_exchange`, origin),
+      );
     }
 
-    const {
-      data: { user },
-      error: getUserErr,
-    } = await supabase.auth.getUser();
+    const { data: claimsData, error: claimsErr } =
+      await supabase.auth.getClaims();
 
-    if (getUserErr || !user?.id) {
-      console.error("auth.getUser error:", getUserErr);
-      return NextResponse.redirect(new URL(`/login?error=user_fetch`, origin));
+    if (claimsErr) {
+      console.error("auth.getClaims error:", claimsErr);
+      return NextResponse.redirect(
+        new URL(`/login?error=claims_fetch`, origin),
+      );
     }
 
-    const userId = user.id;
+    const userId = claimsData?.claims?.sub;
 
     // Fetch role (and create profile if missing)
     const { data: profile, error: profileSelErr } = await supabase
@@ -97,16 +101,18 @@ export async function GET(req: NextRequest) {
     }
 
     if (!profile) {
-      const { error: insertProfileError } = await supabase.from("profiles").insert([
-        {
-          user_id: userId,
-          email: user.email ?? null,
-          first_name: "",
-          last_name: "",
-          avatar_url: null,
-          role: "customer",
-        },
-      ]);
+      const { error: insertProfileError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            user_id: claimsData?.claims?.sub ?? null,
+            email: claimsData?.claims?.email ?? null,
+            first_name: "",
+            last_name: "",
+            avatar_url: null,
+            role: "customer",
+          },
+        ]);
 
       if (insertProfileError) {
         console.error("Profile creation failed:", insertProfileError);
@@ -120,7 +126,7 @@ export async function GET(req: NextRequest) {
       const { data: p2 } = await supabase
         .from("profiles")
         .select("role")
-        .eq("user_id", userId)
+        .eq("user_id", claimsData?.claims?.sub ?? null)
         .maybeSingle();
       role = p2?.role ?? null;
     }
@@ -128,15 +134,21 @@ export async function GET(req: NextRequest) {
     const isAdmin = role === "admin";
     if (isAdmin) {
       // IMPORTANT: build URL from safe origin, not req.url
-      res.headers.set("Location", new URL(`/${locale}/admin`, origin).toString());
+      res.headers.set(
+        "Location",
+        new URL(`/${locale}/admin`, origin).toString(),
+      );
     }
 
     const token = req.cookies.get(CART_COOKIE)?.value ?? null;
 
     if (token && isUuid(token)) {
-      const { error: mergeError } = await supabase.rpc("cart_merge_guest_into_user_v2", {
-        p_cart_token: token,
-      });
+      const { error: mergeError } = await supabase.rpc(
+        "cart_merge_guest_into_user_v2",
+        {
+          p_cart_token: token,
+        },
+      );
 
       if (mergeError) {
         console.error("cart merge failed:", mergeError);
@@ -155,6 +167,8 @@ export async function GET(req: NextRequest) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("OAuth callback error:", message);
-    return NextResponse.redirect(new URL(`/login?error=callback_exception`, origin));
+    return NextResponse.redirect(
+      new URL(`/login?error=callback_exception`, origin),
+    );
   }
 }
