@@ -1,4 +1,3 @@
-// src/app/[locale]/layout.tsx
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
@@ -9,7 +8,6 @@ import Footer from "@/components/footer/Footer";
 import { Noto_Sans_Georgian } from "next/font/google";
 import { Toaster } from "sonner";
 import PublicOnly from "@/components/PublicOnly";
-import "../globals.css";
 
 type Locale = "ka" | "en";
 
@@ -52,22 +50,20 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className={`${noto.className} antialiased bg-white text-zinc-900`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <PublicOnly>
-            <Header locale={locale} />
-          </PublicOnly>
+    <div className={`${noto.className} antialiased bg-white text-zinc-900`}>
+      <NextIntlClientProvider locale={locale} messages={messages}>
+        <PublicOnly>
+          <Header locale={locale} />
+        </PublicOnly>
 
-          {children}
+        {children}
 
-          <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" />
 
-          <PublicOnly>
-            <Footer />
-          </PublicOnly>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+        <PublicOnly>
+          <Footer />
+        </PublicOnly>
+      </NextIntlClientProvider>
+    </div>
   );
 }
