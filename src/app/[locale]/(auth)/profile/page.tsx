@@ -1,3 +1,4 @@
+import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { Mail, Calendar, Clock } from "lucide-react";
 import { formatDate } from "@/lib/helpers";
@@ -38,29 +39,33 @@ function StatCard({ title, value, Icon, titleAttr }: StatCardProps) {
   );
 }
 
-// --- Page ---
 export default async function ProfileIndexPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let fullName: string | null = null;
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    fullName = profile?.full_name ?? null;
-  }
   const t = await getTranslations("Profile");
+
+  // Layout already redirects if not authed,
+  // but keep a tiny fallback so page never crashes
+  const { data: { user }, error: userErr } = await supabase.auth.getUser();
+  if (userErr || !user?.id) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-600">
+        {t("unknown")}
+      </div>
+    );
+  }
+
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const fullName = !profileErr ? (profile?.full_name ?? null) : null;
+
   const firstName = getFirstName(fullName);
-  const joinDate = formatDate(user?.created_at ?? "");
-  const lastLogin = formatDate(user?.last_sign_in_at ?? "");
-  const emailValue = user?.email || t("unknown");
+  const emailValue = user.email || t("unknown");
+  const joinDate = formatDate(user.created_at ?? "");
+  const lastLogin = formatDate(user.last_sign_in_at ?? "");
 
   return (
     <div className="flex h-full flex-col gap-6">
@@ -79,7 +84,7 @@ export default async function ProfileIndexPage() {
           title={t("email")}
           value={emailValue}
           Icon={Mail}
-          titleAttr={user?.email ?? undefined}
+          titleAttr={user.email ?? undefined}
         />
         <StatCard title={t("registeredOn")} value={joinDate} Icon={Calendar} />
         <StatCard title={t("lastActivity")} value={lastLogin} Icon={Clock} />
