@@ -10,7 +10,7 @@ export async function fetchAdminParentProduct(
   const { supabase } = await requireAdmin(locale);
 
   const { data, error } = await supabase
-    .from("shop_catalog_admin_product_detail_view_v1") // ✅ აქედან!
+    .from("shop_catalog_admin_product_detail_mv_v1") // ✅ აქედან!
     .select("*")
     .eq("parent_code", parentCode)
     .maybeSingle();

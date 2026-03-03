@@ -11,7 +11,7 @@ export async function fetchAdminProductsList(
   const { supabase } = await requireAdmin(locale);
 
   const { data, error } = await supabase
-    .from("shop_catalog_admin_product_detail_view_v1")
+    .from("shop_catalog_admin_product_detail_mv_v1")
     .select(
       [
         "parent_code",
