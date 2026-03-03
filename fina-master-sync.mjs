@@ -1,5 +1,51 @@
+import fs from "fs";
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
+
+/* ---------------- safe env loader ---------------- */
+
+// Load /var/www/my-app/.env.local if present.
+// Does NOT override already-set process.env values (PM2/env wins).
+function loadEnvFileIfPresent(envPath = "/var/www/my-app/.env.local") {
+  try {
+    if (!fs.existsSync(envPath)) return;
+
+    const raw = fs.readFileSync(envPath, "utf8");
+
+    for (const line of raw.split(/\r?\n/)) {
+      const s = line.trim();
+      if (!s || s.startsWith("#")) continue;
+
+      const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+      if (!m) continue;
+
+      const key = m[1];
+      let val = (m[2] ?? "").trim();
+
+      // strip inline comment for unquoted values: KEY=value # comment
+      if (!val.startsWith('"') && !val.startsWith("'")) {
+        const idx = val.indexOf(" #");
+        if (idx !== -1) val = val.slice(0, idx).trim();
+      }
+
+      // unquote
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1);
+      }
+
+      // do not override existing env
+      if (process.env[key] == null) process.env[key] = val;
+    }
+  } catch (e) {
+    // never crash worker because of env loading
+    console.error("[ENV] failed to load .env.local:", e?.message ?? e);
+  }
+}
+
+loadEnvFileIfPresent();
 
 /* ---------------- env helpers ---------------- */
 
@@ -27,6 +73,8 @@ function shortErr(x, max = 1200) {
 
 /* ---------------- config ---------------- */
 
+// Keeping your names for compatibility.
+// (Recommended later: switch to SUPABASE_URL for server-only, but optional.)
 const SUPABASE_URL = mustEnv("NEXT_PUBLIC_SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = mustEnv("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -60,9 +108,11 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
 });
 
-// 2) Realtime client (anon key) — optional
+// 2) Realtime client (anon key) optional
 const supabaseRealtime = SUPABASE_ANON_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } })
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+    })
   : null;
 
 /* ---------------- Fina auth (token cached in memory) ---------------- */
@@ -99,7 +149,7 @@ async function finaAuthToken() {
   const authRes = await axios.post(
     `${FINA_BASE_URL}/api/authentication/authenticate`,
     { login: FINA_LOGIN, password: FINA_PASSWORD },
-    { timeout: 20_000 }
+    { timeout: 20_000 },
   );
 
   const token = authRes?.data?.token;
@@ -139,14 +189,20 @@ function toNumberStrict(v, name) {
 let isProcessingOutbox = false;
 
 async function recoverStuckSending() {
-  const cutoff = new Date(Date.now() - STUCK_SENDING_MINUTES * 60_000).toISOString();
+  const cutoff = new Date(
+    Date.now() - STUCK_SENDING_MINUTES * 60_000,
+  ).toISOString();
   const { error } = await supabaseAdmin
     .from("fina_outbox")
     .update({ status: "pending" })
     .eq("status", "sending")
     .lt("last_attempt_at", cutoff);
 
-  if (error) console.error("[OUTBOX] recoverStuckSending error:", error.message ?? error);
+  if (error)
+    console.error(
+      "[OUTBOX] recoverStuckSending error:",
+      error.message ?? error,
+    );
 }
 
 async function processOutbox() {
@@ -167,7 +223,9 @@ async function processOutbox() {
     if (fetchErr) throw fetchErr;
     if (!tasks || tasks.length === 0) return;
 
-    console.log(`\n[OUTBOX] Found ${tasks.length} pending orders. Syncing to Fina...`);
+    console.log(
+      `\n[OUTBOX] Found ${tasks.length} pending orders. Syncing to Fina...`,
+    );
 
     const api = await finaApi();
 
@@ -211,8 +269,10 @@ async function processOutbox() {
           .eq("order_id", task.order_id);
 
         if (itemsErr) throw itemsErr;
-        if (!items || items.length === 0) throw new Error("No order_items found");
-        for (const it of items) if (!it.fina_id) throw new Error("Missing fina_id in order_items");
+        if (!items || items.length === 0)
+          throw new Error("No order_items found");
+        for (const it of items)
+          if (!it.fina_id) throw new Error("Missing fina_id in order_items");
 
         const products = items.map((it) => ({
           id: it.fina_id,
@@ -243,7 +303,7 @@ async function processOutbox() {
           price_type: 3,
           w_type: 3,
           t_type: 1,
-          t_payer: 1, // ✅ FIX: 1 = Buyer pays transport
+          t_payer: 1, // 1 = Buyer pays transport
           w_cost: 0,
           foreign: false,
           drv_name: "",
@@ -262,16 +322,24 @@ async function processOutbox() {
           services: [],
         };
 
-        const resp = await api.post("/api/operation/saveDocProductOut", salePayload);
+        const resp = await api.post(
+          "/api/operation/saveDocProductOut",
+          salePayload,
+        );
         const finaId = resp?.data?.id;
         const ex = resp?.data?.ex ?? null;
 
         if (ex) throw new Error(`FINA saveDocProductOut ex: ${String(ex)}`);
-        if (!finaId) throw new Error(`FINA returned no id: ${JSON.stringify(resp?.data)}`);
+        if (!finaId)
+          throw new Error(`FINA returned no id: ${JSON.stringify(resp?.data)}`);
 
         await supabaseAdmin
           .from("orders")
-          .update({ fina_doc_id: finaId, fina_synced_at: nowIso(), fina_sync_error: null })
+          .update({
+            fina_doc_id: finaId,
+            fina_synced_at: nowIso(),
+            fina_sync_error: null,
+          })
           .eq("id", task.order_id);
 
         await supabaseAdmin
@@ -279,9 +347,26 @@ async function processOutbox() {
           .update({ status: "sent", last_error: null })
           .eq("id", task.id);
 
-        console.log(` [OUTBOX] Synced order=${task.order_id} (Fina ID: ${finaId})`);
+        // ✅ Added: remove local reservation to prevent double deduction
+        const { error: resDelErr } = await supabaseAdmin
+          .from("stock_reservations")
+          .delete()
+          .eq("order_id", task.order_id);
+
+        if (resDelErr) {
+          console.error(
+            " [OUTBOX] stock_reservations delete error:",
+            resDelErr.message ?? resDelErr,
+          );
+        }
+
+        console.log(
+          ` [OUTBOX] Synced order=${task.order_id} (Fina ID: ${finaId})`,
+        );
       } catch (err) {
-        const msg = err?.response?.data ? shortErr(err.response.data) : shortErr(err?.message ?? err);
+        const msg = err?.response?.data
+          ? shortErr(err.response.data)
+          : shortErr(err?.message ?? err);
         const attempts = (task.attempts || 0) + 1;
 
         await supabaseAdmin
@@ -302,7 +387,9 @@ async function processOutbox() {
       }
     }
   } catch (err) {
-    const msg = err?.response?.data ? shortErr(err.response.data) : shortErr(err?.message ?? err);
+    const msg = err?.response?.data
+      ? shortErr(err.response.data)
+      : shortErr(err?.message ?? err);
     console.error("[OUTBOX] Global processor error:", msg);
   } finally {
     isProcessingOutbox = false;
@@ -313,7 +400,9 @@ async function processOutbox() {
 
 function startRealtimeListener() {
   if (!supabaseRealtime) {
-    console.log(" Realtime disabled (missing NEXT_PUBLIC_SUPABASE_ANON_KEY). Using polling only.");
+    console.log(
+      " Realtime disabled (missing NEXT_PUBLIC_SUPABASE_ANON_KEY). Using polling only.",
+    );
     return;
   }
 
@@ -323,14 +412,19 @@ function startRealtimeListener() {
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "fina_outbox" },
       () => {
-        console.log(" [REALTIME] New outbox row inserted. Triggering instant sync...");
+        console.log(
+          " [REALTIME] New outbox row inserted. Triggering instant sync...",
+        );
         processOutbox().catch(() => {});
-      }
+      },
     )
     .subscribe((status) => {
-      if (status === "SUBSCRIBED") console.log(" Listening for outbox inserts...");
-      if (status === "CHANNEL_ERROR") console.log(" Realtime channel error. Polling will still work.");
-      if (status === "TIMED_OUT") console.log(" Realtime timed out. Polling will still work.");
+      if (status === "SUBSCRIBED")
+        console.log(" Listening for outbox inserts...");
+      if (status === "CHANNEL_ERROR")
+        console.log(" Realtime channel error. Polling will still work.");
+      if (status === "TIMED_OUT")
+        console.log(" Realtime timed out. Polling will still work.");
     });
 }
 
@@ -358,8 +452,10 @@ async function syncFinaCatalogOnce() {
         unit_id: p.unit_id ?? null,
         raw: p,
       }));
-      // ✅ FIX: Throw on error to prevent silent DB failures
-      await supabaseAdmin.from("fina_products").upsert(formattedProducts, { onConflict: "fina_id" }).throwOnError();
+      await supabaseAdmin
+        .from("fina_products")
+        .upsert(formattedProducts, { onConflict: "fina_id" })
+        .throwOnError();
     }
 
     // Prices
@@ -373,8 +469,10 @@ async function syncFinaCatalogOnce() {
         discount_price: p.discount_price,
         currency: p.currency,
       }));
-      // ✅ FIX: Throw on error
-      await supabaseAdmin.from("fina_prices").upsert(formattedPrices, { onConflict: "fina_id,price_id" }).throwOnError();
+      await supabaseAdmin
+        .from("fina_prices")
+        .upsert(formattedPrices, { onConflict: "fina_id,price_id" })
+        .throwOnError();
     }
 
     // Stock (full refresh)
@@ -387,13 +485,17 @@ async function syncFinaCatalogOnce() {
         rest: String(s.rest),
         updated_at: nowIso(),
       }));
-      // ✅ FIX: Throw on error
-      await supabaseAdmin.from("fina_stock").upsert(formattedStock, { onConflict: "store_id,fina_id" }).throwOnError();
+      await supabaseAdmin
+        .from("fina_stock")
+        .upsert(formattedStock, { onConflict: "store_id,fina_id" })
+        .throwOnError();
     }
 
     console.log(" Sync Cycle Complete.");
   } catch (error) {
-    const msg = error?.response?.data ? shortErr(error.response.data) : shortErr(error?.message ?? error);
+    const msg = error?.response?.data
+      ? shortErr(error.response.data)
+      : shortErr(error?.message ?? error);
     console.error(" Sync Failed:", msg);
   }
 }
@@ -414,7 +516,9 @@ function startMasterLoop() {
     setTimeout(loop, CATALOG_SYNC_MS);
   };
   loop().catch(() => {});
-  console.log(` Master sync every ${Math.round(CATALOG_SYNC_MS / 60000)} minutes`);
+  console.log(
+    ` Master sync every ${Math.round(CATALOG_SYNC_MS / 60000)} minutes`,
+  );
 }
 
 /* ---------------- start ---------------- */
