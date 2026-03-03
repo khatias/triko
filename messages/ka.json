@@ -683,6 +683,20 @@
   },
 
   "Admin": {
+       "Bundles":{
+        "createBundle": "შექმენი ორეული",
+        "editBundle": "ბანდა რედაქტირება",
+        "topParent": "ზედას კოდი",
+        "selectTop": "აირჩიეთ ზედა კოდი",
+        "selectBottom": "აირჩიეთ ქვედა კოდი",
+        "bottomParent": "ქვედა კოდი",
+        "nameKa": "სახელი (ქართ.)",
+        "nameEn": "სახელი (ინგ.)",
+        "topandBottomCantBeSame": "ზედა და ქვედა კოდი არ უნდა ემთხვეოდეს ერთმანეთს",
+        "availableSzies": "ხელმისაწვდომი ზომები",
+        "sizePreview": "ზომები",
+        "searchPlaceholder": "მოძებნე parent code -ით"
+    },
     "Orders": {
       "title": "შეკვეთები",
       "subtitle": "მართეთ თქვენი მაღაზიის შეკვეთები. ნაჩვენებია {count} შედეგი.",
