@@ -173,8 +173,7 @@ export default async function Hero({ locale }: { locale: Locale }) {
           <h1
             className="
               mt-4
-              font-black uppercase tracking-tight
-              leading-[0.86]
+              font-black uppercase tracking-tight leading-[1.2]
               text-4xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-5xl text-[#FFDE85]
             "
           >
@@ -245,7 +244,7 @@ export default async function Hero({ locale }: { locale: Locale }) {
 
           <h2
             className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight
-              leading-[0.86] text-[#FF5C5C]"
+              leading-none text-[#FF5C5C]"
           >
             <Lines text={copy.infoTitle} />
           </h2>
@@ -258,7 +257,7 @@ export default async function Hero({ locale }: { locale: Locale }) {
             href={safeHref(locale, data.cta_secondary_href)}
             className="
               absolute bottom-5 right-5 sm:bottom-6 sm:right-6
-              rounded-full bg-white px-4 py-2 text-xs font-bold uppercase
+              rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-tight leading-[1.2]
               transition-colors
               hover:bg-[#FF5C5C]  hover:text-white
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#383333]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDE85]
