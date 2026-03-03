@@ -1,9 +1,10 @@
+// src/app/[locale]/(admin)/admin/orders/_components/OrdersFilters.tsx
 "use client";
 
-import { useEffect, useState, useTransition, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Search, X, Filter, Loader2 } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 
 type Props = {
   status: string;
@@ -21,12 +22,8 @@ export default function OrdersFilters({
   limit,
 }: Props) {
   const t = useTranslations("Admin.Orders");
-  const router = useRouter();
   const pathname = usePathname();
 
-  const [isPending, startTransition] = useTransition();
-
-  // Local state initialized directly from props
   const [filters, setFilters] = useState({
     status,
     shippingStatus,
@@ -34,47 +31,52 @@ export default function OrdersFilters({
     limit,
   });
 
-  // Sync local state when URL changes (e.g., back button or server-side update)
+  // Keep UI in sync when URL changes (server returns new props)
   useEffect(() => {
     setFilters({ status, shippingStatus, q, limit });
   }, [status, shippingStatus, q, limit]);
 
-  // Centralized navigation logic
-  const navigate = useCallback(
-    (updated: typeof filters) => {
+  const buildUrl = useCallback(
+    (f: typeof filters) => {
       const p = new URLSearchParams();
 
-      // We explicitly set the status (even "all") to avoid server-side defaults
-      p.set("status", updated.status);
-      p.set("limit", updated.limit);
+      p.set("status", f.status || "paid");
+      p.set("limit", f.limit || "50");
 
-      if (updated.shippingStatus)
-        p.set("shipping_status", updated.shippingStatus);
+      if (f.shippingStatus) p.set("shipping_status", f.shippingStatus);
 
-      const cleanQ = updated.q.trim();
+      const cleanQ = f.q.trim();
       if (cleanQ) p.set("q", cleanQ);
 
-      startTransition(() => {
-        router.push(`${pathname}?${p.toString()}`);
-      });
+      return `${pathname}?${p.toString()}`;
     },
-    [pathname, router],
+    [pathname],
+  );
+
+  const hardNavigate = useCallback(
+    (nextFilters: typeof filters) => {
+      const nextUrl = buildUrl(nextFilters);
+      const current = `${window.location.pathname}${window.location.search}`;
+      if (current === nextUrl) return;
+      window.location.assign(nextUrl);
+    },
+    [buildUrl],
   );
 
   const handleSelectChange = (key: keyof typeof filters, value: string) => {
     const next = { ...filters, [key]: value };
     setFilters(next);
-    navigate(next); // Apply dropdowns immediately
+    hardNavigate(next); // IMPORTANT: navigate using "next" values
   };
 
   const handleClear = () => {
-    const reset = { status: "paid", shippingStatus: "", q: "", limit: "50" };
-    setFilters(reset);
-    navigate(reset);
+    const next = { status: "paid", shippingStatus: "", q: "", limit: "50" };
+    setFilters(next);
+    hardNavigate(next);
   };
 
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm dark:bg-zinc-950 dark:border-zinc-800">
+    <div className="rounded-xl border bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <div className="flex flex-col gap-4 md:flex-row md:items-end">
         {/* Search */}
         <div className="flex-1 space-y-1.5">
@@ -88,7 +90,9 @@ export default function OrdersFilters({
               className="h-9 w-full rounded-md border border-zinc-200 bg-transparent pl-9 pr-3 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black dark:border-zinc-800 dark:focus:ring-white"
               value={filters.q}
               onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-              onKeyDown={(e) => e.key === "Enter" && navigate(filters)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") hardNavigate(filters);
+              }}
               placeholder={t("searchPlaceholder")}
             />
           </div>
@@ -153,24 +157,19 @@ export default function OrdersFilters({
         {/* Actions */}
         <div className="flex gap-2 pt-2 md:pt-0">
           <button
-            onClick={() => navigate(filters)}
-            disabled={isPending}
+            onClick={() => hardNavigate(filters)}
             type="button"
-            className="inline-flex h-9 items-center justify-center rounded-md bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+            className="inline-flex h-9 items-center justify-center rounded-md bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
-            {isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Filter className="mr-2 h-4 w-4" />
-            )}
+            <Filter className="mr-2 h-4 w-4" />
             {t("apply")}
           </button>
 
           <button
             onClick={handleClear}
-            disabled={isPending}
             type="button"
             className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 px-3 text-sm font-medium transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-800"
+            aria-label="Clear"
           >
             <X className="h-4 w-4" />
           </button>

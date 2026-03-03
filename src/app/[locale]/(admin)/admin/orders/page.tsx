@@ -1,3 +1,4 @@
+// src/app/[locale]/(admin)/admin/orders/page.tsx
 import Link from "next/link";
 import { requireAdmin } from "@/utils/auth/requireAdmin";
 import { formatDate, formatPrice, shortId } from "@/lib/helpers";
@@ -7,6 +8,9 @@ import { ShippingStatus, StatusBadge } from "@/components/UI/ShippingStatus";
 import { getTranslations } from "next-intl/server";
 import EmptyState from "../EmptyState";
 import { PackageOpen } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -34,7 +38,7 @@ function pickOne(v: string | string[] | undefined): string {
 function escapeForIlikeOr(input: string): string {
   return input
     .replaceAll("\\", "\\\\")
-    .replaceAll(",", "") 
+    .replaceAll(",", "")
     .replaceAll("%", "\\%")
     .replaceAll("_", "\\_")
     .trim();
@@ -57,10 +61,10 @@ export default async function Page({
   const sp = await searchParams;
   const t = await getTranslations("Admin.Orders");
 
-  // Determine status: if URL is empty, default to "paid". If URL is "all", use "all".
+  // Payment status: default to "paid" if missing; "all" means no status filter
   const rawStatus = pickOne(sp.status);
   const status = rawStatus || "paid";
-  
+
   const shippingStatus = pickOne(sp.shipping_status);
   const qRaw = pickOne(sp.q);
   const q = qRaw.trim();
@@ -76,11 +80,10 @@ export default async function Page({
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  // FIX: Only apply status filter if it's not "all"
   if (status !== "all") {
     query = query.eq("status", status);
   }
-  
+
   if (shippingStatus) {
     query = query.eq("shipping_status", shippingStatus);
   }
@@ -91,7 +94,9 @@ export default async function Page({
       query = query.eq("id", q);
     } else {
       const safe = escapeForIlikeOr(q);
-      query = query.or(`order_code.ilike.%${safe}%,shipping_phone.ilike.%${safe}%`);
+      query = query.or(
+        `order_code.ilike.%${safe}%,shipping_phone.ilike.%${safe}%`,
+      );
     }
   }
 
@@ -135,23 +140,48 @@ export default async function Page({
               <th className="h-10 px-4 font-medium">{t("action")}</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {orders.map((o) => (
-              <tr key={o.id} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
-                <td className="px-4 py-3 font-medium font-mono text-zinc-700 dark:text-zinc-300">
+              <tr
+                key={o.id}
+                className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+              >
+                <td className="px-4 py-3 font-mono font-medium text-zinc-700 dark:text-zinc-300">
                   {displayOrderId(o)}
                 </td>
-                <td className="px-4 py-3 text-zinc-500">{formatDate(o.created_at)}</td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-zinc-900 dark:text-zinc-100">{o.shipping_full_name}</div>
-                  <div className="text-xs text-zinc-500">{o.shipping_phone}{o.shipping_city ? ` • ${o.shipping_city}` : ""}</div>
+                <td className="px-4 py-3 text-zinc-500">
+                  {formatDate(o.created_at)}
                 </td>
-                <td className="px-4 py-3 text-right text-zinc-600">{o.items_count}</td>
-                <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-zinc-100">{formatPrice(Number(o.total), o.currency)}</td>
-                <td className="px-4 py-3"><PaymentStatus label={o.status} /></td>
-                <td className="px-4 py-3"><StatusBadge order={o} status={o.shipping_status as ShippingStatus | null} /></td>
                 <td className="px-4 py-3">
-                  <Link href={`/${locale}/admin/orders/${o.id}`} className="text-xs font-medium text-zinc-600 underline-offset-4 hover:text-black hover:underline dark:text-zinc-400 dark:hover:text-white">
+                  <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {o.shipping_full_name}
+                  </div>
+                  <div className="text-xs text-zinc-500">
+                    {o.shipping_phone}
+                    {o.shipping_city ? ` • ${o.shipping_city}` : ""}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right text-zinc-600">
+                  {o.items_count}
+                </td>
+                <td className="px-4 py-3 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                  {formatPrice(Number(o.total), o.currency)}
+                </td>
+                <td className="px-4 py-3">
+                  <PaymentStatus label={o.status} />
+                </td>
+                <td className="px-4 py-3">
+                  <StatusBadge
+                    order={o}
+                    status={o.shipping_status as ShippingStatus | null}
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/${locale}/admin/orders/${o.id}`}
+                    className="text-xs font-medium text-zinc-600 underline-offset-4 hover:text-black hover:underline dark:text-zinc-400 dark:hover:text-white"
+                  >
                     {t("view")}
                   </Link>
                 </td>
@@ -163,33 +193,59 @@ export default async function Page({
 
       <div className="space-y-4 md:hidden">
         {orders.map((o) => (
-          <div key={o.id} className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+          <div
+            key={o.id}
+            className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+          >
             <div className="mb-3 flex items-start justify-between border-b border-zinc-100 pb-3 dark:border-zinc-800">
               <div>
-                <Link href={`/${locale}/admin/orders/${o.id}`} className="font-mono text-sm font-bold text-blue-600">#{displayOrderId(o)}</Link>
-                <div className="text-xs text-zinc-500">{formatDate(o.created_at)}</div>
+                <Link
+                  href={`/${locale}/admin/orders/${o.id}`}
+                  className="font-mono text-sm font-bold text-blue-600"
+                >
+                  #{displayOrderId(o)}
+                </Link>
+                <div className="text-xs text-zinc-500">
+                  {formatDate(o.created_at)}
+                </div>
               </div>
               <div className="text-right">
-                <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{formatPrice(Number(o.total), o.currency)}</div>
-                <div className="text-xs text-zinc-500">{o.items_count} {t("items")}</div>
+                <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  {formatPrice(Number(o.total), o.currency)}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  {o.items_count} {t("items")}
+                </div>
               </div>
             </div>
+
             <div className="mb-4 grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs text-zinc-400 mb-1">{t("status")}</div>
+                <div className="mb-1 text-xs text-zinc-400">{t("status")}</div>
                 <PaymentStatus label={o.status} />
               </div>
               <div>
-                <div className="text-xs text-zinc-400 mb-1">{t("shipping")}</div>
-                <StatusBadge order={o} status={o.shipping_status as ShippingStatus | null} />
+                <div className="mb-1 text-xs text-zinc-400">
+                  {t("shipping")}
+                </div>
+                <StatusBadge
+                  order={o}
+                  status={o.shipping_status as ShippingStatus | null}
+                />
               </div>
             </div>
+
             <div className="flex items-center justify-between text-sm">
               <div className="flex flex-col">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">{o.shipping_full_name}</span>
-                <span className="text-zinc-500 text-xs">{o.shipping_phone}</span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {o.shipping_full_name}
+                </span>
+                <span className="text-xs text-zinc-500">{o.shipping_phone}</span>
               </div>
-              <Link href={`/${locale}/admin/orders/${o.id}`} className="rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-medium bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800">
+              <Link
+                href={`/${locale}/admin/orders/${o.id}`}
+                className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
+              >
                 {t("view")}
               </Link>
             </div>
