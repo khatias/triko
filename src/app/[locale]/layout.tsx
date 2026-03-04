@@ -3,7 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import Header from "@/components/Header/Header";
+// import Header from "@/components/Header/Header";
 import Footer from "@/components/footer/Footer";
 import { Noto_Sans_Georgian } from "next/font/google";
 import { Toaster } from "sonner";
@@ -52,9 +52,9 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <div className={`${noto.className} antialiased bg-white text-zinc-900`}>
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <PublicOnly>
+        {/* <PublicOnly>
           <Header locale={locale} />
-        </PublicOnly>
+        </PublicOnly> */}
 
         {children}
 
