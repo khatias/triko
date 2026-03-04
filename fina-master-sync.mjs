@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 import sharp from "sharp";
 import pLimit from "p-limit";
@@ -8,8 +7,11 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // keep private
 const BUCKET = process.env.BUCKET;
 
 const PREFIX = (process.env.PREFIX || "").replace(/^\/+/, "");
-const BACKUP_PREFIX = (process.env.BACKUP_PREFIX || "__backup_originals/").replace(/^\/+/, "");
-const DO_BACKUP = String(process.env.DO_BACKUP || "true").toLowerCase() === "true";
+const BACKUP_PREFIX = (
+  process.env.BACKUP_PREFIX || "__backup_originals/"
+).replace(/^\/+/, "");
+const DO_BACKUP =
+  String(process.env.DO_BACKUP || "true").toLowerCase() === "true";
 
 const MAX_WIDTH = Number(process.env.MAX_WIDTH || 1600);
 const QUALITY = Number(process.env.QUALITY || 78);
@@ -18,7 +20,9 @@ const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 const DRY_RUN = String(process.env.DRY_RUN || "true").toLowerCase() === "true";
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY || !BUCKET) {
-  console.error("Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, BUCKET");
+  console.error(
+    "Missing env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, BUCKET",
+  );
   process.exit(1);
 }
 
@@ -140,9 +144,13 @@ async function processOne(obj) {
   const files = await walk(PREFIX);
   console.log("Found:", files.length);
 
-  const results = await Promise.allSettled(files.map((f) => limit(() => processOne(f))));
+  const results = await Promise.allSettled(
+    files.map((f) => limit(() => processOne(f))),
+  );
 
-  let ok = 0, skipped = 0, failed = 0;
+  let ok = 0,
+    skipped = 0,
+    failed = 0;
 
   for (const r of results) {
     if (r.status === "fulfilled") {
