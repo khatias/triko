@@ -2,6 +2,7 @@
 "use server";
 
 import "server-only";
+import sharp from "sharp";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/utils/auth/requireAdmin";
@@ -67,12 +68,9 @@ export async function saveProductContentAction(
     const data = parsed.data;
 
     // ensure row exists
-    const { error: ensureErr } = await supabase.rpc(
-      "admin_product_content_ensure",
-      {
-        p_parent_code: data.parentCode,
-      },
-    );
+    const { error: ensureErr } = await supabase.rpc("admin_product_content_ensure", {
+      p_parent_code: data.parentCode,
+    });
     if (ensureErr) return err(ensureErr.message);
 
     const { error } = await supabase
@@ -90,9 +88,7 @@ export async function saveProductContentAction(
     if (error) return err(error.message);
 
     revalidatePath(`/${locale}/admin/products`);
-    revalidatePath(
-      `/${locale}/admin/products/${encodeURIComponent(data.parentCode)}`,
-    );
+    revalidatePath(`/${locale}/admin/products/${encodeURIComponent(data.parentCode)}`);
 
     return ok(null);
   } catch (e) {
@@ -129,19 +125,17 @@ export async function setProductPublishedAction(
 
 /** ---------- upload ---------- */
 
-const MAX_BYTES = 8 * 1024 * 1024; // 8MB
+const MAX_BYTES = 8 * 1024 * 1024; // 8MB (input file limit)
 const ALLOWED_MIME = new Set([
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/avif",
 ]);
-const ExtByMime: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/avif": "avif",
-};
+
+// Processing config
+const MAX_WIDTH = 1600; // Resize down to this width (keeps aspect ratio)
+const WEBP_QUALITY = 80; // 75-85 recommended
 
 export async function uploadProductPhotoAction(
   locale: string,
@@ -161,16 +155,29 @@ export async function uploadProductPhotoAction(
     if (file.size <= 0) return err("Empty file.");
     if (file.size > MAX_BYTES) return err("Image is too large (max 8MB).");
 
-    const safeParent = safeParentFolder(p_parent_code);
-    const ext = ExtByMime[file.type] ?? "jpg";
-    const objectPath = `products/${safeParent}/${crypto.randomUUID()}.${ext}`;
+    // Read file -> buffer
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
 
+    // Resize + convert to webp (auto-orient via EXIF, strip metadata)
+    const outputBuffer = await sharp(inputBuffer)
+      .rotate() // auto-orient
+      .resize({
+        width: MAX_WIDTH,
+        withoutEnlargement: true,
+      })
+      .webp({ quality: WEBP_QUALITY })
+      .toBuffer();
+
+    const safeParent = safeParentFolder(p_parent_code);
+    const objectPath = `products/${safeParent}/${crypto.randomUUID()}.webp`;
+
+    // Upload processed file
     const { error: upErr } = await supabase.storage
       .from("product-images")
-      .upload(objectPath, file, {
+      .upload(objectPath, outputBuffer, {
         cacheControl: "31536000",
         upsert: false,
-        contentType: file.type,
+        contentType: "image/webp",
       });
 
     if (upErr) return err(upErr.message);
