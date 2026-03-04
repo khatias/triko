@@ -6,11 +6,11 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig: NextConfig = {
   images: {
     qualities: [60, 70, 75, 80, 85, 90, 95, 100],
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**.supabase.co",
+        hostname: "jtllowjuurijdjllkzam.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
     ],
   },
