@@ -1,6 +1,8 @@
 // src/app/[locale]/(admin)/admin/site/_components/hero/heroActions.ts
 "use server";
 
+import "server-only";
+import sharp from "sharp";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { isString } from "@/utils/type-guards";
@@ -17,29 +19,53 @@ function normalizePath(p: string): string {
   return s.startsWith("/") ? s : `/${s}`;
 }
 
-function extFromFile(file: File): string {
-  const name = file.name || "";
-  const fromName = name.includes(".") ? name.split(".").pop() : "";
-  const fromType = (file.type || "").split("/")[1] || "";
-  const ext = (fromName || fromType || "jpg").toLowerCase();
-  return ext === "jpeg" ? "jpg" : ext;
+// Hero processing config
+const HERO_MAX_BYTES = 12 * 1024 * 1024; // input limit (you can change)
+const HERO_ALLOWED_MIME = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+]);
+
+const HERO_MAX_WIDTH_MAIN = 2400; // hero main can be bigger
+const HERO_MAX_WIDTH_SIDE = 1400; // side image usually smaller
+const HERO_WEBP_QUALITY = 82;
+
+function uniqueHeroPath(kind: "main" | "side"): string {
+  return `hero/${kind}-${Date.now()}-${crypto.randomUUID()}.webp`;
 }
 
-function uniqueHeroPath(kind: "main" | "side", file: File): string {
-  const ext = extFromFile(file);
-  return `hero/${kind}-${Date.now()}.${ext}`;
+async function processHeroImage(
+  file: File,
+  kind: "main" | "side",
+): Promise<{ buffer: Buffer; contentType: string }> {
+  if (!HERO_ALLOWED_MIME.has(file.type)) {
+    throw new Error("Unsupported image type. Use JPG, PNG, WEBP, or AVIF.");
+  }
+  if (file.size <= 0) throw new Error("Empty file.");
+  if (file.size > HERO_MAX_BYTES) throw new Error("Image is too large.");
+
+  const input = Buffer.from(await file.arrayBuffer());
+  const maxWidth = kind === "main" ? HERO_MAX_WIDTH_MAIN : HERO_MAX_WIDTH_SIDE;
+
+  const out = await sharp(input)
+    .rotate()
+    .resize({ width: maxWidth, withoutEnlargement: true })
+    .webp({ quality: HERO_WEBP_QUALITY })
+    .toBuffer();
+
+  return { buffer: out, contentType: "image/webp" };
 }
 
-async function uploadHeroImage(file: File, path: string) {
+async function uploadHeroImageBytes(bytes: Buffer, path: string, contentType: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.storage
-    .from("site")
-    .upload(path, file, {
-      upsert: true,
-      contentType: file.type || "image/jpeg",
-      cacheControl: "0",
-    });
+  const { data, error } = await supabase.storage.from("site").upload(path, bytes, {
+    upsert: true,
+    contentType,
+    cacheControl: "31536000",
+  });
 
   if (error) {
     console.error("Storage upload failed", { path, message: error.message });
@@ -71,18 +97,20 @@ export async function heroUpdateAction(formData: FormData) {
 
   if (existingErr) throw new Error(existingErr.message);
 
-  let image_main_path = existingRow?.image_main_path ?? "hero/main.jpg";
-  let image_side_path = existingRow?.image_side_path ?? "hero/side.jpg";
+  let image_main_path = existingRow?.image_main_path ?? "hero/main.webp";
+  let image_side_path = existingRow?.image_side_path ?? "hero/side.webp";
 
   if (imageMain && imageMain.size > 0) {
-    const newPath = uniqueHeroPath("main", imageMain);
-    await uploadHeroImage(imageMain, newPath);
+    const newPath = uniqueHeroPath("main");
+    const processed = await processHeroImage(imageMain, "main");
+    await uploadHeroImageBytes(processed.buffer, newPath, processed.contentType);
     image_main_path = newPath;
   }
 
   if (imageSide && imageSide.size > 0) {
-    const newPath = uniqueHeroPath("side", imageSide);
-    await uploadHeroImage(imageSide, newPath);
+    const newPath = uniqueHeroPath("side");
+    const processed = await processHeroImage(imageSide, "side");
+    await uploadHeroImageBytes(processed.buffer, newPath, processed.contentType);
     image_side_path = newPath;
   }
 
@@ -106,12 +134,8 @@ export async function heroUpdateAction(formData: FormData) {
     main_card_label_ka: isString(formData.get("main_card_label_ka"))
       ? formData.get("main_card_label_ka")
       : "",
-    title_en: isString(formData.get("title_en"))
-      ? formData.get("title_en")
-      : "",
-    title_ka: isString(formData.get("title_ka"))
-      ? formData.get("title_ka")
-      : "",
+    title_en: isString(formData.get("title_en")) ? formData.get("title_en") : "",
+    title_ka: isString(formData.get("title_ka")) ? formData.get("title_ka") : "",
 
     subtitle_en: isString(formData.get("subtitle_en"))
       ? formData.get("subtitle_en")
@@ -133,12 +157,8 @@ export async function heroUpdateAction(formData: FormData) {
       })(),
     ),
 
-    info_tag_en: isString(formData.get("info_tag_en"))
-      ? formData.get("info_tag_en")
-      : "",
-    info_tag_ka: isString(formData.get("info_tag_ka"))
-      ? formData.get("info_tag_ka")
-      : "",
+    info_tag_en: isString(formData.get("info_tag_en")) ? formData.get("info_tag_en") : "",
+    info_tag_ka: isString(formData.get("info_tag_ka")) ? formData.get("info_tag_ka") : "",
 
     info_title_en: isString(formData.get("info_title_en"))
       ? formData.get("info_title_en")
