@@ -283,11 +283,11 @@ export default async function OrderPage({
   const supabase = await createClient();
   const t = await getTranslations("Profile.orders");
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const claimsResult = await supabase.auth.getClaims();
 
-  if (!user) {
+  const userId = claimsResult.data?.claims?.sub;
+
+  if (!userId) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm rounded-3xl border border-gray-200 bg-white p-8 text-center">
@@ -310,7 +310,7 @@ export default async function OrderPage({
     .from("orders")
     .select("id,status,shipping_status,items_count,subtotal,discount_total,shipping_total,total,created_at,currency")
     .eq("id", orderIdStr)
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .maybeSingle<OrderRow>();
 
   if (orderError) {

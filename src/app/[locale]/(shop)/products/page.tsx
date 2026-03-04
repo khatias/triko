@@ -7,17 +7,30 @@ import type { CatalogPageResult } from "@/lib/db/products";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { getTranslations } from "next-intl/server";
 import EmptyState from "@/components/UI/EmptyState";
+import { getVisibleGroups, type ShopGroup } from "@/lib/db/groups";
+import FiltersDrawer from "@/components/products/FiltersDrawer";
+import Filter from "@/components/products/Filter";
+import { collectDescendantGroupIds } from "@/lib/groups-tree";
+
+export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    q?: string;
+    sizes?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    sort?: string;
+    categoryId?: string;
+  }>;
 };
 
 export async function generateMetadata(ctx: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { slug } = await ctx.params;
-
   return generateLocalizedMetadata(ctx, {
     namespace: "Products",
     path: `/products/${slug}`,
@@ -35,6 +48,29 @@ function buildHref(sp: URLSearchParams, nextPage: number) {
   return qs ? `?${qs}` : "?page=1";
 }
 
+function parseIntOrNull(v?: string) {
+  if (!v) return null;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : null;
+}
+
+type GroupRow = Pick<ShopGroup, "group_id" | "parent_group_id">;
+
+function buildQueryParams(spRaw: Awaited<PageProps["searchParams"]>) {
+  const sp = new URLSearchParams();
+
+  const q = clampQuery(spRaw.q ?? "");
+  if (q) sp.set("q", q);
+
+  if (spRaw.sizes) sp.set("sizes", spRaw.sizes);
+  if (spRaw.minPrice) sp.set("minPrice", spRaw.minPrice);
+  if (spRaw.maxPrice) sp.set("maxPrice", spRaw.maxPrice);
+  if (spRaw.sort) sp.set("sort", spRaw.sort);
+  if (spRaw.categoryId) sp.set("categoryId", spRaw.categoryId);
+
+  return sp;
+}
+
 export default async function ProductsPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
   const spRaw = await searchParams;
@@ -43,134 +79,171 @@ export default async function ProductsPage({ params, searchParams }: PageProps) 
   const currentPage = clampPositiveInt(spRaw.page ?? "1", 1);
 
   const q = clampQuery(spRaw.q ?? "");
+  const sizes = spRaw.sizes ? spRaw.sizes.split(",") : null;
+  const minPrice = spRaw.minPrice ? Number(spRaw.minPrice) : null;
+  const maxPrice = spRaw.maxPrice ? Number(spRaw.maxPrice) : null;
+  const sort = (spRaw.sort as "price_asc" | "price_desc" | "newest") || null;
 
-  const h = await getTranslations({ locale, namespace: "Helpers" });
-  const p = await getTranslations({ locale, namespace: "Products" });
+  const [groups, h, p] = await Promise.all([
+    getVisibleGroups(),
+    getTranslations({ locale, namespace: "Helpers" }),
+    getTranslations({ locale, namespace: "Products" }),
+  ]);
+
+  const selectedId = parseIntOrNull(spRaw.categoryId);
+  let groupIds: number[] | null = null;
+
+  if (selectedId != null) {
+    const rows: GroupRow[] = groups.map((g) => ({
+      group_id: g.group_id,
+      parent_group_id: g.parent_group_id ?? null,
+    }));
+
+    const descendants = collectDescendantGroupIds(rows, selectedId);
+    groupIds = [selectedId, ...descendants];
+  }
 
   const data = (await getCatalogProductsGrouped({
     page: currentPage,
     pageSize,
-    q: q.length ? q : null,
+    q: q ? q : null,
+    sizes,
+    minPrice: Number.isFinite(minPrice as number) ? minPrice : null,
+    maxPrice: Number.isFinite(maxPrice as number) ? maxPrice : null,
+    sort,
+    groupIds,
   })) as CatalogPageResult;
 
   const items = data.items?.filter(Boolean) ?? [];
-  const totalPages = Math.max(1, data.totalPages ?? 1);
 
-  const sp = new URLSearchParams();
-  if (q) sp.set("q", q);
+  // ✅ NEW: no totalPages, use hasNextPage
+  const hasPrevPage = currentPage > 1;
+  const hasNextPage = Boolean(data.hasNextPage);
 
+  const sp = buildQueryParams(spRaw);
   const prevHref = buildHref(sp, Math.max(1, currentPage - 1));
-  const nextHref = buildHref(sp, Math.min(totalPages, currentPage + 1));
+  const nextHref = buildHref(sp, currentPage + 1); // ✅ don't clamp
 
-  if (items.length === 0) {
-    const base = `/${locale}`;
-    const primaryHref = buildHref(sp, 1);
+  const base = `/${locale}`;
+  const primaryHref = `/${locale}/products`;
 
+  function HeaderBar() {
     return (
-      <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
-        <header className="w-full border-b border-stone-100 py-10">
-          <div className={`${wrap} flex flex-col items-center gap-10`}>
-            <div className="w-full text-center">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-stone-400">
-                {h("page")} {currentPage}
-              </p>
-            </div>
-          </div>
-        </header>
-
-        <main className={`${wrap} py-20`}>
-          <EmptyState
-            title={p("empty.title")}
-            description={p("empty.description")}
-            primaryAction={{
-              label: p("empty.primary"),
-              href: primaryHref,
-            }}
-            secondaryAction={{
-              label: p("empty.secondary"),
-              href: `${base}/products`,
-            }}
-          />
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white text-stone-900 selection:bg-stone-100">
-      <header className="w-full border-b border-stone-100 py-10">
-        <div className={`${wrap} flex flex-col items-center gap-10`}>
-          <nav className="flex w-full items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]">
-            <div className="flex gap-10 text-stone-400">
+      <header className="border-b border-stone-100">
+        <div className={`${wrap} h-20 flex items-center`}>
+          <nav className="w-full flex items-center justify-between text-[10px] font-medium uppercase tracking-wider">
+            <div className="flex gap-8 text-stone-400 min-w-40">
               <Link
                 href={prevHref}
+                prefetch={false}
                 className={
-                  currentPage === 1
+                  !hasPrevPage
                     ? "opacity-20 pointer-events-none"
-                    : "hover:text-black transition-colors"
+                    : "hover:text-stone-900 transition-colors"
                 }
               >
                 {h("previous")}
               </Link>
+
               <Link
                 href={nextHref}
+                prefetch={false}
                 className={
-                  currentPage === totalPages
+                  !hasNextPage
                     ? "opacity-20 pointer-events-none"
-                    : "hover:text-black transition-colors"
+                    : "hover:text-stone-900 transition-colors"
                 }
               >
                 {h("next")}
               </Link>
             </div>
 
-            <div className="hidden md:block font-medium">
-              {h("page")} {currentPage} <span className="text-stone-200 mx-2">/</span>{" "}
-              {totalPages}
+            {/* ✅ remove totalPages display (or change it) */}
+            <div className="hidden md:block text-stone-500 tabular-nums min-w-35 text-center">
+              {h("page")} {currentPage}
             </div>
 
-            <button className="hover:line-through">{h("filters")}</button>
+            <div className="lg:hidden min-w-14 flex justify-end">
+              <FiltersDrawer groups={groups} />
+            </div>
+
+            <div className="hidden lg:block min-w-14" aria-hidden />
           </nav>
         </div>
       </header>
+    );
+  }
 
-      <main className={`${wrap} py-20`}>
-        <div className="grid grid-cols-1 gap-x-10 gap-y-24 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((pRow, idx) => (
-            <ProductCard
-              key={pRow.parent_code || idx}
-              product={pRow}
-              locale={locale}
-              revealDelay={idx % 3}
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-white text-stone-900">
+        <HeaderBar />
+        <main className={`${wrap} py-14 lg:flex lg:gap-12`}>
+          <aside className="hidden lg:block w-70 shrink-0">
+            <Filter groups={groups} />
+          </aside>
+          <div className="flex-1">
+            <EmptyState
+              title={p("empty.title")}
+              description={p("empty.description")}
+              primaryAction={{ label: p("empty.primary"), href: primaryHref }}
+              secondaryAction={{
+                label: p("empty.secondary"),
+                href: `${base}/products`,
+              }}
             />
-          ))}
-        </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-        <footer className="mt-40 flex flex-col items-center py-20 border-t border-stone-100">
-          <div className="flex items-center gap-16">
+  return (
+    <div className="min-h-screen bg-white text-stone-900">
+      <HeaderBar />
+      <main className={`${wrap} py-14 flex flex-col lg:flex-row gap-12`}>
+        <aside className="hidden lg:block w-70 shrink-0">
+          <Filter groups={groups} />
+        </aside>
+
+        <div className="flex-1">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {items.map((row, idx) => (
+              <ProductCard
+                key={row.parent_code || idx}
+                product={row}
+                locale={locale}
+                revealDelay={idx % 3}
+              />
+            ))}
+          </div>
+
+          <footer className="mt-20 flex justify-center gap-8 pt-8 border-t border-stone-100">
             <Link
               href={prevHref}
-              className={`text-[10px] uppercase tracking-[0.4em] ${
-                currentPage === 1
+              prefetch={false}
+              className={`text-xs uppercase tracking-wider ${
+                !hasPrevPage
                   ? "opacity-20 pointer-events-none"
-                  : "hover:underline underline-offset-8"
+                  : "text-stone-500 hover:text-stone-900 transition-colors"
               }`}
             >
               {h("backToStart")}
             </Link>
-            <div className="h-px w-20 bg-stone-100" />
+
             <Link
               href={nextHref}
-              className={`text-[10px] uppercase tracking-[0.4em] ${
-                currentPage === totalPages
+              prefetch={false}
+              className={`text-xs uppercase tracking-wider ${
+                !hasNextPage
                   ? "opacity-20 pointer-events-none"
-                  : "hover:underline underline-offset-8"
+                  : "text-stone-500 hover:text-stone-900 transition-colors"
               }`}
             >
               {h("loadMore")}
             </Link>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </main>
     </div>
   );

@@ -33,7 +33,7 @@ export default async function Home({
     <div className="bg-[#FDFBF9] overflow-hidden">
       <Hero locale={locale} />
       <StatusStrip />
-      <ProductSlider catalog={catalog} />
+      <ProductSlider catalog={catalog} locale={locale}  />
 
       <CategoryAccordion featuredGroups={featuredGroups} locale={locale} />
       <StorySlice />

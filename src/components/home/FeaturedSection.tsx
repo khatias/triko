@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowUpRightIcon } from "@heroicons/react/24/solid";
 import { Section } from "../UI/primitives";
 import { useMemo, useState } from "react";
@@ -49,7 +49,7 @@ export default function CategoryAccordion({
   return (
     <Section className="py-8 sm:py-12">
       <div className="mb-10 flex items-center justify-between px-2">
-        <h2 className="text-3xl font-black uppercase text-[#383333] sm:text-5xl">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-[#FF5C5C] ">
           {t("title")}
         </h2>
         <span className="hidden text-xs font-bold uppercase tracking-widest text-stone-400 sm:block">
@@ -142,7 +142,7 @@ export default function CategoryAccordion({
                         href={group.slug_en ? `/${group.slug_en}` : "#"}
                         className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-xs font-bold uppercase text-[#383333] transition-colors hover:bg-[#FFDE85]"
                       >
-                        {t("explore") } <ArrowUpRightIcon className="h-4 w-4" />
+                        {t("explore")} <ArrowUpRightIcon className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -220,15 +220,16 @@ export default function CategoryAccordion({
                 >
                   <div className="w-full rounded-3xl border border-white/20 bg-black/20 p-6 backdrop-blur-md shadow-2xl">
                     <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-white/80 drop-shadow">
-                      0{group.group_id} — {group.name_en}
+                      0{group.group_id} — {pickGroupName(group, locale)}
                     </span>
 
                     <h3 className="text-4xl font-black uppercase leading-none text-white drop-shadow-lg">
-                      {group.name_en}
+                    
+                    {pickGroupName(group, locale)}
                     </h3>
 
                     <Link
-                      href={group.slug_en ? `/shop/${group.slug_en}` : "#"}
+                      href={group.slug_en ? `/${group.slug_en}` : "#"}
                       className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3.5 text-sm font-bold uppercase text-[#383333] transition-colors active:scale-95 active:bg-[#FFDE85]"
                     >
                       Explore <ArrowUpRightIcon className="h-4 w-4" />

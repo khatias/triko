@@ -14,9 +14,9 @@
     },
 
     "StatusStrip": {
-      "seasonValue": "ყოველდღიური კომფორტი",
+      "seasonValue": "დამზადებულია საქართველოში",
       "featureLeft": "პრემიუმ ხარისხი",
-      "featureRight": "მიწოდება საქართველოს მასშტაბით",
+      "featureRight": "მიწოდება მსოფლიოს მასშტაბით",
       "locationCode": "[ TBS / GEO ]",
       "scarcity": "ლიმიტირებული მარაგი",
       "mobileLeft": "ბამბის ნაზავი",
@@ -90,7 +90,7 @@
     "viewAll": "ყველას ნახვა",
     "all": "ყველა პროდუქტი",
     "searchPlaceholder": "ძებნა...",
-    "end":"დასასრული"
+    "end": "დასასრული"
   },
 
   "Footer": {
@@ -100,10 +100,14 @@
       "storeTitle": "ჩვენი მაღაზიები",
       "storesAria": "მაღაზიების მისამართები"
     },
+    "contact": {
+      "call": "დარეკვა",
+      "callAria": "დაგვირეკე"
+    },
     "Newsletter": {
-      "title": "გამოიწერე რომ  გამოგრჩეს",
+      "title": "გამოიწერე რომ არ  გამოგრჩეს",
       "description": "გამოიწერე და პირველმა გაიგე ახალი პროდუქციის და შეთავაზებების შესახებ.",
-      "placeholder": "შეიყვანეთ თქვენი ელ. ფოსტა",
+      "placeholder": "შეიყვანეთ  ელ. ფოსტა",
       "button": "გამოწერა"
     },
     "nav": {
@@ -176,6 +180,8 @@
     "forgotPasswordSubtitle": "ჩაწერეთ ელფოსტა და გამოგიგზავნით აღდგენის ბმულს.",
     "resetPasswordTitle": "პაროლის აღდგენა",
     "resetPasswordSubtitle": "მიუთითეთ ახალი პაროლი და დაადასტურეთ.",
+    "preferToCall": "გირჩევნიათ საუბარი? დაგვირეკეთ: ",
+    "trustHint": "თქვენი მონაცემები დაცულია",
     "fields": {
       "fullName": "სრული სახელი",
       "fullNamePlaceholder": "შეიყვანეთ თქვენი  სახელი",
@@ -259,7 +265,7 @@
     "OUT_OF_STOCK": "ზოგი პროდუქტი ამ მომენტში ხელმისაწვდომი არ არის.",
     "CHECKOUT_FAILED": "გადახდის პროცესი ვერ შესრულდა. სცადეთ ხელახლა.",
     "PAYMENT_INIT_FAILED": "გადახდის დაწყება ვერ მოხერხდა. სცადეთ ხელახლა.",
-
+    "botDetected": "ჩვენმა სისტემამ ეჭვი შეიტანა, რომ თქვენ არ ხართ ადამიანი. თუ ეს შეცდომაა, გთხოვთ, სცადეთ მოგვიანებით.",
     "OOS_DETAILS_TITLE": "პროდუქტები, რომელთა დაჯავშნაც ვერ მოხერხდა",
     "OOS_QTY_LINE": "მოთხოვნილი: {requested},  ახლა ხელმისაწვდომია: {available}",
 
@@ -285,7 +291,8 @@
     "selectedAddrId": "გთხოვთ, აირჩიეთ ვალიდური შენახული მისამართი.",
     "regionTooLong": "რეგიონის დასახელება ძალიან გრძელია.",
     "regionMustContainLettersOrNumbers": "გთხოვთ შეიყვანოთ სწორი რეგიონი.",
-    "phoneInvalidCharacters": "მობილურის ნომრის ველი უნდა შეიცავდეს მხოლოდ რიცხვით სიმბოლოებს."
+    "phoneInvalidCharacters": "მობილურის ნომრის ველი უნდა შეიცავდეს მხოლოდ რიცხვით სიმბოლოებს.",
+    "fullNameInvalid": "გთხოვთ, შეიყვანოთ სრული სახელი."
   },
   "Login": {
     "meta": {
@@ -297,20 +304,20 @@
   "SignUp": {
     "meta": {
       "title": "რეგისტრაცია — Triko",
-      "description": "შექმენით Triko-ს ანგარიში, რათა დააკვირდეთ შეკვეთებს, მართოთ პროფილი და შეინახოთ რჩეულები. სწრაფი და უსაფრთხო რეგისტრაცია ელფოსტით ან Google-ით."
+      "description": "შექმენით Triko-ს ანგარიში, რათა თვალყური ადევნოთ შეკვეთებს, მართოთ პროფილი და შეინახოთ რჩეულები. სწრაფი და უსაფრთხო რეგისტრაცია ელფოსტით ან Google-ით."
     }
   },
 
   "ForgotPassword": {
     "meta": {
       "title": "დაგავიწყდათ პაროლი — Triko ანგარიშის აღდგენა",
-      "description": "შეიყვანეთ ელფოსტა და მიიღეთ უსაფრთხო აღდგენის ბმული Triko-სგან. სწრაფად დაიბრუნეთ წვდომა პროფილზე, შეკვეთებსა და რჩეულებზე."
+      "description": "შეიყვანეთ ელფოსტა და მიიღეთ პაროლის  აღდგენის ბმული Triko-სგან.  დაიბრუნეთ წვდომა პროფილზე, შეკვეთებსა და თქვენს რჩეულ პროდუქციაზე."
     }
   },
   "ResetPassword": {
     "meta": {
       "title": "ახალი პაროლის დაყენება — Triko",
-      "description": "დააყენეთ ძლიერი ახალი პაროლი და დაასრულეთ Triko-ზე აღდგენის პროცესი. შემდეგ შედით პროფილში შეკვეთებისა და რჩეულების სამართავად."
+      "description": "დააყენეთ ახალი პაროლი და შედით თქვენს ანგარიშში."
     }
   },
 
@@ -351,8 +358,8 @@
       "readButton": "წაიკითხე ჩვენი ისტორია",
       "title": "ჩვენი მიზანი",
       "slogan1": "ჩვენი მიზანია შევქმნათ პროდუქტი",
-      "slogan2": "ყველასთვის",
-      "slogan3": "ხარისხის, დათმობის ",
+      "slogan2": "ყველასთვის,",
+      "slogan3": "ხარისხის დათმობის ",
       "slogan4": "  გარეშე"
     },
     "philosophy": {
@@ -385,21 +392,6 @@
           "title": "თბილისი · გალერია თბილისი",
           "address": "შოთა რუსთაველის გამზირი 2/4, მე-3 სართული",
           "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
-        },
-        "store2": {
-          "title": "თბილისი · თბილისი მოლი",
-          "address": "მე-16 კმ, დავით აღმაშენებლის ხეივანი, მე-2 სართული",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Tbilisi+Mall+16km+Agmashenebeli+Ave"
-        },
-        "store3": {
-          "title": "თბილისი · გლდანი მოლი",
-          "address": "მეტრო ახმეტელის მიმდებარედ, II სართული",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Gldani+Mall+Tbilisi"
-        },
-        "store4": {
-          "title": "ქუთაისი",
-          "address": "თამარ მეფის 14 (კინო ჯორჯიას კორპუსის მე-2 სართული)",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Kutaisi+Tamar+Mepe+14"
         }
       }
     },
@@ -554,7 +546,19 @@
     "previous": "წინა",
     "page": "გვერდი",
     "filters": "ფილტრები",
+    "clear": "გასუფთავება",
+    "category": "კატეგორია",
+    "categories": "კატეგორიები",
+    "allCategories": "ყველა კატეგორია",
     "sortBy": "სორტირება",
+    "recommended": "რეკომენდირებული",
+    "priceLowHigh": "ფასი: ზრდადობით",
+    "priceHighLow": "ფასი: კლებადობით",
+    "size": "ზომა",
+    "priceRange": "ფასის დიაპაზონი",
+    "min": "მინ",
+    "max": "მაქს",
+    "showResults": "შედეგების ჩვენება",
     "noImages": "სურათი არ არის ხელმისაწვდომი",
     "backToStart": "დაბრუნება დასაწყისში",
     "noProducts": "პროდუქტები ვერ მოიძებნა.",
@@ -564,6 +568,7 @@
     "noProductsFound": "თქვენი კრიტერიუმებით პროდუქტი ვერ მოიძებნა."
   },
   "Products": {
+    "title": "პროდუქტები",
     "meta": {
       "title": "პროდუქტები — Triko",
       "description": "აღმოაჩინე ტრიკოს კომფორტული შარვლების, პიჟამოების და ლაუნჯვერის კოლექცია, რომელიც შექმნილია ყოველდღიური მოხმარებისთვის. შეიძინეთ ახლა რბილი ქსოვილებისა და გააზრებული ზომებისთვის."
@@ -678,6 +683,20 @@
   },
 
   "Admin": {
+       "Bundles":{
+        "createBundle": "შექმენი ორეული",
+        "editBundle": "ბანდა რედაქტირება",
+        "topParent": "ზედას კოდი",
+        "selectTop": "აირჩიეთ ზედა კოდი",
+        "selectBottom": "აირჩიეთ ქვედა კოდი",
+        "bottomParent": "ქვედა კოდი",
+        "nameKa": "სახელი (ქართ.)",
+        "nameEn": "სახელი (ინგ.)",
+        "topandBottomCantBeSame": "ზედა და ქვედა კოდი არ უნდა ემთხვეოდეს ერთმანეთს",
+        "availableSzies": "ხელმისაწვდომი ზომები",
+        "sizePreview": "ზომები",
+        "searchPlaceholder": "მოძებნე parent code -ით"
+    },
     "Orders": {
       "title": "შეკვეთები",
       "subtitle": "მართეთ თქვენი მაღაზიის შეკვეთები. ნაჩვენებია {count} შედეგი.",
@@ -759,14 +778,32 @@
       "actions": "ქმედება",
       "total": "სულ ",
       "finaName": "ფინას სახელი",
-      "noGroups": "კატეგორიები ვერ მოიძებნა."
+      "noGroups": "კატეგორიები ვერ მოიძებნა.",
+      "active": "აქტიური",
+      "inactive": "არააქტიური",
+      "activeHint": "ფრონტზე ჩანს",
+      "featuredTitle": "მთავარ გვერდზე",
+      "featuredEnable": "ჩართვა",
+      "featuredOrder": "რიგი",
+      "featuredPreview": "პრევიუ",
+      "featuredNoImage": "სურათი არ არის",
+      "featuredUpload": "სურათის ატვირთვა",
+      "featuredReplace": "სურათის შეცვლა",
+      "featuredClear": "სურათის წაშლა",
+      "featuredOpen": "სურათის ნახვა",
+      "featuredUploading": "იტვირთება…",
+      "featuredAltEn": "Alt ტექსტი EN (ხელმისაწვდომობა + SEO)",
+      "featuredAltKa": "Alt ტექსტი KA (ხელმისაწვდომობა + SEO)",
+      "featuredPath": "Storage მისამართი",
+      "featuredNoImageHint": "ჯერ სურათი არ არის. ატვირთე განიერი ბანერის ტიპის სურათი."
     },
     "items": {
       "dashboard": "დეშბორდი",
       "orders": "შეკვეთები",
       "products": "პროდუქტები",
       "groups": "ჯგუფები",
-      "site": "საიტის პარამეტრები"
+      "site": "საიტის პარამეტრები",
+      "sets": "ორეულები"
     },
     "sideBar": {
       "title": "ადმინის პანელი",
@@ -816,7 +853,17 @@
       "ctaLabelEN": " CTA (ინგლისური)",
       "ctaLabelKA": " CTA (ქართული)",
       "ctaURL": " CTA URL",
-      "usePath": "შეიყვანეთ მხოლოდ შიდა ლინკი (მაგ: /products) სრული URL-ის ნაცვლად"
+      "usePath": "შეიყვანეთ მხოლოდ შიდა ლინკი (მაგ: /products) სრული URL-ის ნაცვლად",
+      "featuredProductsTitle": "გამორჩეული პროდუქტები",
+      "featuredProductsDesc": "მთავარი გვერდის გამორჩეული პროდუქტები parent_code, რიგი და აქტიურობა.",
+      "featuredProductsAddPlaceholder": "parent_code მაგალითად X262",
+      "noItems": "ჩანაწერი არ არის",
+      "add": "დამატება",
+
+      "featuredOrder": "რიგი",
+      "searchLabel": "ძებნა",
+      "total": "სულ",
+      "actions": "ქმედებები"
     },
     "Products": {
       "title": "პროდუქტების მართვა",
@@ -824,7 +871,8 @@
       "needAttention": "{count} საჭიროებს ყურადღებას",
       "hiddenCount": "{count} დამალულია",
       "liveCount": "{count} აქტიურია",
-
+      "clearFilters": "ფილტრების გასუფთავება",
+      "reset": "გასუფთავება",
       "tabs": { "inbox": "ინბოქსი", "hidden": "დამალული", "live": "აქტიური" },
 
       "filtersTitle": "ფილტრები და ძიება",
@@ -858,8 +906,6 @@
         "title": "სათაური",
         "desc": "აღწერა"
       },
-
-      "reset": "ფილტრების გასუფთავება",
 
       "empty": {
         "title": "პროდუქტები ვერ მოიძებნა",

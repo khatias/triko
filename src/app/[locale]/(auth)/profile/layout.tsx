@@ -1,8 +1,9 @@
-// app/[locale]/(auth)/profile/layout.tsx
 import React from "react";
 import SidebarNav from "../profile/_components/SidebarNav";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { createClient } from "@/utils/supabase/server";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function generateMetadata(ctx: {
   params: Promise<{ locale: string }>;
@@ -16,34 +17,42 @@ export async function generateMetadata(ctx: {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+async function getNextPath() {
+  return (await headers()).get("next-url") || "/profile";
+}
+
 export default async function ProfileLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
-  let fullName = "Guest";
+  const { locale } = await params;
 
-  try {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    const userRes = await supabase.auth.getUser();
-    const user = userRes.data?.user;
+  const { data, error: claimsErr } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
 
-    if (user) {
-      const { data: profile, error: profileErr } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (!profileErr && profile?.full_name) fullName = profile.full_name;
-    }
-  } catch (e) {
-    console.error("ProfileLayout: failed to load user/profile", e);
+  if (claimsErr || !userId) {
+    redirect(
+      `/${locale}/login?next=${encodeURIComponent(await getNextPath())}`,
+    );
   }
 
+  let fullName = "Guest";
+
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!profileErr && profile?.full_name) fullName = profile.full_name;
+
   return (
-    <main className="min-h-[60vh] container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10 mb-40">
+    <main className="min-h-screen container mx-auto px-4 md:px-8 lg:px-16 xl:px-20 2xl:px-32 py-6 lg:py-10 mb-40">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         <aside className="hidden lg:block lg:col-span-3">
           <SidebarNav fullName={fullName} />

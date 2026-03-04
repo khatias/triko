@@ -13,7 +13,10 @@ import {
 } from "@/lib/helpers";
 import { useTranslations } from "next-intl";
 import { useAddToCart } from "@/lib/cart/useAddToCart";
-import { getBundleFinaIdsFromVariant, getFinaIdFromVariant } from "@/utils/fina/ids";
+import {
+  getBundleFinaIdsFromVariant,
+  getFinaIdFromVariant,
+} from "@/utils/fina/ids";
 
 function formatRange(
   min: number | null | undefined,
@@ -176,7 +179,9 @@ export default function ProductCard({
                       const v = row.variant;
 
                       const singleId = v ? getFinaIdFromVariant(v) : null;
-                      const bundleIds = v ? getBundleFinaIdsFromVariant(v) : null;
+                      const bundleIds = v
+                        ? getBundleFinaIdsFromVariant(v)
+                        : null;
 
                       const disabled =
                         !row.inStock ||
@@ -222,7 +227,9 @@ export default function ProductCard({
                               : "ring-black/5 text-stone-900 hover:bg-stone-900 hover:text-white",
                           ].join(" ")}
                           aria-label={`Add size ${row.label} to bag`}
-                          title={disabled ? "Not available" : `Add ${row.label}`}
+                          title={
+                            disabled ? "Not available" : `Add ${row.label}`
+                          }
                         >
                           {isSinglePending || isBundlePending ? "…" : row.label}
                         </button>
@@ -253,9 +260,6 @@ export default function ProductCard({
                 <h3 className="truncate text-[13px] font-medium uppercase tracking-[0.2em] text-stone-900">
                   {title}
                 </h3>
-                <p className="text-[10px] font-light uppercase tracking-[0.3em] text-stone-400">
-                  {variants?.[0]?.name ?? "Permanent collection"}
-                </p>
               </div>
 
               {/* PRICE */}

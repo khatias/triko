@@ -11,11 +11,11 @@ export default async function AccountPage() {
   const t = await getTranslations("Profile");
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) {
+  const { data, error: claimsErr } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+
+  if (claimsErr || !userId) {
     return (
       <div className="rounded-2xl border p-6">
         <p>{t("account.noUser")}</p>
@@ -26,7 +26,7 @@ export default async function AccountPage() {
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .single();
 
   const fullName = profile?.full_name ?? "";
@@ -38,7 +38,6 @@ export default async function AccountPage() {
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white p-6 min-h-full ">
       <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-8">
-        {" "}
         {t("account.title")}
       </h2>
 

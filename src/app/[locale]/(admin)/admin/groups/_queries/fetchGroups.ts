@@ -11,6 +11,12 @@ export type AdminGroupRow = {
   slug_en: string | null;
   raw: unknown;
   updated_at: string | null;
+  is_active: boolean;
+  featured_home: boolean;
+  featured_home_order: number | null;
+  featured_home_image_path: string | null;
+  featured_home_alt_en: string | null;
+  featured_home_alt_ka: string | null;
 };
 
 export async function fetchAdminGroups(locale: string) {
@@ -19,7 +25,7 @@ export async function fetchAdminGroups(locale: string) {
   const { data, error } = await supabase
     .from("admin_groups_view")
     .select(
-      "idx, group_id, fina_name, name_en, name_ka, sort_order, is_visible, slug_en, raw, updated_at",
+      "idx, group_id, fina_name, name_en, name_ka, sort_order, is_visible, slug_en, raw, updated_at, is_active, featured_home, featured_home_order, featured_home_image_path, featured_home_alt_en, featured_home_alt_ka"
     )
     .order("idx", { ascending: true });
 

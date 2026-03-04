@@ -52,7 +52,7 @@ export default function ForgotPasswordForm() {
     });
 
     if (!result.ok) {
-      setErrorMessage(result.message ?? tForm("errors.unknown"));
+      setErrorMessage(result.message ?? tErrors("unknown"));
 
       // ✅ keep email, clear honeypot
       reset(

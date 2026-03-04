@@ -1,3 +1,4 @@
+// src/app/[locale]/(admin)/admin/products/[parentCode]/page.tsx
 import "server-only";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -12,8 +13,13 @@ export default async function Page({
 }: {
   params: Promise<{ locale: string; parentCode: string }>;
 }) {
-  const { locale, parentCode } = await params;
+  const { locale, parentCode: raw } = await params;
   const t = await getTranslations("Admin.ProductEdit");
+
+  // Fix URL encoding issues:
+  // - decode %xx sequences
+  // - convert spaces back to "+" (some routers/servers treat "+" as space)
+  const parentCode = decodeURIComponent(raw).replaceAll(" ", "+");
 
   const row = await fetchAdminParentProduct(locale, parentCode);
   if (!row) return notFound();

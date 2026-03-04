@@ -7,22 +7,18 @@ export default function StatusStrip() {
   const separator = <span className="mx-10 opacity-20">—</span>;
 
   const content = (
-    <div className="flex items-center text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">
+    <div className="flex items-center text-[10px] font-bold uppercase tracking-[0.25em] text-white">
       <span>{t("seasonValue")}</span>
       {separator}
       <span>{t("featureLeft")}</span>
       {separator}
-      <span>{t("featureRight")}</span>
-      {separator}
-      <span className="text-[#FF5C5C]">{t("scarcity")}</span>
-      {separator}
-      <span className="font-mono opacity-40">{t("locationCode")}</span>
+      <span className="text-blue-600">{t("featureRight")}</span>
       {separator}
     </div>
   );
 
   return (
-    <div className="w-full overflow-hidden bg-[#383333] py-3 border-t border-white/5">
+    <div className="w-full overflow-hidden bg-orange-300 py-3 border-t border-white/5">
       <div className="flex w-max animate-marquee whitespace-nowrap">
         {/* Render 3 times to ensure no gaps on large screens */}
         {[...Array(3)].map((_, i) => (

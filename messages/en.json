@@ -13,7 +13,7 @@
     },
 
     "StatusStrip": {
-      "seasonValue": "Everyday Comfort",
+      "seasonValue": "Made in Georgia",
       "featureLeft": "Premium quality",
       "featureRight": "Ships Across Georgia",
       "locationCode": "[ TBS / GEO ]",
@@ -98,6 +98,10 @@
       "storeTitle": "Our Stores",
       "storesAria": "Store locations"
     },
+    "contact": {
+      "call": "Call",
+      "callAria": "Call us"
+    },
     "Newsletter": {
       "title": "Let's stay in touch.",
       "description": "Subscribe to our newsletter for exclusive offers and  early access to new collections,",
@@ -173,6 +177,8 @@
     "resetPasswordSubtitle": "Choose a new password and confirm it below.",
     "contactTitle": "Get in Touch",
     "contactSubtitle": "We’d love to hear from you. Send us a message below.",
+    "preferToCall": "Prefer to call? Reach us at: ",
+    "trustHint": "We’ll never share your email with anyone else.",
     "fields": {
       "fullName": "Full Name",
       "fullNamePlaceholder": "Enter your full name",
@@ -222,7 +228,7 @@
   },
   "Errors": {
     "required": "This field is required",
-    "ivanlidCredentials": "Email or password is incorrect",
+    "invalidCredentials": "Email or password is incorrect",
     "emailRequired": "Email is required",
     "emailTooLong": "Email is too long",
     "invalidEmail": "Email format is incorrect",
@@ -245,7 +251,7 @@
     "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
     "rate_limited": "Too many attempts. Please wait a moment and try again.",
     "server_error": "Server error. Please try again later.",
-    "unknown": "Somthing Went Wron. Please try again.",
+    "unknown": "Something went wrong. Please try again.",
     "network": "Network error. Please try again.",
     "timeout": "Request timed out. Please try again.",
     "fullNameRequired": "This field is required.",
@@ -268,7 +274,7 @@
     "regionTooLong": "Region is too long.",
     "regionMustContainLettersOrNumbers": "Please enter a valid region.",
     "phoneInvalidCharacters": "Only digits  are allowed.",
-
+    "botDetected": "Our system suspects you may not be human. If this is an error, please try again later.",
     "AUTH_REQUIRED": "Please sign in to continue.",
     "CART_EMPTY": "Your cart is empty.",
     "CART_ITEM_INVALID_QTY": "One of the items has an invalid quantity. Please refresh your cart.",
@@ -281,7 +287,8 @@
 
     "oos_reserved_temporarily": "Temporarily unavailable because another customer is checking out. Please try again in a few minutes.",
     "oos_no_stock": "Sold out.",
-    "oos_insufficient": "Not enough stock available right now."
+    "oos_insufficient": "Not enough stock available right now.",
+    "fullNameInvalid": "Please enter a valid full name."
   },
   "Login": {
     "meta": {
@@ -380,21 +387,6 @@
           "title": "Tbilisi · Galleria Tbilisi",
           "address": "2/4 Shota Rustaveli Ave, 3rd floor",
           "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
-        },
-        "store2": {
-          "title": "Tbilisi · Tbilisi Mall",
-          "address": "16th km, Davit Aghmashenebeli Ave, 2nd floor",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Tbilisi+Mall+16km+Agmashenebeli+Ave"
-        },
-        "store3": {
-          "title": "Tbilisi · Gldani Mall",
-          "address": "Near Akhmeteli metro, 2nd floor",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Gldani+Mall+Tbilisi"
-        },
-        "store4": {
-          "title": "Kutaisi",
-          "address": "14 Tamar Mepe St (Cinema Georgia building, 2nd floor)",
-          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Kutaisi+Tamar+Mepe+14"
         }
       }
     },
@@ -526,6 +518,7 @@
       "contactSupport": "Contact Support",
       "variantLabel": "Size",
       "productAlt": "Product",
+      "noOrders": "You have not placed any orders yet.",
       "shipping": {
         "confirmedLabel": "Confirmed",
         "confirmedDesc": "Order received",
@@ -546,7 +539,19 @@
     "previous": "Previous",
     "page": "Page",
     "filters": "Filters",
+    "clear": "Clear All",
+    "category": "Category",
+    "categories": "Categories",
+    "allCategories": "All Categories",
     "sortBy": "Sort by",
+    "recommended": "Recommended",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "size": "Size",
+    "priceRange": "Price range",
+    "min": "min",
+    "max": "max",
+    "showResults": "Show results",
     "noImages": "No image available.",
     "backToStart": "Back to start",
     "loadMore": "Load more",
@@ -556,6 +561,7 @@
     "noProductsFound": "No products found matching your criteria."
   },
   "Products": {
+    "title": "Products",
     "meta": {
       "title": "Products — Triko",
       "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
@@ -667,6 +673,20 @@
     "brand": "Triko"
   },
   "Admin": {
+    "Bundles":{
+      "createBundle": "Create Set",
+      "topParent": "Top parent",
+      "selectTop": "Select top parent",
+      "bottomParent": "Bottom parent",
+      "selectBottom": "Select bottom parent",
+      "editBundle": "Edit Set",
+      "nameKa": "Name Ka",
+      "nameEn": "Name En",
+      "topandBottomCantBeSame": "Top and bottom pieces cannot be the same.",
+    "availableSzies": "Available sizes",
+    "sizePreview": "Size preview",
+    "searchPlaceholder":"search by parentCode"
+    },
     "Orders": {
       "title": "Orders",
       "subtitle": "Manage and track your store orders. Showing {count} results.",
@@ -742,7 +762,8 @@
       "orders": "Orders",
       "products": "Products",
       "groups": "Groups",
-      "site": "Site parameters"
+      "site": "Site parameters",
+      "sets": "Sets"
     },
     "groups": {
       "title": "Groups",
@@ -756,7 +777,24 @@
       "actions": "Actions",
       "total": "Total",
       "finaName": "Final name",
-      "noGroups": "No groups found."
+      "noGroups": "No groups found.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activeHint": "Front allowed",
+      "featuredTitle": "Featured on Home",
+      "featuredEnable": "Enable",
+      "featuredOrder": "Order",
+      "featuredPreview": "Preview",
+      "featuredNoImage": "No image",
+      "featuredUpload": "Upload image",
+      "featuredReplace": "Replace image",
+      "featuredClear": "Clear image",
+      "featuredOpen": "Open image",
+      "featuredUploading": "Uploading…",
+      "featuredAltEn": "Alt text EN (for accessibility + SEO)",
+      "featuredAltKa": "Alt text KA (for accessibility + SEO)",
+      "featuredPath": "Storage path",
+      "featuredNoImageHint": "No image yet. Upload a wide banner style image."
     },
     "sideBar": {
       "title": "Admin Panel",
@@ -805,7 +843,16 @@
       "ctaLabelEN": "CTA Label En",
       "ctaLabelKA": "CTA Label Ka",
       "ctaURL": "CTA URL",
-      "usePath": "Use internal path (e.g. /products) instead of full URL"
+      "usePath": "Use internal path (e.g. /products) instead of full URL",
+      "featuredProductsTitle": "Featured products",
+      "featuredProductsDesc": "Manage home featured products by parent_code, order and active state.",
+      "featuredProductsAddPlaceholder": "parent_code e.g. X262",
+      "noItems": "No items",
+      "add": "Add",
+      "featuredOrder": "Order",
+      "searchLabel": "Search",
+      "total": "Total",
+      "actions": "Actions"
     },
     "Products": {
       "title": "Product Management",
@@ -813,7 +860,8 @@
       "needAttention": "{count} need attention",
       "hiddenCount": "{count} hidden",
       "liveCount": "{count} live",
-
+      "clearFilters": "Clear filters",
+      "reset": "Reset",
       "tabs": { "inbox": "Inbox", "hidden": "Hidden", "live": "Live" },
 
       "filtersTitle": "Filters and Search",
@@ -847,8 +895,6 @@
         "title": "Title",
         "desc": "Description"
       },
-
-      "reset": "Reset filters",
 
       "empty": {
         "title": "No products found",

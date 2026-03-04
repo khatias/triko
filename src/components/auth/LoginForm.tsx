@@ -66,7 +66,7 @@ export default function LoginForm() {
       )) as LoginApiResp;
 
       if (!result.ok) {
-        setErrorMessage(result.message ?? tForm("errors.unknown"));
+        setErrorMessage(result.message ?? tErrors("unknown"));
 
         // keep email, clear only sensitive fields
         reset(
@@ -85,7 +85,7 @@ export default function LoginForm() {
       router.replace(redirectTo);
       router.refresh();
     } catch {
-      setErrorMessage(tForm("errors.unknown"));
+      setErrorMessage(tErrors("unknown"));
 
       reset(
         { email: data.email, password: "", website: "" },

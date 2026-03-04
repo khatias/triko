@@ -155,7 +155,7 @@ export default async function Hero({ locale }: { locale: Locale }) {
         <div
           className="
             relative overflow-hidden rounded-[2.25rem]
-            bg-[#FF5C5C] p-7 sm:p-8 lg:p-12 text-white
+            bg-[#fc6759] p-7 sm:p-8 lg:p-12 text-white
             md:col-span-6 md:row-span-1
             min-h-65 sm:min-h-75
           "
@@ -164,8 +164,8 @@ export default async function Hero({ locale }: { locale: Locale }) {
           <div className="absolute -left-12 -bottom-12 h-44 w-44 rounded-full bg-black/10 blur-3xl" />
 
           <div className="flex items-center gap-2">
-            <StarIcon className="h-5 w-5 text-[#FFDE85]" />
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#FFDE85]">
+            <StarIcon className="h-5 w-5 text-white" />
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] text-white">
               {copy.seasonLabel}
             </span>
           </div>
@@ -173,9 +173,8 @@ export default async function Hero({ locale }: { locale: Locale }) {
           <h1
             className="
               mt-4
-              font-black uppercase tracking-tight
-              leading-[0.86]
-              text-4xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl
+              font-black uppercase tracking-tight leading-[1.2]
+              text-4xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-5xl text-[#FFDE85]
             "
           >
             <Lines text={copy.title} />
@@ -230,8 +229,8 @@ export default async function Hero({ locale }: { locale: Locale }) {
         {/* BLOCK 4: Info card (fills remaining space nicely) */}
         <div
           className="
-            relative overflow-hidden rounded-[2.25rem] bg-[#FFDE85]
-            p-7 sm:p-8 text-[#383333]
+            relative overflow-hidden rounded-[2.25rem] bg-[#FFDE85] flex flex-col justify-center
+            p-5 sm:p-8 text-[#383333]
             md:col-span-6
             lg:col-span-4
             min-h-55 sm:min-h-65
@@ -243,11 +242,14 @@ export default async function Hero({ locale }: { locale: Locale }) {
             {copy.infoTag}
           </span>
 
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-6xl font-black uppercase leading-[0.95]">
+          <h2
+            className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tight
+              leading-none text-[#FF5C5C]"
+          >
             <Lines text={copy.infoTitle} />
           </h2>
 
-          <p className="mt-3 text-xs font-bold uppercase tracking-wider text-stone-600/80">
+          <p className="mt-6 text-xs font-bold uppercase tracking-wider text-stone-600/80">
             {copy.infoSubtitle}
           </p>
 
@@ -255,9 +257,9 @@ export default async function Hero({ locale }: { locale: Locale }) {
             href={safeHref(locale, data.cta_secondary_href)}
             className="
               absolute bottom-5 right-5 sm:bottom-6 sm:right-6
-              rounded-full bg-white px-4 py-2 text-xs font-bold uppercase
+              rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-tight leading-[1.2]
               transition-colors
-              hover:bg-[#383333] hover:text-white
+              hover:bg-[#FF5C5C]  hover:text-white
               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#383333]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFDE85]
             "
           >

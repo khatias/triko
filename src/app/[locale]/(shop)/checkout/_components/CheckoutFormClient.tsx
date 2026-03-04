@@ -36,12 +36,11 @@ import {
   type ShippingZone,
 } from "../actions/setShippingZone";
 import {
-  fullNameSchema,
   makeGeorgiaPhoneSchema,
 } from "@/lib/validation/profile";
 import { hasImg, toNumber } from "@/utils/type-guards";
 import { formatPrice } from "@/lib/helpers";
-
+import { nameSchema } from "@/lib/validation/profile";
 export type AddressRow = {
   id: string;
   line1: string;
@@ -115,7 +114,7 @@ async function initBogPayment(
 
 function makeCheckoutSchema(tErr: (k: string) => string) {
   return z.object({
-    fullName: fullNameSchema(tErr),
+    fullName: nameSchema(tErr),
     phone: makeGeorgiaPhoneSchema({
       t: tErr,
       output: "e164",

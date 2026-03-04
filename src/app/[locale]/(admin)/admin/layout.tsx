@@ -12,9 +12,9 @@ export default async function AdminLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string } | Promise<{ locale: string }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await Promise.resolve(params);
+  const { locale } = await params;
 
   if (!routing.locales.includes(locale as Locale)) notFound();
 

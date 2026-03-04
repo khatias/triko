@@ -11,7 +11,7 @@ export default function ProductSlider({
   locale,
 }: {
   catalog: CatalogGroupedProductCard[];
-  locale?: "en" | "ka";
+  locale?: "ka" | "en";
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -53,7 +53,7 @@ export default function ProductSlider({
           <span className="text-xs font-black uppercase tracking-[0.2em] text-[#FF5C5C]">
             {t("subTitle")}
           </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-[#383333]">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black uppercase tracking-tighter text-blue-900">
             {t("title")}
           </h2>
         </div>
@@ -99,7 +99,7 @@ export default function ProductSlider({
               {/* Note: Ensure your ProductCard accepts className="h-full" or has h-full built in! */}
               <ProductCard
                 product={pRow}
-                locale={locale as "en" | "ka"}
+                locale={locale as "ka" | "en"}
                 revealDelay={idx % 3}
               />
             </div>

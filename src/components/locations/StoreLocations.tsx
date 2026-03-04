@@ -11,10 +11,7 @@ interface StoreLocationsProps {
 const StoreLocations = ({ locale, t }: StoreLocationsProps) => {
   const withLocale = (path: string) => `/${locale}${path}`;
 
-  const stores = [
-    { city: "Tbilisi", path: "/aboutUs#locations" },
-    { city: "Kutaisi", path: "/aboutUs#locations" },
-  ];
+  const stores = [{ city: "Tbilisi", path: "/aboutUs#locations" }];
 
   return (
     <div className="">

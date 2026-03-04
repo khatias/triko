@@ -1,11 +1,13 @@
+// src/app/[locale]/products/[parent_code]/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
-import type { CatalogProductDetail } from "@/lib/db/products";
-import { getCatalogProductDetail } from "@/lib/db/products";
+import {
+  getCatalogProductDetail,
+  type CatalogProductDetail,
+} from "@/lib/db/products";
 import { wrap } from "@/components/UI/primitives";
-
 import {
   displayTitle,
   displayDescription,
@@ -23,39 +25,50 @@ type PageProps = {
 };
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const { locale, parent_code } = await params;
+  const { locale, parent_code: raw } = await params;
 
-  const t = await getTranslations({ locale, namespace: "Products" });
-  const h = await getTranslations({ locale, namespace: "Helpers" });
+  // Fix URL encoding issues:
+  // - decode %xx sequences
+  // - convert spaces back to "+" (some routers/servers treat "+" as space)
+  const parent_code = decodeURIComponent(raw).replaceAll(" ", "+");
 
-  const product = (await getCatalogProductDetail(
-    parent_code,
-  )) as CatalogProductDetail | null;
+  const [h, product] = await Promise.all([
+    getTranslations({ locale, namespace: "Helpers" }),
+    getCatalogProductDetail(
+      parent_code,
+    ) as Promise<CatalogProductDetail | null>,
+  ]);
+
   if (!product) notFound();
 
   const title = displayTitle(product, locale);
-  const description = displayDescription(product, locale);
+  const description = displayDescription(product, locale) ?? "";
   const groupName = displayGroupName(product, locale);
-
   const photos = getPhotoUrls(product.photos);
   const priceLabel = formatPrice(product.min_price, product.currency) ?? "";
 
-  const homeHref = `/${locale}` as const;
-
   return (
-    <div className="min-h-screen bg-[#FCFCFA] text-stone-900 selection:bg-stone-900 selection:text-white">
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-50" />
+    <div className="min-h-screen bg-[#FAFAFA] text-stone-900 selection:bg-stone-200 selection:text-stone-900 font-sans">
+      <div
+        className="pointer-events-none fixed inset-0 z-50 bg-[url('/noise.png')] opacity-[0.015] mix-blend-multiply"
+        aria-hidden="true"
+      />
 
-      <main className={`${wrap} relative py-12 md:py-20`}>
-        <nav className="mb-10 text-[10px] uppercase tracking-[0.2em] text-stone-400">
+      <main className={`${wrap} relative py-12 `}>
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-16 flex items-center space-x-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-stone-400"
+        >
           <Link
-            href={homeHref}
-            className="hover:text-stone-900 transition-colors"
+            href={`/${locale}`}
+            className="hover:text-stone-900 transition-all duration-300 hover:tracking-[0.3em]"
           >
             {h("home")}
           </Link>
-          <span className="mx-3">/</span>
-          <span className="text-stone-900">{groupName}</span>
+          <span className="w-4 h-px bg-stone-300" aria-hidden="true" />
+          <span className="text-stone-900" aria-current="page">
+            {groupName}
+          </span>
         </nav>
 
         <ProductDetailClient
@@ -64,28 +77,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
           photos={photos}
           variants={product.variants ?? []}
           groupName={groupName}
-          description={description ?? ""}
+          description={description}
           basePriceLabel={priceLabel}
         />
-
-        <footer className="mt-32 border-t border-stone-100 pt-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-[11px] uppercase tracking-[0.15em] text-stone-500">
-            <div>
-              <p className="font-bold text-stone-900 mb-4">
-                {t("Craftsmanship")}
-              </p>
-              <p className="leading-relaxed">{t("Craftsmanshipdesc")}</p>
-            </div>
-            <div>
-              <p className="font-bold text-stone-900 mb-4">{t("Shipping")}</p>
-              <p className="leading-relaxed">{t("Shippingdesc")}</p>
-            </div>
-            <div>
-              <p className="font-bold text-stone-900 mb-4">{t("Assistance")}</p>
-              <p className="leading-relaxed">{t("Assistancedesc")}</p>
-            </div>
-          </div>
-        </footer>
       </main>
     </div>
   );

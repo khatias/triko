@@ -47,11 +47,11 @@ function isShippingStatus(v: unknown): v is ShippingStatus {
 export default async function Page() {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const claimsResult = await supabase.auth.getClaims();
 
-  if (!user) {
+  const userId = claimsResult.data?.claims?.sub;
+
+  if (!userId) {
     return <OrdersClients view="unauth" />;
   }
 
@@ -60,7 +60,7 @@ export default async function Page() {
     .select(
       "id,status,shipping_status,items_count,subtotal,discount_total,total,created_at,currency, order_code",
     )
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {

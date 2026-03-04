@@ -5,14 +5,12 @@ import { createClient } from "@/utils/supabase/server";
 ========================= */
 
 export type Variant = {
-  fina_id: number | null; 
+  fina_id: number | null;
   top_fina_id?: number | null;
   bottom_fina_id?: number | null;
-
   code: string | null;
   name: string;
   size: string | null;
-
   price: number | null;
   list_price: number | null;
   has_discount: boolean | null;
@@ -23,84 +21,100 @@ export type Variant = {
 export type CatalogGroupedProductCard = {
   parent_code: string;
   name: string;
-
   title_ka: string | null;
   title_en: string | null;
   description_ka: string | null;
   description_en: string | null;
-
   photos: unknown | null;
-
   currency: string | null;
-
-  // effective range
   min_price: number | null;
   max_price: number | null;
-
-  // original(list) range
   min_list_price: number | null;
   max_list_price: number | null;
-
   has_discount: boolean | null;
-
   total_stock?: number | null;
-
   group_id?: number | null;
   group_name?: string | null;
   group_name_en?: string | null;
   group_name_ka?: string | null;
-
   variants?: Variant[] | null;
 };
 
 export type CatalogPageResult = {
   items: CatalogGroupedProductCard[];
-  total: number;
   page: number;
   pageSize: number;
-  totalPages: number;
+
+  // We removed exact count to avoid heavy COUNT(*)
+  total?: number | null;
+  totalPages?: number | null;
+
+  // Simple pagination signal
+  hasNextPage: boolean;
 };
 
 type GetCatalogProductsGroupedArgs = {
   page?: number;
   pageSize?: number;
   groupId?: number | null;
+  groupIds?: number[] | null;
   q?: string | null;
+  sizes?: string[] | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  sort?: "price_asc" | "price_desc" | "newest" | null;
 };
 
 export type CatalogProductDetail = {
   parent_code: string;
-
   group_id: number | null;
   group_name: string | null;
   group_name_en: string | null;
   group_name_ka: string | null;
-
   name: string;
-
   title_ka: string | null;
   title_en: string | null;
   description_ka: string | null;
   description_en: string | null;
-
   photos: unknown | null;
-
   currency: string | null;
-
-  // effective range
   min_price: number | null;
   max_price: number | null;
-
-  // original(list) range
   min_list_price: number | null;
   max_list_price: number | null;
-
   has_discount: boolean | null;
-
   total_stock: number | null;
-
   variants: Variant[];
 };
+
+/* =========================
+   Helpers
+========================= */
+
+function normalizeGroupIds(args: GetCatalogProductsGroupedArgs): number[] {
+  const out: number[] = [];
+  if (Array.isArray(args.groupIds)) {
+    for (const x of args.groupIds) {
+      if (typeof x === "number" && Number.isFinite(x)) out.push(x);
+    }
+  }
+  if (typeof args.groupId === "number" && Number.isFinite(args.groupId)) {
+    out.push(args.groupId);
+  }
+  return Array.from(new Set(out));
+}
+
+function uniqueKeepOrder(list: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of list) {
+    if (!x) continue;
+    if (seen.has(x)) continue;
+    seen.add(x);
+    out.push(x);
+  }
+  return out;
+}
 
 /* =========================
    Queries
@@ -116,42 +130,48 @@ export async function getCatalogProductsGrouped(
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
-  let query = supabase
-    .from("shop_catalog_parent_view")
-    .select(
-      `
-        parent_code,
-        name,
-        title_ka,
-        title_en,
-        description_ka,
-        description_en,
-        photos,
-        currency,
-        min_price,
-        max_price,
-        min_list_price,
-        max_list_price,
-        has_discount,
-        variants,
-        group_id,
-        group_name,
-        group_name_en,
-        group_name_ka
-      `,
-      { count: "exact" },
-    )
-    .order("parent_code", { ascending: true });
+  // No count: removed { count: "exact" }
+  let query = supabase.from("shop_catalog_fast").select(`
+    parent_code,
+    name,
+    title_ka,
+    title_en,
+    description_ka,
+    description_en,
+    photos,
+    currency,
+    min_price,
+    max_price,
+    min_list_price,
+    max_list_price,
+    has_discount,
+    variants,
+    group_id,
+    group_name,
+    group_name_en,
+    group_name_ka
+  `);
 
-  if (typeof args.groupId === "number") {
-    query = query.eq("group_id", args.groupId);
+  if (args.sort === "price_asc") {
+    query = query.order("min_price", { ascending: true });
+  } else if (args.sort === "price_desc") {
+    query = query.order("min_price", { ascending: false });
+  } else {
+    query = query.order("parent_code", { ascending: true });
+  }
+
+  const gids = normalizeGroupIds(args);
+  if (gids.length === 1) {
+    query = query.eq("group_id", gids[0]);
+  } else if (gids.length > 1) {
+    query = query.in("group_id", gids);
   }
 
   const rawQ = (args.q ?? "").trim();
   if (rawQ) {
     const q = rawQ
-      .replace(/[%_]/g, "\\$&") // escape ILIKE wildcards
-      .replace(/,/g, " ") // commas break .or() list
+      .replace(/[%_]/g, "\\$&")
+      .replace(/,/g, " ")
       .replace(/\s+/g, " ")
       .slice(0, 80);
 
@@ -168,7 +188,23 @@ export async function getCatalogProductsGrouped(
     );
   }
 
-  const { data, error, count } = await query.range(from, to);
+  if (args.sizes && args.sizes.length > 0) {
+    // note: relies on variants jsonb containing objects with "size"
+    const sizeConditions = args.sizes.map(
+      (s) => `variants.cs.[{"size": "${s}"}]`,
+    );
+    query = query.or(sizeConditions.join(","));
+  }
+
+  if (typeof args.minPrice === "number") {
+    query = query.gte("min_price", args.minPrice);
+  }
+  if (typeof args.maxPrice === "number") {
+    query = query.lte("min_price", args.maxPrice);
+  }
+
+  // removed: count
+  const { data, error } = await query.range(from, to);
 
   if (error) {
     console.error("getCatalogProductsGrouped error:", {
@@ -180,15 +216,15 @@ export async function getCatalogProductsGrouped(
     throw new Error("Failed to fetch grouped catalog products");
   }
 
-  const total = count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const items = (data ?? []) as CatalogGroupedProductCard[];
 
   return {
-    items: (data ?? []) as CatalogGroupedProductCard[],
-    total,
+    items,
     page,
     pageSize,
-    totalPages,
+    total: null,
+    totalPages: null,
+    hasNextPage: items.length === pageSize,
   };
 }
 
@@ -198,7 +234,7 @@ export async function getCatalogProductDetail(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("shop_catalog_parent_view")
+    .from("shop_catalog_fast")
     .select(
       `
         parent_code,
@@ -237,17 +273,6 @@ export async function getCatalogProductDetail(
 
   return (data ?? null) as CatalogProductDetail | null;
 }
-function uniqueKeepOrder(list: string[]) {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const x of list) {
-    if (!x) continue;
-    if (seen.has(x)) continue;
-    seen.add(x);
-    out.push(x);
-  }
-  return out;
-}
 
 export async function getProductsByParentCodes(
   parentCodes: string[],
@@ -258,29 +283,29 @@ export async function getProductsByParentCodes(
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("shop_catalog_parent_view")
+    .from("shop_catalog_fast")
     .select(
       `
-      parent_code,
-      name,
-      title_ka,
-      title_en,
-      description_ka,
-      description_en,
-      photos,
-      currency,
-      min_price,
-      max_price,
-      min_list_price,
-      max_list_price,
-      has_discount,
-      group_id,
-      group_name,
-      group_name_en,
-      group_name_ka,
-      total_stock,
-      variants
-    `,
+        parent_code,
+        name,
+        title_ka,
+        title_en,
+        description_ka,
+        description_en,
+        photos,
+        currency,
+        min_price,
+        max_price,
+        min_list_price,
+        max_list_price,
+        has_discount,
+        group_id,
+        group_name,
+        group_name_en,
+        group_name_ka,
+        total_stock,
+        variants
+      `,
     )
     .in("parent_code", codes);
 
@@ -295,7 +320,6 @@ export async function getProductsByParentCodes(
   }
 
   const rows = (data ?? []) as CatalogGroupedProductCard[];
-
   const map = new Map<string, CatalogGroupedProductCard>();
   for (const r of rows) {
     if (!map.has(r.parent_code)) map.set(r.parent_code, r);
