@@ -56,14 +56,14 @@ export default function StorySlice() {
           </div>
 
           {/* Right Half: Sharp Editorial Images */}
-          <div className="relative mx-auto flex w-full max-w-[500px] justify-center md:max-w-[600px] lg:mx-0 lg:w-1/2 lg:max-w-none lg:justify-start lg:pl-20">
+          <div className="relative mx-auto flex w-full max-w-125 justify-center md:max-w-150 lg:mx-0 lg:w-1/2 lg:max-w-none lg:justify-start lg:pl-20">
             
             {/* THE FIX: 
                 1. Changed base aspect ratio to `aspect-[4/3]` (landscape-ish) for mobile/tablet to stop the heavy crop.
                 2. Added `lg:aspect-square` to return to your original brutalist square on desktop.
                 3. Constrained the width tightly on `md` to `w-[75%]` so it doesn't blow up in scale.
             */}
-            <div className="relative z-10 w-[90%] border border-white/10 bg-black aspect-[4/3] md:w-[75%] lg:w-[90%] lg:aspect-square">
+            <div className="relative z-10 w-[90%] border border-white/10 bg-black aspect-4/3 md:w-[75%] lg:w-[90%] lg:aspect-square">
               <Image
                 src="https://jtllowjuurijdjllkzam.supabase.co/storage/v1/object/public/site/hero/image00071.jpeg"
                 alt={t("title")}

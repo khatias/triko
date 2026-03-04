@@ -24,49 +24,45 @@ export default function AboutPage() {
 
   return (
     <main className="bg-white text-[#1a1a1a] selection:bg-[#FF4D37] selection:text-white overflow-x-hidden">
-      {/* 1. HERO: Warm & Cinematic */}
-      <Section className=" py-20 bg-orange-300">
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-neutral-100 hidden lg:block" />
+      <Section className="relative overflow-hidden bg-orange-300 px-6 py-16 sm:px-8  lg:px-16 ">
+        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center gap-16 lg:flex-row lg:gap-12 xl:gap-20">
+          {/* Left Content Area */}
+          <div className="z-20 w-full flex-1">
+            {/* Kept your exact typography style, but smoothed the scaling so it doesn't awkwardly shrink on 'md' */}
+            <h2 className="text-5xl font-black uppercase leading-[1.1] tracking-tight text-neutral-50 md:text-6xl lg:text-[5vw] xl:text-[6.5vw]">
+              {t("hero.title")}
+            </h2>
 
-        <div className="absolute top-45  pointer-events-none select-none mb-10">
-          <h2 className=" mt-4 text-[8vw]   text-neutral-50  tracking-tight  uppercase">
-            {t("hero.title")}
-          </h2>
-        </div>
-
-        <div className="relative z-10 w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-0 ">
-          <div className="flex-1 lg:pr-20 z-20">
             <div className="max-w-xl">
-              <div className="flex items-center gap-3 mb-8 mt-40">
-                <span className="text-[14px] uppercase tracking-[0.6em] font-black text-purple-800">
+              {/* 3. Smoothed the massive spacing jump. mt-40 on md was causing too much dead space. */}
+              <div className="mb-8 mt-8 flex items-center gap-4 lg:mt-12">
+                <span className="text-[14px] font-black uppercase tracking-[0.3em] text-purple-800">
                   {t("hero.detail")}
                 </span>
-
                 <div className="h-px flex-1 bg-neutral-900 opacity-20" />
               </div>
 
               <div className="relative">
-                <p className="text-lg md:text-xl text-white font-light leading-relaxed tracking-tight lg:columns-1 gap-12">
+                <p className="text-lg font-light leading-relaxed tracking-tight text-white md:text-xl">
                   {t("hero.description")}
                 </p>
-
-                <span className="absolute -top-6 -left-4 text-4xl  text-neutral-200"></span>
               </div>
 
-              <div className="mt-16 group cursor-pointer inline-block">
-                <span className="uppercase tracking-[0.5em] text-[10px] text-purple-950">
+              <div className="group mt-12 inline-block cursor-pointer md:mt-16">
+                <span className="text-[10px] uppercase tracking-[0.5em] text-purple-950">
                   {t("hero.exploreMore")}
                 </span>
-
                 <div className="mt-2 h-0.5 w-8 bg-neutral-900 transition-all duration-700 group-hover:w-full" />
               </div>
             </div>
           </div>
 
-          <div className="flex-1 w-full lg:pl-10 relative">
-            <div className="relative aspect-3/4 w-full max-w-lg mx-auto overflow-hidden shadow-2xl shadow-neutral-200">
+          {/* Right Image Area */}
+          <div className="relative flex w-full flex-1 justify-center lg:justify-end">
+            {/* 4. Fixed Tailwind syntax: 'aspect-[3/4]' is the correct class. Added specific max-widths per breakpoint. */}
+            <div className="relative w-full max-w-100 aspect-3/4 overflow-hidden shadow-2xl shadow-neutral-200 md:max-w-112.5 lg:max-w-125">
               <Image
-                src="/about/cover.jpeg"
+                src="https://jtllowjuurijdjllkzam.supabase.co/storage/v1/object/public/site/hero/image00009.jpeg"
                 alt="Triko Cover"
                 fill
                 className="object-cover transition-transform duration-[2s] hover:scale-110"
@@ -74,8 +70,9 @@ export default function AboutPage() {
               />
             </div>
 
-            <div className="absolute top-1/2 -right-12 -translate-y-1/2 hidden xl:block">
-              <span className="text-[10px] uppercase tracking-[1em] text-white [writing-mode:vertical-rl] font-medium">
+            {/* Adjusted the vertical text so it floats cleanly relative to the wrapper */}
+            <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 xl:-right-8 xl:block 2xl:-right-12">
+              <span className="text-[10px] font-medium uppercase tracking-[1em] text-white [writing-mode:vertical-rl]">
                 {t("hero.underwear")} • {t("hero.kimano")} • {t("hero.pajamas")}
               </span>
             </div>
@@ -87,7 +84,10 @@ export default function AboutPage() {
         <div className="flex flex-col lg:flex-row gap-20">
           <div className="lg:w-1/3">
             <div className="sticky top-32">
-              <h2 className="text-5xl md:text-6xl  mb-8  text-orange-500">
+              <h2
+                className="mb-8  text-orange-500 tracking-tight leading-[1.2]
+              text-4xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-5xl "
+              >
                 {t("whoIsTrikoFor.title")}
               </h2>
 
@@ -180,8 +180,13 @@ export default function AboutPage() {
               </span>
             </div>
 
-            <h2 className="text-6xl lg:text-7xl text-[#fc6759]  ">
-              {t("WhatWeCreate.title1")} <br />
+            <h2
+              className="
+              mt-4
+              font-black uppercase tracking-tight leading-[1.2]
+              text-4xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-5xl text-[#fc6759]  "
+            >
+              {t("WhatWeCreate.title1")} {""}
               <span className="">{t("WhatWeCreate.title2")}</span>
             </h2>
 
@@ -281,10 +286,7 @@ export default function AboutPage() {
               key={title}
               className="group relative bg-[#FFDE85] hover:bg-[#FFD966] transition-colors duration-300 p-10 md:p-16 min-h-72 flex flex-col justify-between"
             >
-              <div className="flex justify-between items-start mb-6">
-          
-           
-              </div>
+              <div className="flex justify-between items-start mb-6"></div>
 
               <div className="max-w-2xl">
                 <h4 className="text-2xl md:text-3xl text-black mb-4 group-hover:translate-x-1 transition-transform duration-300">
