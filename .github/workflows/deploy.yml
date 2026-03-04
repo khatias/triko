@@ -23,7 +23,8 @@ name: Deploy Next.js to VPS
 on:
   push:
     branches:
-      - fix-cleanup-2
+      - development
+  workflow_dispatch:
 
 concurrency:
   group: deploy-triko-vps
@@ -51,6 +52,9 @@ jobs:
             ENV_FILE="${APP_DIR}/.env.local"
             LOCK_FILE="/tmp/deploy_triko.lock"
 
+            # Which git branch to deploy:
+            DEPLOY_BRANCH="development"
+
             # Helps Supabase connect timeouts on some VPS (ipv6 routing/dns).
             DEFAULT_NODE_OPTIONS="--dns-result-order=ipv4first"
 
@@ -65,6 +69,10 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             export PATH=$PATH:/usr/local/bin
+
+            # Pin Node version for deploy/runtime consistency (adjust if needed)
+            nvm use 24
+
             node -v
             npm -v
 
@@ -144,8 +152,11 @@ jobs:
 
             echo "---- update code ----"
             git fetch --prune origin
-            git checkout -f fix-cleanup-2
-            git reset --hard origin/fix-cleanup-2
+
+            # Force local branch to exactly match remote branch (prevents stale local state)
+            git checkout -f -B "$DEPLOY_BRANCH" "origin/$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
+            git clean -fd
 
             NEW_SHA="$(git rev-parse HEAD)"
             echo "NEW_SHA=${NEW_SHA}"
