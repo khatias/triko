@@ -3,5 +3,8 @@ Allow: /
 
 Disallow: /admin
 Disallow: /api
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
 
-Sitemap: /sitemap.xml
+Sitemap: https://triko.ge/sitemap.xml

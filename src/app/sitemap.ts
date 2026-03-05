@@ -1,17 +1,13 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const BASE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://triko.ge").replace(/\/$/, "");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const locales = ["en", "ka"] as const;
 
   const staticPaths = [
-    "",
+    "", // home
     "/products",
-    "/cart",
-    "/profile",
-    "/profile/orders",
-    "/profile/addresses",
     "/aboutUs",
     "/contact",
     "/privacy",
@@ -20,14 +16,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/exchange-policy",
   ];
 
-  const categorySlugs = ["silk", "triko"];
+  const categorySlugs = ["silk", "triko"]; // make sure these actually match your routes
 
   const now = new Date();
 
   const urls: MetadataRoute.Sitemap = [];
 
   for (const locale of locales) {
-    // static
     for (const path of staticPaths) {
       urls.push({
         url: `${BASE_URL}/${locale}${path}`,

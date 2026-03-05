@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Triko",
     short_name: "Triko",
     start_url: "/",
-    display: "standalone",
+    display: "browser",
     background_color: "#ffffff",
     theme_color: "#ffffff",
   };
