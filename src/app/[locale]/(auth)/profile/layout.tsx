@@ -2,7 +2,7 @@ import React from "react";
 import SidebarNav from "../profile/_components/SidebarNav";
 import { generateLocalizedMetadata } from "@/utils/metadata/generateMetadata";
 import { createClient } from "@/utils/supabase/server";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function generateMetadata(ctx: {
@@ -21,6 +21,15 @@ async function getNextPath() {
   return (await headers()).get("next-url") || "/profile";
 }
 
+async function clearSupabaseCookies() {
+  const store = await cookies();
+  for (const c of store.getAll()) {
+    if (c.name.startsWith("sb-")) {
+      store.delete(c.name);
+    }
+  }
+}
+
 export default async function ProfileLayout({
   children,
   params,
@@ -35,10 +44,15 @@ export default async function ProfileLayout({
   const { data, error: claimsErr } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
 
-  if (claimsErr || !userId) {
-    redirect(
-      `/${locale}/login?next=${encodeURIComponent(await getNextPath())}`,
-    );
+  if (claimsErr) {
+    if (claimsErr.code === "refresh_token_not_found") {
+      clearSupabaseCookies();
+    }
+    redirect(`/${locale}/login?next=${encodeURIComponent(await getNextPath())}`);
+  }
+
+  if (!userId) {
+    redirect(`/${locale}/login?next=${encodeURIComponent(await getNextPath())}`);
   }
 
   let fullName = "Guest";
