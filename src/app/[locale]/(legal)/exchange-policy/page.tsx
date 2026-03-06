@@ -57,7 +57,7 @@ export default function ExchangePolicyPage() {
 
       {/* BIGGER, SPACIOUS CONTENT LAYOUT */}
       <Section className="py-16 md:py-24" labelledBy="exchange-policy-title">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10 lg:gap-16">
             {/* STICKY SIDEBAR / TABLE OF CONTENTS */}
             <aside className="hidden lg:block lg:sticky lg:top-32 h-fit">
@@ -199,16 +199,7 @@ export default function ExchangePolicyPage() {
                 </div>
               </section>
 
-              {/* Footer Note */}
-              <section className="not-prose mt-16 p-10 rounded-4xl bg-[#FF5C5C]/5 border border-[#FF5C5C]/20 text-neutral-700 text-base leading-relaxed">
-                <p className="font-bold text-[#FF5C5C] uppercase tracking-widest text-sm mb-4 flex items-center gap-3">
-                  <span className="size-2 bg-[#FF5C5C] rounded-full" />
-                  {t("footer.noteTitle")}
-                </p>
-                <p className="text-neutral-700 text-lg">
-                  {t("footer.noteBody")}
-                </p>
-              </section>
+
             </article>
           </div>
         </div>

@@ -263,7 +263,7 @@ export default function AboutPage() {
       {/* 6. OUTRO: Warm & Clean */}
       <section className="py-32 bg-orange-300 px-6 text-center border-t border-[#EAE8E4]">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-5xl md:text-7xl  tracking-tight mb-8 text-white">
+          <h3 className="text-4xl md:text-7xl  tracking-tight mb-8 text-white">
             {t("Georgia.title")}
           </h3>
 
@@ -273,7 +273,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="bg-[#fc6759]  text-black my-20 px-20" id="locations">
+      <div className="bg-[#fc6759]  text-black my-20 px-10 md:px-20" id="locations">
         <div className="py-12  border-b border-neutral-800 flex flex-col md:flex-row justify-between md:items-end">
           {/* <h3 className=" text-3xl italic text-white mb-2">
             {t("locations.title")}

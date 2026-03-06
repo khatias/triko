@@ -62,7 +62,7 @@ export default function ShippingPolicyPage() {
 
       {/* BIGGER, SPACIOUS CONTENT LAYOUT */}
       <Section className="py-16 md:py-24" labelledBy="shipping-policy-title">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+               <div className="max-w-7xl mx-auto md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10 lg:gap-16">
             
             {/* STICKY SIDEBAR / TABLE OF CONTENTS */}
@@ -143,12 +143,12 @@ export default function ShippingPolicyPage() {
 
                 {/* Help / Contact CTA Block */}
                 <div className="not-prose mt-16 pt-12 border-t-2 border-dashed border-neutral-200">
-                  <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center justify-between bg-white p-10 rounded-3xl border border-neutral-200 shadow-sm">
+                  <div className="">
               
 
                     <Link
                       href="/terms"
-                      className="px-10 py-5 rounded-2xl bg-[#FF5C5C] text-white text-lg font-bold hover:bg-[#ff4444] transition-all active:scale-95 shadow-lg shadow-[#FF5C5C]/30 whitespace-nowrap"
+                      className="px-4 py-5 rounded-2xl bg-[#FF5C5C] text-white text-lg font-bold hover:bg-[#ff4444] transition-all active:scale-95 shadow-lg shadow-[#FF5C5C]/30 whitespace-nowrap"
                     >
                       {t("cta.terms")}
                     </Link>

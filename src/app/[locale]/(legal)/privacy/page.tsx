@@ -33,21 +33,20 @@ export default function PrivacyPolicyPage() {
 
   return (
     <main className="bg-neutral-50 text-neutral-900 selection:bg-[#FF5C5C] selection:text-white pb-32">
-      
       {/* EDGE-TO-EDGE HERO WITH ROUNDED BOTTOM */}
       <Section className="relative py-24 md:py-32 bg-[#FFDE85] rounded-b-[3rem] md:rounded-b-[4rem] shadow-sm overflow-hidden border-b border-[#FFDE85]/80">
         <div className="mx-auto px-6 max-w-6xl">
           {/* Eyebrow Label */}
           <div className="flex items-center gap-4 mb-8">
             <span className="inline-flex items-center justify-center size-3 rounded-full bg-[#FF5C5C] animate-pulse shadow-sm" />
-            <span className="text-sm uppercase tracking-[0.2em] font-bold text-neutral-800 bg-white/50 px-4 py-1.5 rounded-full border border-white">
+            <span className="text-xs md:text-sm uppercase font-bold text-neutral-800 bg-white/50 px-4 py-1.5 rounded-full border border-white">
               {t("hero.kicker")}
             </span>
           </div>
 
           {/* Title */}
           <h1
-            className="text-5xl md:text-7xl font-serif font-medium   mb-8 text-neutral-950"
+            className="text-3xl sm:text-4xl md:text-7xl lg:text-7xl font-serif font-medium mb-6 md:mb-8 text-neutral-950 leading-tight wrap-break-word"
             id="privacy-policy-title"
           >
             {t("hero.title")}
@@ -61,7 +60,9 @@ export default function PrivacyPolicyPage() {
           {/* Metadata Pills */}
           <div className="mt-12 flex flex-wrap gap-4 text-sm font-bold">
             <span className="inline-flex items-center rounded-2xl border border-white/60 bg-white/80 backdrop-blur-sm px-6 py-3 text-neutral-900 shadow-sm">
-              <span className="mr-2 text-neutral-500 font-medium">Last Updated:</span>
+              <span className="mr-2 text-neutral-500 font-medium">
+                Last Updated:
+              </span>
               {t("hero.lastUpdatedDate")}
             </span>
             <span className="inline-flex items-center rounded-2xl border border-white/60 bg-white/80 backdrop-blur-sm px-6 py-3 text-neutral-900 shadow-sm">
@@ -73,9 +74,8 @@ export default function PrivacyPolicyPage() {
 
       {/* BIGGER, SPACIOUS CONTENT LAYOUT */}
       <Section className="py-16 md:py-24" labelledBy="privacy-policy-title">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto md:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-10 lg:gap-16">
-            
             {/* STICKY SIDEBAR / TABLE OF CONTENTS */}
             <aside className="hidden lg:block lg:sticky lg:top-32 h-fit">
               <div className="bg-white border border-neutral-200 rounded-4xl p-8 shadow-sm">
@@ -221,19 +221,23 @@ export default function PrivacyPolicyPage() {
 
               <section id="contact" className="scroll-mt-32">
                 <h2>{t("sections.contact.title")}</h2>
-                <div className="bg-neutral-50 p-8 rounded-3xl border border-neutral-100 mt-8">
+                <div className="bg-neutral-50 p-4 rounded-3xl border border-neutral-100 mt-8">
                   <p className="mb-4">
                     {t("sections.contact.p1")}{" "}
-                    <a 
+                    <a
                       href={`mailto:${t("contactEmail")}`}
                       className="text-[#FF5C5C] font-bold hover:text-[#ff4444]"
                     >
                       {t("contactEmail")}
-                    </a>.
+                    </a>
+                    .
                   </p>
                   <p className="m-0">
                     {t("sections.contact.p2")}{" "}
-                    <Link href="/terms" className="text-[#FF5C5C] font-bold hover:text-[#ff4444]">
+                    <Link
+                      href="/terms"
+                      className="text-[#FF5C5C] font-bold hover:text-[#ff4444]"
+                    >
                       {t("sections.contact.termsLink")}
                     </Link>{" "}
                     {t("sections.contact.p3")}
@@ -241,16 +245,7 @@ export default function PrivacyPolicyPage() {
                 </div>
               </section>
 
-              {/* Footer Note */}
-              <section className="not-prose mt-16 p-10 rounded-4xl bg-[#FF5C5C]/5 border border-[#FF5C5C]/20 text-neutral-700 text-base leading-relaxed">
-                <p className="font-bold text-[#FF5C5C] uppercase tracking-widest text-sm mb-4 flex items-center gap-3">
-                  <span className="size-2 bg-[#FF5C5C] rounded-full" />
-                  {t("note.title")}
-                </p>
-                <p className="text-neutral-700 text-lg">
-                  {t("note.body")}
-                </p>
-              </section>
+    
             </article>
           </div>
         </div>
