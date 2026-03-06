@@ -43,7 +43,7 @@ async function getOriginSafe() {
   if (host) return `${proto}://${host}`;
 
   // 3) Last resort hard fallback
-  return "https://beta.triko.ge";
+  return "https://triko.ge";
 }
 
 export async function GET(req: NextRequest) {
