@@ -1,0 +1,307 @@
+# .github/workflows/deploy.yml
+# Deploys 2 PM2 apps on the same VPS:
+# - triko-store (Next.js)
+# - triko-sync  (fina-master-sync.mjs worker)
+#
+# Key properties:
+# - No `source .env.local` (safe parsing, no shell execution)
+# - No `eval`
+# - No external deps like dotenv (works even when npm omits devDependencies)
+# - Deploy lock (prevents concurrent deploys)
+# - Rollback on failure
+# - Build before restart (reduced downtime)
+# - Optional restart of triko-sync only when relevant files changed
+# - Health checks (localhost + domain)
+#
+# Requires:
+# - /var/www/my-app/.env.local exists on server (not in repo)
+# - PM2 apps are named exactly: triko-store, triko-sync
+# - Worker entry: /var/www/my-app/fina-master-sync.mjs
+
+name: Deploy Next.js to VPS
+
+on:
+  push:
+    branches:
+      - development
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-triko-vps
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into VPS and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+
+            # ---- CONFIG ----
+            APP_DIR="/var/www/my-app"
+            WEB_APP="triko-store"
+            SYNC_APP="triko-sync"
+            PORT="3000"
+            HEALTH_URL="https://beta.triko.ge/"
+            ENV_FILE="${APP_DIR}/.env.local"
+            LOCK_FILE="/tmp/deploy_triko.lock"
+
+            # Which git branch to deploy:
+            DEPLOY_BRANCH="development"
+
+            # Helps Supabase connect timeouts on some VPS (ipv6 routing/dns).
+            DEFAULT_NODE_OPTIONS="--dns-result-order=ipv4first"
+
+            echo "---- acquire deploy lock ----"
+            exec 9>"$LOCK_FILE"
+            if ! flock -n 9; then
+              echo "Another deploy is running. Exiting."
+              exit 1
+            fi
+
+            echo "---- load nvm/node ----"
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+            export PATH=$PATH:/usr/local/bin
+
+            # Pin Node version for deploy/runtime consistency (adjust if needed)
+            nvm use 24
+
+            node -v
+            npm -v
+
+            cd "$APP_DIR"
+
+            echo "---- verify env file exists (server-only) ----"
+            if [ ! -f "$ENV_FILE" ]; then
+              echo "Missing $ENV_FILE on server. Refusing to deploy."
+              exit 1
+            fi
+
+            # Helper: load env safely from .env.local WITHOUT executing it as shell
+            # Supports:
+            # - KEY=VALUE
+            # - KEY="VALUE with spaces"
+            # - KEY='VALUE'
+            # Ignores comments/blank lines and ignores invalid lines safely.
+            load_env() {
+              export NODE_ENV=production
+              export PORT="$PORT"
+              export ENV_FILE="$ENV_FILE"
+
+              umask 077
+              ENV_EXPORTS="/tmp/env_exports_triko.sh"
+
+              node - <<'NODE' > "$ENV_EXPORTS"
+            const fs = require("fs");
+
+            const p = process.env.ENV_FILE;
+            const raw = fs.readFileSync(p, "utf8");
+
+            function unquote(v) {
+              v = v.trim();
+              if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+                return v.slice(1, -1);
+              }
+              return v;
+            }
+
+            for (const line of raw.split(/\r?\n/)) {
+              const s = line.trim();
+              if (!s || s.startsWith("#")) continue;
+
+              const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+              if (!m) continue;
+
+              const key = m[1];
+              let val = m[2] ?? "";
+
+              // strip inline comments for unquoted values: KEY=value # comment
+              if (!val.startsWith('"') && !val.startsWith("'")) {
+                const idx = val.indexOf(" #");
+                if (idx !== -1) val = val.slice(0, idx);
+              }
+
+              val = unquote(val);
+
+              // safe bash export (single quotes + escaping)
+              const escaped = String(val).replace(/'/g, `'\\''`);
+              process.stdout.write(`export ${key}='${escaped}'\n`);
+            }
+            NODE
+
+              # shellcheck disable=SC1090
+              . "$ENV_EXPORTS"
+              rm -f "$ENV_EXPORTS"
+
+              if [ -z "${NODE_OPTIONS:-}" ]; then
+                export NODE_OPTIONS="$DEFAULT_NODE_OPTIONS"
+              fi
+            }
+
+            echo "---- before deploy ----"
+            OLD_SHA="$(git rev-parse HEAD || true)"
+            echo "OLD_SHA=${OLD_SHA}"
+            pm2 status || true
+
+            echo "---- update code ----"
+            git fetch --prune origin
+
+            # Force local branch to exactly match remote branch (prevents stale local state)
+            git checkout -f -B "$DEPLOY_BRANCH" "origin/$DEPLOY_BRANCH"
+            git reset --hard "origin/$DEPLOY_BRANCH"
+            git clean -fd
+
+            NEW_SHA="$(git rev-parse HEAD)"
+            echo "NEW_SHA=${NEW_SHA}"
+            git --no-pager log -1 --oneline
+
+            echo "---- decide whether to restart sync ----"
+            CHANGED="$(git diff --name-only "${OLD_SHA}" "${NEW_SHA}" || true)"
+            printf "%s\n" "$CHANGED" > /tmp/changed_files.txt || true
+
+            NEED_SYNC_RESTART="no"
+            if grep -Eiq '(^triko-sync/|^fina-master-sync\.mjs$|sync|fina|jobs|cron|pm2|package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock)' /tmp/changed_files.txt; then
+              NEED_SYNC_RESTART="yes"
+            fi
+            echo "NEED_SYNC_RESTART=${NEED_SYNC_RESTART}"
+
+            rollback() {
+              echo "---- ROLLBACK: deployment failed, restoring OLD_SHA=${OLD_SHA} ----"
+              if [ -n "${OLD_SHA}" ]; then
+                git reset --hard "${OLD_SHA}" || true
+              fi
+
+              rm -rf .next || true
+
+              # deps (build needs dev deps for tailwind/postcss in many setups)
+              if [ -f package-lock.json ]; then
+                npm ci --include=dev || npm install --include=dev || true
+              else
+                npm install --include=dev || true
+              fi
+
+              load_env || true
+
+              npm run build || true
+              pm2 restart "$WEB_APP" --update-env || true
+              pm2 restart "$SYNC_APP" --update-env || true
+              pm2 save || true
+              pm2 status || true
+            }
+
+            trap rollback ERR
+
+            echo "---- install dependencies (include dev deps for build) ----"
+            if [ -f package-lock.json ]; then
+              npm ci --include=dev
+            else
+              npm install --include=dev
+            fi
+
+            echo "---- load env from .env.local (safe) ----"
+            load_env
+
+            echo "Env loaded (non-sensitive check):"
+            node -e "console.log({ NODE_ENV: process.env.NODE_ENV, PORT: process.env.PORT, HAS_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL, HAS_SERVICE_ROLE: !!process.env.SUPABASE_SERVICE_ROLE_KEY, HAS_FINA: !!process.env.FINA_BASE_URL })"
+
+            echo "---- build (no downtime yet) ----"
+            rm -rf .next
+            npm run build
+
+            echo "---- restart web (update env) ----"
+            pm2 restart "$WEB_APP" --update-env
+            pm2 save || true
+
+            echo "---- ensure sync is running (and restart if needed) ----"
+            # IMPORTANT: worker should be fork / 1 instance (avoid double-processing)
+            if pm2 describe "$SYNC_APP" >/dev/null 2>&1; then
+              # If it's currently in cluster mode, replace with fork mode
+              MODE="$(pm2 describe "$SYNC_APP" | awk -F': ' '/exec mode/ {print $2; exit}' | tr -d '\r')"
+              if echo "$MODE" | grep -qi "cluster"; then
+                echo "triko-sync is in cluster mode -> recreating as single fork process"
+                pm2 delete "$SYNC_APP" || true
+                pm2 start "${APP_DIR}/fina-master-sync.mjs" \
+                  --name "$SYNC_APP" \
+                  --interpreter node \
+                  --time \
+                  --max-restarts 10 \
+                  --restart-delay 3000
+              else
+                if [ "$NEED_SYNC_RESTART" = "yes" ]; then
+                  echo "Sync-related changes detected -> restarting ${SYNC_APP}"
+                  pm2 restart "$SYNC_APP" --update-env || true
+                else
+                  echo "No sync-related changes -> leaving ${SYNC_APP} running"
+                fi
+              fi
+            else
+              echo "${SYNC_APP} not found in PM2. Starting it now (single instance)..."
+              pm2 start "${APP_DIR}/fina-master-sync.mjs" \
+                --name "$SYNC_APP" \
+                --interpreter node \
+                --time \
+                --max-restarts 10 \
+                --restart-delay 3000
+            fi
+
+            pm2 save || true
+            pm2 status || true
+
+            echo "---- local upstream readiness (bypass nginx) ----"
+            READY="no"
+            for i in $(seq 1 30); do
+              if curl -fsS "http://127.0.0.1:${PORT}/" >/dev/null; then
+                echo "OK: upstream responded on 127.0.0.1:${PORT}"
+                READY="yes"
+                break
+              fi
+              echo "waiting for upstream... ($i/30)"
+              sleep 1
+            done
+            if [ "$READY" != "yes" ]; then
+              echo "FAILED: upstream never became ready on 127.0.0.1:${PORT}"
+              pm2 status || true
+              pm2 logs "$WEB_APP" --lines 200 --nostream || true
+              exit 1
+            fi
+
+            echo "---- nginx/domain health check (follow redirects) ----"
+            OK="no"
+            for i in $(seq 1 30); do
+              CODE="$(curl -sS -L -o /dev/null -w "%{http_code}" "${HEALTH_URL}" || true)"
+              if [ "$CODE" = "200" ]; then
+                echo "OK: ${HEALTH_URL} returned ${CODE}"
+                OK="yes"
+                break
+              fi
+              echo "health check got ${CODE} ($i/30)"
+              if [ "$i" = "5" ] || [ "$i" = "15" ] || [ "$i" = "25" ]; then
+                pm2 status || true
+                pm2 logs "$WEB_APP" --lines 120 --nostream || true
+                pm2 logs "$SYNC_APP" --lines 80 --nostream || true
+                sudo tail -n 80 /var/log/nginx/error.log || true
+              fi
+              sleep 1
+            done
+            if [ "$OK" != "yes" ]; then
+              echo "FAILED: ${HEALTH_URL} never became healthy"
+              pm2 status || true
+              pm2 logs "$WEB_APP" --lines 250 --nostream || true
+              pm2 logs "$SYNC_APP" --lines 120 --nostream || true
+              sudo tail -n 120 /var/log/nginx/error.log || true
+              exit 1
+            fi
+
+            echo "---- final sanity: both apps online ----"
+            pm2 describe "$WEB_APP"  | grep -q "status.*online"
+            pm2 describe "$SYNC_APP" | grep -q "status.*online"
+
+            trap - ERR
+            echo "---- deploy done ----"

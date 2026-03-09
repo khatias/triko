@@ -3,15 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,5 +18,121 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+ font-family: "Noto Sans Georgian", system-ui, -apple-system, "Segoe UI", Roboto,
+    Arial, sans-serif;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+/* add to global css once */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-reveal {
+  opacity: 0;
+  animation: revealUp 0.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+}
+
+.reveal-delay-0 {
+  animation-delay: 0ms;
+}
+.reveal-delay-1 {
+  animation-delay: 140ms;
+}
+.reveal-delay-2 {
+  animation-delay: 280ms;
+}
+
+@keyframes shineSweep {
+  from {
+    transform: translateX(-140%) rotate(12deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(240%) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+/* paused by default, only runs on hover via group-hover play state */
+.animate-shine {
+  animation: shineSweep 1.6s cubic-bezier(0.2, 1, 0.3, 1) paused;
+}
+
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border: 8px solid transparent;
+  border-top-color: #f44842;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0.8, 0.6, 1) infinite;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@layer utilities {
+  .animate-marquee {
+    /* 60s makes it feel steady and luxury. 
+       Use 'linear' to prevent it from speeding up or slowing down. */
+    animation: marquee 60s linear infinite;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* We slide exactly half because we rendered the list twice */
+    transform: translateX(-50%);
+  }
 }

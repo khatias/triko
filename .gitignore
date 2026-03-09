@@ -34,3 +34,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+supabase/temp/
+.env*
+.vscode/
+supabase/.temp/
+
+ecosystem.config.js

@@ -1,0 +1,1340 @@
+{
+  "Home": {
+    "meta": {
+      "title": "Triko | Sets, Kimonos & Boxers",
+      "description": "Discover Triko's collection of sets, kimonos, and boxers crafted with refined style, quality fabrics, and thoughtfully designed silhouettes."
+    },
+    "Hero": {
+      "h1": "Soft by design, Made for everyday comfort",
+      "sub": "Kimono, pajamas, and loungewear — comfort and simplicity for every day.",
+      "ctaPrimary": "Shop New Arrivals",
+      "ctaSecondary": "Size Guide",
+      "imgAlt": "Triko loungewear on a model in a soft-lit studio"
+    },
+
+    "StatusStrip": {
+      "seasonValue": "Made in Georgia",
+      "featureLeft": "Premium quality",
+      "featureRight": "Ships Across Georgia",
+      "locationCode": "[ TBS / GEO ]",
+      "scarcity": "Limited Stock",
+      "mobileLeft": "Cotton Blend",
+      "mobileRight": "Delivery in Georgia"
+    },
+    "Slider": {
+      "subTitle": "New Season",
+      "title": "Latest Drops"
+    },
+    "Groups": {
+      "title": "The Collection",
+      "subTitle": "Select a category",
+      "explore": "Explore"
+    },
+    "Categories": {
+      "title": "Shop by popular category",
+      "items": {
+        "boxers": "Boxers",
+        "pajamas": "Pajamas",
+        "kimano": "Kimano",
+        "dress": "Dress"
+      }
+    },
+    "USP": {
+      "freeReturns": "Free returns within 14 days",
+      "fastDelivery": "Fast delivery in Georgia",
+      "securePayments": "Secure payments",
+      "storeLocations": "Two store locations"
+    },
+    "Featured": {
+      "title": "Featured",
+      "viewAll": "View all"
+    },
+    "Story": {
+      "sub": "Thoughtful fits, breathable fabrics, and details that matter.",
+      "cta": "About Us",
+      "imgAlt": "Lifestyle photo showing Triko products in a cozy home"
+    },
+    "Social": {
+      "rating": "Average rating",
+      "customers": "Happy customers",
+      "returns": "Free returns"
+    }
+  },
+
+  "LanguageSwitcher": {
+    "labelEn": "ENGLISH",
+    "labelKa": "GEORGIAN"
+  },
+  "Banner": {
+    "bannerTitle": "Explore the best products and services we have to offer!"
+  },
+  "Header": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "featured": "Featured",
+    "newArrivals": "New Arrivals",
+    "kimano": "Kimono",
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "info": "Info",
+    "profile": "My Profile",
+    "account": "My Account",
+    "addresses": "My Addresses",
+    "orders": "My Orders",
+    "greeting": "Hello",
+    "welcome": "Welcome",
+    "joinUs": "Join Us",
+    "seeMore": "See More",
+    "viewAll": "View All",
+    "all": "All products",
+    "searchPlaceholder": "Search .."
+  },
+
+  "Footer": {
+    "brand": {
+      "aria": "Brand information",
+      "tagline": "Everyday comfort, made for you.",
+      "storeTitle": "Our Stores",
+      "storesAria": "Store locations"
+    },
+    "contact": {
+      "call": "Call",
+      "callAria": "Call us"
+    },
+    "Newsletter": {
+      "title": "Let's stay in touch.",
+      "description": "Subscribe to our newsletter for exclusive offers and  early access to new collections,",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
+    "nav": {
+      "help": "Help",
+      "orders": "Orders & Returns",
+      "services": "Services",
+      "stores": "Store Locations",
+      "legal": "Legal"
+    },
+    "links": {
+      "profile": "My Profile",
+      "orders": "My Orders",
+      "about": "About Us",
+      "contact": "Contact Us",
+      "shipping": "Shipping & Returns",
+      "sizeGuide": "Size Guide",
+      "faq": "FAQ",
+      "orderStatus": "Order Status",
+      "returns": "Returns & Exchanges",
+      "trackOrder": "Track Your Order",
+      "giftCards": "Gift Cards",
+      "offers": "Offers & Events",
+      "chat": "Live Chat",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Use",
+      "cookies": "Cookie Policy",
+      "adPreferences": "Ad Preferences",
+      "view": "View"
+    },
+    "legal": {
+      "allRights": "All rights reserved.",
+      "madeWith": "Made with love."
+    }
+  },
+  "Auth": {
+    "unsupported": "Unsupported media type.",
+    "unknown": "Something went wrong. Please try again.",
+    "supabase": "We couldn't complete the request. Please try again later.",
+    "rateLimit": "Too many attempts. Please try again later.",
+
+    "invalidEmail": "Please enter a valid email address.",
+    "invalidPassword": "Your password doesn't meet the requirements.",
+    "passwordRequired": "Password is required.",
+    "passwordTooLong": "Password must be 72 characters or fewer.",
+    "invalidFullName": "Please enter your full name.",
+
+    "invalidCredentials": "Invalid email or password.",
+
+    "loginSuccess": "Signed in successfully.",
+    "signupSuccess": "We sent a verification link to {email}. Please check your inbox.",
+    "signupSuccessGeneric": "We sent a verification link. Please check your inbox.",
+
+    "emailInUse": "This email is already registered. Try signing in instead.",
+    "resetSent": "If an account exists for this email, we’ve sent a password reset link.",
+    "resetSentGeneric": "If an account exists, we’ve sent a password reset link.",
+    "resetFailed": "We couldn’t send the reset email. Please try again later.",
+    "passwordUpdated": "Your password has been updated.",
+    "resetLinkInvalidOrExpired": "This reset link is invalid or has expired. Please request a new one.",
+    "passwordMustBeDifferent": "Your new password must be different from your current password."
+  },
+  "Form": {
+    "loginTitle": "Welcome back",
+    "loginSubTitle": "Sign in to your account to continue.",
+    "signUpTitle": "Create your account",
+    "signUpSubtitle": "Join Triko to save favorites, track orders, and check out faster.",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordSubtitle": "Enter your email and we’ll send you a reset link.",
+    "resetPasswordTitle": "Reset password",
+    "resetPasswordSubtitle": "Choose a new password and confirm it below.",
+    "contactTitle": "Get in Touch",
+    "contactSubtitle": "We’d love to hear from you. Send us a message below.",
+    "preferToCall": "Prefer to call? Reach us at: ",
+    "trustHint": "We’ll never share your email with anyone else.",
+    "fields": {
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "email": "Email Address",
+      "password": "Password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm Password",
+      "message": "Your Message",
+      "messagePlaceholder": "Enter your message here"
+    },
+    "actions": {
+      "submit": "Sign in",
+      "send": "Send Message",
+      "sending": "Sending…",
+      "signIn": "Sign in",
+      "signUp": "Create account",
+      "google": "Continue with Google",
+      "sendResetLink": "Send reset link",
+      "updatePassword": "Update password"
+    },
+    "ui": {
+      "or": "or"
+    },
+
+    "notices": {
+      "trustEmailPrivacy": "We’ll never share your email.",
+      "resetHelp": "If you don’t see the email in a few minutes, check your spam folder.",
+      "passwordHint": "Use at least 8 characters, including a number and a letter."
+    },
+    "links": {
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Remember me",
+      "createAccount": "Create one",
+      "dontHaveAccount": "Don’t have an account?",
+      "haveAccount": "Already have an account?",
+      "terms": "Terms",
+      "privacy": "Privacy Policy",
+      "backToLogin": "Back to sign in"
+    },
+    "legal": {
+      "notice": "By continuing, you agree to our <terms>Terms</terms> and <privacy>Privacy Policy</privacy>."
+    },
+    "messages": {
+      "passwordUpdated": "Your password has been updated successfully. You can now log in.",
+      "genericError": "Something went wrong. Please try again."
+    }
+  },
+  "Errors": {
+    "required": "This field is required",
+    "invalidCredentials": "Email or password is incorrect",
+    "emailRequired": "Email is required",
+    "emailTooLong": "Email is too long",
+    "invalidEmail": "Email format is incorrect",
+    "tooShortName": "Too short name, minimum 3 characters",
+    "tooLongName": "Too long name, maximum 100 characters",
+    "tooLongEmail": "Too long email, maximum 254 characters",
+    "tooShortMessage": "Message is too short, minimum 10 characters",
+    "tooLongMessage": "Message is too long, maximum 2000 characters",
+    "passwordRequired": "Password is required",
+    "passwordTooLong": "Password is too long",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordUpper": "Add at least one uppercase letter",
+    "passwordLower": "Add at least one lowercase letter",
+    "passwordNumber": "Add at least one number",
+    "passwordSymbol": "Add at least one symbol",
+    "confirmPasswordRequired": "Confirm your password",
+    "passwordsDontMatch": "Passwords do not match",
+    "termsRequired": "You must accept the terms",
+    "reset_link_invalid_or_expired": "The reset link is invalid or has expired. Please request a new email.",
+    "weak_password": "That password doesn't meet the requirements. Please choose a stronger one.",
+    "rate_limited": "Too many attempts. Please wait a moment and try again.",
+    "server_error": "Server error. Please try again later.",
+    "unknown": "Something went wrong. Please try again.",
+    "network": "Network error. Please try again.",
+    "timeout": "Request timed out. Please try again.",
+    "fullNameRequired": "This field is required.",
+    "fullNamePleaseFirstLast": "Please enter first and last name.",
+    "phoneRequired": "This field is required.",
+    "phoneMustHave9Digits": "Please enter a valid Georgian phone number.",
+    "phoneLooksInvalid": "Please enter a valid phone number.",
+    "phoneCannotStartWith0": "Please enter a valid phone number.",
+    "phoneMustBeMobile": "Please enter a valid mobile number.",
+    "cityRequired": "This field is required.",
+    "cityTooShort": "Please enter a valid city.",
+    "cityTooLong": "City is too long.",
+    "cityMustContainLetters": "City must contain letters.",
+    "addressSelectionRequired": "Please select an address or enter a new one.",
+    "addressLineRequired": "This field is required.",
+    "addressLineTooShort": "Address is too short",
+    "addressLineTooLong": "Address is too long.",
+    "addressLineMustContainLettersOrNumbers": "Please enter a valid address.",
+    "selectedAddrId": "Please select a valid saved address.",
+    "regionTooLong": "Region is too long.",
+    "regionMustContainLettersOrNumbers": "Please enter a valid region.",
+    "phoneInvalidCharacters": "Only digits  are allowed.",
+    "botDetected": "Our system suspects you may not be human. If this is an error, please try again later.",
+    "AUTH_REQUIRED": "Please sign in to continue.",
+    "CART_EMPTY": "Your cart is empty.",
+    "CART_ITEM_INVALID_QTY": "One of the items has an invalid quantity. Please refresh your cart.",
+    "OUT_OF_STOCK": "Some items are not available right now.",
+    "CHECKOUT_FAILED": "Checkout failed. Please try again.",
+    "PAYMENT_INIT_FAILED": "Payment could not be started. Please try again.",
+
+    "OOS_DETAILS_TITLE": "Items that cannot be reserved",
+    "OOS_QTY_LINE": "Requested: {requested}, available now: {available}",
+
+    "oos_reserved_temporarily": "Temporarily unavailable because another customer is checking out. Please try again in a few minutes.",
+    "oos_no_stock": "Sold out.",
+    "oos_insufficient": "Not enough stock available right now.",
+    "fullNameInvalid": "Please enter a valid full name."
+  },
+  "Login": {
+    "meta": {
+      "title": "Sign in — Triko",
+      "description": "Sign in to your Triko account to track orders, manage your profile, and save favorites. Secure login with email or Google."
+    }
+  },
+  "ForgotPassword": {
+    "meta": {
+      "title": "Forgot password — Reset your Triko account",
+      "description": "Enter your email to get a secure password reset link from Triko. Recover access to your account, orders, favorites, and profile in minutes."
+    }
+  },
+  "ResetPassword": {
+    "meta": {
+      "title": "Set new password — Secure your Triko account",
+      "description": "Create a strong new password to finish your Triko password reset. Then sign in to manage orders, favorites, and your profile securely."
+    }
+  },
+
+  "SignUp": {
+    "meta": {
+      "title": "Sign up — Triko",
+      "description": "Create a Triko account to track orders, manage your profile, and save favorites. Fast, secure sign up with email or Google."
+    }
+  },
+
+  "Contact": {
+    "meta": {
+      "title": "Contact — Triko",
+      "description": "Get in touch with Triko. Find our store locations in Tbilisi, or reach us online for support and inquiries."
+    },
+
+    "title": "Contact Us",
+    "success": "Your message has been sent!"
+  },
+
+  "About": {
+    "meta": {
+      "title": "About — Triko",
+      "description": "Discover Triko: our story, mission, values, and store locations."
+    },
+    "hero": {
+      "title": "TRIKO",
+      "detail": "First and only",
+      "exploreMore": "Explore Studio",
+      "description": "Triko is the first and only Georgian brand creating underwear, pajama sets, and unisex kimonos for women and men. What started as a local brand in Tbilisi is now expanding internationally, sharing our vision of comfort and individuality with a wider audience.",
+      "underwear": "Underwear",
+      "kimano": "Kimono",
+      "pajamas": "Pajamas",
+      "subtitle": "Triko blends cozy materials, thoughtful fits, and clean lines to create everyday pieces you’ll reach for again and again."
+    },
+    "whoIsTrikoFor": {
+      "title": "Who is Triko for?",
+      "desc": "Our unisex designs are created for all genders and lifestyles, allowing freedom of movement, self-expression, and ease in everyday life.",
+      "isTrikoFor1": "For those who love comfort!",
+      "isTrikoFor2": "For those who love color and boldness!",
+      "isTrikoFor3": "For those for whom quality is just as important as design!",
+      "isTrikoFor4": "Triko is for everyone!"
+    },
+    "goal": {
+      "Cardtitle": "The Vision",
+      "readButton": "Read Our Story",
+      "title": "Our Goal",
+      "slogan1": "Our goal is to create products for",
+      "slogan2": "everyone",
+      "slogan3": "without sacrificing quality ethics, or",
+      "slogan4": "aesthetics"
+    },
+    "philosophy": {
+      "title": "Our philosophy",
+      "desc": "We believe that quality should be accessible. Triko is a budget-oriented brand with high standards—proving that good materials, thoughtful design, and comfort do not have to come at a high price.",
+      "discoverCollection": "Discover our collection"
+    },
+    "WhatWeCreate": {
+      "concept": "Concept",
+      "title1": "What We",
+      "title2": "Create",
+      "desc": "We design and produce underwear, pajama sets, and unisex kimonos that are meant to be worn every day. Our collections are modern, functional, and expressive—created to feel natural on the body while still standing out visually."
+    },
+    "FabricsAndQuality": {
+      "title": "Fabrics & Quality",
+      "desc": "Fabric is the foundation of Triko. We work very delicately with materials, carefully choosing natural, breathable, and skin-friendly textiles. Every product is made to be comfortable, soft, and long-lasting, so you can truly feel the difference when wearing it.",
+      "seeMore": "See our Products"
+    },
+    "Georgia": {
+      "title": "From Georgia to the World",
+      "desc": "Proudly founded in Georgia, Triko began as a local brand and is now growing internationally. While our roots remain in Tbilisi, our vision is global—bringing Georgian creativity, care, and craftsmanship to customers around the world."
+    },
+    "locations": {
+      "title": "Visit Us",
+      "subtitle": "Directory & Showrooms",
+      "openInMaps": "Open in Maps",
+      "viewOnMap": "View on map",
+      "items": {
+        "store1": {
+          "title": "Tbilisi · Galleria Tbilisi",
+          "address": "2/4 Shota Rustaveli Ave, 3rd floor",
+          "mapsHref": "https://www.google.com/maps/search/?api=1&query=Galleria+Tbilisi+2%2F4+Rustaveli+Avenue"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to feel the difference?",
+      "subtitle": "Explore our latest drops and everyday staples.",
+      "button": "Shop New Arrivals"
+    }
+  },
+  "auth": {
+    "unsupported": "Unsupported media type.",
+    "required": "Email and password are required.",
+    "signupSuccess": "We’ve sent a confirmation link to {email}.",
+    "emailInUse": "This email is already registered, please try logging in or resetting your password.",
+    "supabase": "Something went wrong. Please try again later.",
+    "invalidAction": "Invalid action.",
+    "unexpected": "Unexpected error. Please try again.",
+    "signinSuccess": "Signed in successfully.",
+    "badCredentials": "Invalid email or password.",
+    "emailNotConfirmed": "Please confirm your email. We’ve sent a new confirmation link to {email}.",
+    "rateLimit": "Too many attempts. Please try again later.",
+    "passwordResetSent": "We’ve sent a password reset link if the address exists in our system.",
+    "passwordResetFailed": "Could not send password reset email.",
+    "network": "Network error. Please try again.",
+    "timeout": "Request timed out. Please try again."
+  },
+  "Profile": {
+    "hello": "Hello, {name}!",
+    "subtitle": "Welcome back! Manage your account, view orders, and update your information.",
+    "email": "Email",
+    "registeredOn": "Registered on",
+    "lastActivity": "Last Activity",
+    "unknown": "Unknown",
+    "meta": {
+      "title": "Profile — Triko",
+      "description": "Manage your Triko account details, including your name, email, phone number, and preferences. Update your profile information securely."
+    },
+    "sidebar": {
+      "orders": "My Orders",
+      "account": "My Account",
+      "addresses": "My Addresses",
+      "title": "My Profile",
+      "signOut": "Sign out"
+    },
+    "actions": {
+      "save": "Save changes",
+      "saving": "Saving…"
+    },
+    "account": {
+      "title": "Account Details",
+      "fullName": "Full Name",
+      "phone": "Phone Number",
+      "sex": "Sex",
+      "female": "Female",
+      "male": "Male",
+      "birthdate": "Birth Date",
+      "marketingOptIn": "I agree to receive marketing emails.",
+      "noUser": "please log in to have access to your profile.",
+      "birthDateInvalid": "Birth date must be a valid date in the past."
+    },
+    "addresses": {
+      "title": "Shipping Addresses",
+      "subtitle": "Save multiple addresses for a faster checkout experience.",
+      "add": "Add New Address",
+      "noAddresses": "You have no saved addresses.",
+      "default": "Default",
+      "setDefault": "Set as default",
+      "delete": "Delete",
+      "address1": "Address",
+      "address2": "Comment(optional)",
+      "city": "City",
+      "region": "Region",
+      "save": "Save Address",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "shippingZone": "Choose Shipping zone",
+      "regionCity": "Region - City",
+      "regionVillage": "Region - Village",
+      "regionTbilisi": "Tbilisi",
+      "municipality": "Municipality",
+      "village": "Village"
+    },
+    "orders": {
+      "title": "My Orders",
+      "subtitle": "Track your order history and status.",
+      "totalOrders": "Total Orders: ",
+      "pendingPayments": "Pending Payments",
+      "continueShopping": "Continue Shopping",
+      "logintoView": "please log in to view your orders.",
+      "failedToLoad": "Failed to load orders. Please try again later.",
+      "activeOrders": "Active",
+      "loginCta": "Log in",
+      "confirmedLabel": "Order Confirmed",
+      "confirmedDesc": "We have received your order and it is being processed.",
+      "inTransitLabel": "In Transit",
+      "inTransitDesc": "Your order is on its way to the delivery address.",
+      "deliveredLabel": "Delivered",
+      "deliveredDesc": "Your order has been delivered. We hope you enjoy your purchase!",
+      "orderTitle": "Order",
+      "qtyLabel": "Qty: {qty}",
+      "paymentFailedLabel": "Payment Failed",
+      "paymentFailedDesc": "Shipping will not start for unpaid orders.",
+      "awaitingPaymentLabel": "Awaiting Payment",
+      "notStartedLabel": "Not started",
+      "notStartedDesc": "Shipping starts after payment.",
+      "supportDesc": "If you have any questions about your order, please contact our support team.",
+      "completePaymentHint": "Complete payment to continue",
+      "failedPayments": "Failed payments",
+      "viewDetails": "View details",
+      "discountApplied": "Discount applied",
+      "itemsCount": "{count, plural, one {# item} other {# items}}",
+      "back": "Back",
+      "orderStatusLabel": "Order Status",
+      "completePayment": "Complete Payment",
+      "awaitingPaymentTitle": "Awaiting Payment",
+      "awaitingPaymentDesc": "This order is saved but not yet processed.",
+      "payNow": "Pay Now",
+      "itemsTitle": "Items",
+      "failedToLoadItems": "Failed to load items",
+      "noItems": "No item details found",
+      "summaryTitle": "Summary",
+      "subtotalLabel": "Subtotal",
+      "discountLabel": "Discount",
+      "shippingLabel": "Shipping",
+      "freeLabel": "Free",
+      "totalLabel": "Total",
+      "returnToCart": "Return to Cart",
+      "needHelp": "Need help?",
+      "contactSupport": "Contact Support",
+      "variantLabel": "Size",
+      "productAlt": "Product",
+      "noOrders": "You have not placed any orders yet.",
+      "shipping": {
+        "confirmedLabel": "Confirmed",
+        "confirmedDesc": "Order received",
+        "inTransitLabel": "In Transit",
+        "inTransitDesc": "On the way",
+        "deliveredLabel": "Delivered",
+        "deliveredDesc": "Package arrived",
+        "confirmedShort": "Confirmed",
+        "inTransitShort": "In Transit",
+        "deliveredShort": "Delivered"
+      }
+    }
+  },
+  "Helpers": {
+    "home": "Home",
+    "loading": "Loading…",
+    "next": "Next",
+    "previous": "Previous",
+    "page": "Page",
+    "filters": "Filters",
+    "clear": "Clear All",
+    "category": "Category",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "sortBy": "Sort by",
+    "recommended": "Recommended",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "size": "Size",
+    "priceRange": "Price range",
+    "min": "min",
+    "max": "max",
+    "showResults": "Show results",
+    "noImages": "No image available.",
+    "backToStart": "Back to start",
+    "loadMore": "Load more",
+    "noProducts": "No products found.",
+    "explorePiece": "Explore Piece",
+    "rollToZoom": "Roll over to zoom",
+    "noProductsFound": "No products found matching your criteria."
+  },
+  "Products": {
+    "title": "Products",
+    "meta": {
+      "title": "Products | Triko",
+      "description": "Explore Triko’s collection of sets, kimonos, and boxers. Carefully selected styles, quality fabrics, and refined design in one place."
+    },
+    "empty": {
+      "title": "No products found",
+      "description": "There are no products on this page. Try going back to page one or continue browsing the catalog.",
+      "primary": "Back to page 1",
+      "secondary": "Shop"
+    },
+    "sizes": "Sizes",
+    "sale": "SALE",
+    "selectedSize": "Selected size:",
+    "adding": "ADDING",
+    "viewPhoto": "View photo {n}",
+    "outOfStock": "This size is out of stock",
+    "chooseSize": "Choose Size",
+    "sizeGuide": "Size Guide",
+    "addToCart": "Add to Cart",
+    "addedToCart": "Added to Cart",
+    "description": "Description",
+    "Craftsmanship": "Craftsmanship",
+    "Craftsmanshipdesc": "Every piece is inspected for quality and detail to ensure longevity and timeless appeal.",
+    "Shipping": "Shipping",
+    "Shippingdesc": "We offer fast and reliable shipping across Georgia, shipping times may vary.",
+    "Assistance": "Assistance",
+    "Assistancedesc": "Our customer support team is here to help with any questions or concerns you may have."
+  },
+
+  "Cart": {
+    "cart": "Cart",
+    "size": "Size",
+    "orderSummary": "Order Summary",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total Price",
+    "checkout": "Proceed to Checkout",
+    "empty": "Your cart is  empty.",
+    "continueShopping": "Continue Shopping",
+    "secure": "Secure Payment Process",
+    "products": "Products",
+    "deliveryFee": "Delivery Fee",
+    "discount": "Discount",
+    "shippingPriceText": "Shipping fee will be added at checkout.",
+    "errors": {
+      "onlyLeft": "Only {available} left in stock.",
+      "notEnoughStock": "Not enough stock available.",
+      "notFound": "This item is currently unavailable.",
+      "priceMismatch": "Please clear your cart and try again.",
+      "priceInvalid": "Price is invalid. Please try again.",
+      "qtyInvalid": "Invalid quantity."
+    }
+  },
+  "Checkout": {
+    "meta": {
+      "title": "Checkout — Triko",
+      "description": "Complete your order securely. Add your contact and delivery details, review your items, and choose a payment method."
+    },
+    "reviewTitle": "Review your products",
+    "qtyLabel": "Qty:",
+    "contactTitle": "Contact information",
+    "fullNameLabel": "Full name",
+    "fullNamePlaceholder": "Name Surname",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "+995 5XX XX XX XX",
+    "shippingTitle": "Shipping address",
+    "toggleManual": "Enter manually",
+    "toggleSaved": "Select saved address",
+    "addressLine1Label": "Address line",
+    "addressLine1Placeholder": "Street, building, apartment",
+    "addressLine2Label": "Address line 2",
+    "addressLine2Placeholder": "Apartment, floor, etc.",
+    "cityLabel": "City",
+    "cityPlaceholder": "City",
+    "countryLabel": "Country",
+    "countryValue": "Georgia",
+    "orderSummaryTitle": "Order summary",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "shipping": "Shipping",
+    "total": "Total",
+    "processing": "Processing...",
+    "payNow": "Pay now",
+    "sizeLabel": "Size",
+    "securePayment": "Secure payment via Bank of Georgia"
+  },
+  "PaymentReturn": {
+    "checking": {
+      "title": "Verifying payment",
+      "desc": "Please wait while we confirm your transaction with the bank."
+    },
+
+    "success": {
+      "title": "Order confirmed",
+      "desc": "Thanks for choosing Triko. Your payment was successful."
+    },
+
+    "error": {
+      "title": "Payment failed",
+      "desc": "The transaction was declined or cancelled. If a hold was placed on your card, your bank will release it shortly."
+    },
+
+    "orderRefLabel": "Order reference",
+    "copyOrderId": "Copy order ID",
+    "viewMyOrder": "View my orders",
+    "tryAgain": "Try again",
+    "returnToStore": "Return to store",
+    "secureNote": "Secure connection established",
+    "brand": "Triko"
+  },
+  "Admin": {
+    "Bundles": {
+      "createBundle": "Create Set",
+      "topParent": "Top parent",
+      "selectTop": "Select top parent",
+      "bottomParent": "Bottom parent",
+      "selectBottom": "Select bottom parent",
+      "editBundle": "Edit Set",
+      "nameKa": "Name Ka",
+      "nameEn": "Name En",
+      "topandBottomCantBeSame": "Top and bottom pieces cannot be the same.",
+      "availableSzies": "Available sizes",
+      "sizePreview": "Size preview",
+      "searchPlaceholder": "search by parentCode"
+    },
+    "Orders": {
+      "title": "Orders",
+      "subtitle": "Manage and track your store orders. Showing {count} results.",
+      "orderId": "Order ID",
+      "customer": "Customer",
+      "date": "Date",
+      "status": "Status",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "total": "Total",
+      "action": "Action",
+      "items": "Items",
+      "shipping": "Shipping ",
+      "view": "View ",
+      "noOrders": "You have not placed any orders yet.",
+      "noOrdersHint": "When orders are created, they will appear here.",
+      "noOrdersHintFiltered": "No orders match your filters. Try clearing filters or changing the search.",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search phone, UUID...",
+      "paymentLabel": "Payment",
+      "shippingLabel": "Shipping",
+      "rowsLabel": "Rows",
+      "apply": "Apply",
+      "loading": "Loading",
+      "resetTitle": "Reset to paid",
+
+      "end": "End",
+
+      "paid": "Paid",
+      "all": "All ",
+      "pending": "Pending",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "fulfilled": "Fulfilled",
+      "fulfillment": "Fulfilment",
+      "confirmed": "Confirmed",
+      "inTransit": "In transit",
+      "delivered": "Delivered",
+      "content": "Order Contents",
+      "itemDetails": "Item Details",
+      "price": "Price",
+      "quantity": "Quantity",
+      "technicalData": "Technical Data",
+      "userId": "User ID",
+      "customerDetails": "Customer Details",
+      "contact": "Contact",
+      "address": "Address",
+      "syncStatus": "Sync status",
+      "synced": "Synced",
+      "notSynced": "Not synced",
+      "gatewayData": "Gateway data",
+      "fulfilmentData": "Fulfilment data",
+      "shippingAddress": "Shipping address",
+      "paymentInfo": "Payment info",
+      "paymentId": "Payment ID",
+      "paidAt": "Paid at",
+      "none": "None",
+      "notStarted": "Not started",
+      "autoSave": "Auto save"
+    },
+    "actions": {
+      "autoSave": "Auto save",
+      "saving": "Saving…",
+      "save": "Save",
+      "saved": "Saved",
+      "normalized": "Normalized",
+      "logout": "Log out",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups",
+      "site": "Site parameters",
+      "sets": "Sets"
+    },
+    "groups": {
+      "title": "Groups",
+      "subtitle": "Manage categories, hide or show, change name.",
+      "searchLabel": "Search by category name, slug, or ID",
+      "visible": "Visible",
+      "nameEn": "Name En",
+      "nameKa": "Name Ka",
+      "slug": "Slug",
+      "sortOrder": "Sort Order",
+      "actions": "Actions",
+      "total": "Total",
+      "finaName": "Final name",
+      "noGroups": "No groups found.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "activeHint": "Front allowed",
+      "featuredTitle": "Featured on Home",
+      "featuredEnable": "Enable",
+      "featuredOrder": "Order",
+      "featuredPreview": "Preview",
+      "featuredNoImage": "No image",
+      "featuredUpload": "Upload image",
+      "featuredReplace": "Replace image",
+      "featuredClear": "Clear image",
+      "featuredOpen": "Open image",
+      "featuredUploading": "Uploading…",
+      "featuredAltEn": "Alt text EN (for accessibility + SEO)",
+      "featuredAltKa": "Alt text KA (for accessibility + SEO)",
+      "featuredPath": "Storage path",
+      "featuredNoImageHint": "No image yet. Upload a wide banner style image."
+    },
+    "sideBar": {
+      "title": "Admin Panel",
+      "overview": "Overview",
+      "dashboard": "Dashboard",
+      "orders": "Orders",
+      "products": "Products",
+      "groups": "Groups",
+      "name": "Admin User",
+      "email": "admin@store.com"
+    },
+    "AdminDashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your store's performance.",
+      "cards": {
+        "revenue": "Revenue",
+        "orders": "Orders",
+        "products": "Products",
+        "customers": "Customers",
+        "last30Days": "Last 30 days",
+        "total": "Total",
+        "newCustomersLast30Days": "+{count} new (30d)"
+      },
+      "recentOrders": {
+        "title": "Recent orders",
+        "viewAll": "View all",
+        "empty": "No recent orders.",
+        "order": "Order"
+      },
+      "secondary": {
+        "title": "Coming soon",
+        "desc": "Add top products, inventory alerts, or sales charts here."
+      }
+    },
+    "site": {
+      "title": "Website Parameters",
+      "desc": "Manage your store's main settings",
+      "banner": "Site banner",
+      "bannerHint": "This banner will appear at the top of your website.",
+      "active": "Active",
+      "english": "English",
+      "georgian": "Georgian",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Changes saved",
+      "ctaLabelEN": "CTA Label En",
+      "ctaLabelKA": "CTA Label Ka",
+      "ctaURL": "CTA URL",
+      "usePath": "Use internal path (e.g. /products) instead of full URL",
+      "featuredProductsTitle": "Featured products",
+      "featuredProductsDesc": "Manage home featured products by parent_code, order and active state.",
+      "featuredProductsAddPlaceholder": "parent_code e.g. X262",
+      "noItems": "No items",
+      "add": "Add",
+      "featuredOrder": "Order",
+      "searchLabel": "Search",
+      "total": "Total",
+      "actions": "Actions"
+    },
+    "Products": {
+      "title": "Product Management",
+      "matching": "{count} matching products",
+      "needAttention": "{count} need attention",
+      "hiddenCount": "{count} hidden",
+      "liveCount": "{count} live",
+      "clearFilters": "Clear filters",
+      "reset": "Reset",
+      "tabs": { "inbox": "Inbox", "hidden": "Hidden", "live": "Live" },
+
+      "filtersTitle": "Filters and Search",
+      "active": "Active",
+
+      "searchLabel": "Search products",
+      "searchPlaceholder": "Search by code, name, or group",
+      "groupLabel": "Product group",
+      "allGroups": "All groups",
+      "stockLabel": "Stock status",
+      "stock": {
+        "all": "All stock",
+        "in": "In stock",
+        "out": "Out of stock",
+        "low": "Low stock"
+      },
+
+      "sortLabel": "Sort by",
+      "sort": {
+        "group": "Group",
+        "stock": "Stock level",
+        "priceAsc": "Price low to high",
+        "priceDesc": "Price high to low"
+      },
+
+      "missingTitle": "Missing content",
+      "missing": {
+        "all": "All products",
+        "content": "Content",
+        "photos": "Photos",
+        "title": "Title",
+        "desc": "Description"
+      },
+
+      "empty": {
+        "title": "No products found",
+        "desc": "Try changing filters or search terms."
+      },
+
+      "table": {
+        "code": "Product code",
+        "name": "Product name",
+        "group": "Group",
+        "stock": "Stock",
+        "price": "Price range",
+        "noName": "No name set",
+        "nameMissing": "Product name missing",
+        "pricingSet": "Pricing set"
+      },
+
+      "status": {
+        "live": "Live",
+        "hidden": "Hidden",
+        "needsWork": "Needs work"
+      },
+
+      "hints": {
+        "noContent": "No content",
+        "noPhotos": "No photos",
+        "noTitle": "No title",
+        "noDesc": "No description",
+        "more": "+{count} more"
+      }
+    },
+    "ProductEdit": {
+      "breadcrumbs": { "products": "Products" },
+      "title": "Edit Product",
+      "subtitle": "Manage details, media, and publishing status.",
+      "back": "Back",
+      "meta": { "stock": "Stock:", "price": "Price:" },
+      "actions": {
+        "saveDraft": "Save Draft",
+        "publish": "Publish Live",
+        "unpublish": "Unpublish"
+      },
+      "toasts": {
+        "saving": "Saving changes...",
+        "saved": "Draft saved successfully",
+        "publishing": "Publishing product...",
+        "published": "Product is now live!",
+        "hiding": "Hiding product...",
+        "hidden": "Product is now hidden"
+      },
+      "checklist": {
+        "ready": "Ready for Publication",
+        "incomplete": "Draft Incomplete",
+        "photos": "Photos",
+        "titles": "Titles",
+        "descriptions": "Descriptions"
+      },
+      "fields": { "title": "Product Title", "description": "Description" },
+      "ka": {
+        "title": "Georgian Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "en": {
+        "title": "English Content",
+        "titlePh": "e.g. Black T-shirt...",
+        "descPh": "Detailed product description..."
+      },
+      "media": {
+        "title": "Media Gallery",
+        "upload": "Upload",
+        "or": "or",
+        "urlPh": "Paste image URL...",
+        "addUrl": "Add URL",
+        "empty": "No photos yet.",
+        "emptyHint": "Upload or paste a URL to get started.",
+        "uploaded": "Image uploaded successfully",
+        "uploadFailed": "Failed to upload image",
+        "badUrl": "Please enter a valid http(s) URL",
+        "urlAdded": "Image URL added",
+        "removed": "Image removed",
+        "coverUpdated": "Cover image updated",
+        "max": "You can upload up to {count} photos",
+        "imgAlt": "Product image {index}",
+        "broken": "Broken URL",
+        "cover": "Cover",
+        "moveLeft": "Move Left",
+        "moveRight": "Move Right",
+        "remove": "Remove Photo",
+        "setCover": "Set as Cover"
+      },
+      "variants": {
+        "title": "Available Variants",
+        "sku": "SKU",
+        "inStock": "In Stock",
+        "empty": "No variants found for this product."
+      }
+    }
+  },
+  "PrivacyPolicy": {
+    "meta": {
+      "title": "Privacy Policy",
+      "description": "How Triko collects, uses, shares, and protects your information."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Privacy Policy",
+      "title": "Your privacy matters",
+      "description": "This Privacy Policy explains how Triko collects, uses, shares, and protects your information when you use our website and services.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Privacy policy contents",
+      "items": {
+        "who-we-are": "Who we are",
+        "info-we-collect": "Information we collect",
+        "how-we-use": "How we use information",
+        "cookies": "Cookies and analytics",
+        "sharing": "Sharing and disclosures",
+        "payments": "Payments",
+        "security": "Security",
+        "retention": "Data retention",
+        "your-rights": "Your rights and choices",
+        "children": "Children",
+        "international": "International transfers",
+        "contact": "Contact us"
+      }
+    },
+    "sections": {
+      "whoWeAre": {
+        "title": "Who we are",
+        "body": "Triko is a brand and online store. In this policy, “Triko,” “we,” “us,” and “our” refer to the entity operating this website and providing our services."
+      },
+      "collect": {
+        "title": "Information we collect",
+        "lead": "We may collect the following categories of information:",
+        "items": [
+          "Contact details, such as name, email address, phone number, and delivery address",
+          "Account details, such as login identifiers and preferences if you create an account",
+          "Order information, such as items purchased, size, color, order total, and order history",
+          "Payment related data handled by our payment providers (we do not store full card numbers)",
+          "Device and usage data, such as IP address, browser type, pages viewed, and approximate location derived from IP",
+          "Customer support content, such as messages you send us and our replies"
+        ]
+      },
+      "use": {
+        "title": "How we use information",
+        "lead": "We use information to:",
+        "items": [
+          "Provide and operate the website and store",
+          "Process orders, deliveries, returns, and customer support",
+          "Send transactional messages about your orders",
+          "Detect, prevent, and investigate fraud and abuse",
+          "Improve our products, site performance, and user experience",
+          "Send marketing communications if you opt in, and allow you to opt out at any time"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies and analytics",
+        "p1": "We use cookies and similar technologies to keep the site working, remember your preferences, and understand usage. You can control cookies through your browser settings. If you disable cookies, some features may not work as intended.",
+        "p2": "If we use analytics tools, they help us measure traffic and site performance. Where required, we will request consent before setting non essential cookies."
+      },
+      "sharing": {
+        "title": "Sharing and disclosures",
+        "lead": "We may share information in these situations:",
+        "items": [
+          "Service providers who help us run the business, such as hosting, email delivery, customer support tools, and analytics",
+          "Delivery and logistics partners to ship your order and provide tracking",
+          "Payment providers to process payments and prevent fraud",
+          "Legal and safety reasons, such as complying with law, responding to lawful requests, or protecting rights and safety",
+          "Business changes, such as a merger, acquisition, or sale of assets (information may be transferred as part of that deal)"
+        ],
+        "note": "We do not sell your personal information in the ordinary meaning of “sell.”"
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party payment providers. Your payment information is handled according to their policies. We typically receive limited payment details, such as payment status and a token or reference, not full card numbers."
+      },
+      "security": {
+        "title": "Security",
+        "body": "We use reasonable technical and organizational measures to protect information. No method of transmission or storage is completely secure, so we cannot guarantee absolute security."
+      },
+      "retention": {
+        "title": "Data retention",
+        "body": "We keep personal information only as long as necessary for the purposes described in this policy, including legal, accounting, and operational requirements. Retention periods may vary depending on the type of data and the purpose."
+      },
+      "rights": {
+        "title": "Your rights and choices",
+        "lead": "Depending on where you live, you may have rights to access, correct, delete, or receive a copy of your personal information, and to object or restrict certain processing.",
+        "items": [
+          "Marketing emails: you can unsubscribe using the link in the message",
+          "Account: you can update certain details in your account settings if available",
+          "Requests: you can contact us to request access, correction, or deletion where applicable"
+        ]
+      },
+      "children": {
+        "title": "Children",
+        "body": "Our services are not intended for children. If you believe a child has provided personal information, contact us so we can take appropriate steps."
+      },
+      "international": {
+        "title": "International transfers",
+        "body": "Your information may be processed in countries other than your own, for example where our service providers operate. Where required, we take steps to provide appropriate safeguards for transfers."
+      },
+      "contact": {
+        "title": "Contact us",
+        "p1": "For privacy questions or requests, contact us at",
+        "p2": "You can also visit our",
+        "termsLink": "Terms",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This page is a high quality template. For best accuracy, update payment providers, shipping partners, your company legal name, address, and jurisdiction specific rights."
+    }
+  },
+  "Terms": {
+    "meta": {
+      "title": "Terms and Conditions",
+      "description": "The rules and conditions for using Triko’s website and services."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Terms",
+      "title": "Terms and Conditions",
+      "description": "These Terms explain the rules for using Triko’s website and purchasing from our online store.",
+      "lastUpdatedLabel": "Last updated:",
+      "lastUpdatedDate": "February 5, 2026",
+      "appliesTo": "Applies to: Triko website and online store"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Terms contents",
+      "items": {
+        "about": "About these Terms",
+        "eligibility": "Eligibility",
+        "accounts": "Accounts",
+        "orders": "Orders",
+        "pricing": "Pricing",
+        "shipping": "Shipping",
+        "returns": "Returns",
+        "payments": "Payments",
+        "content": "Content and IP",
+        "acceptable-use": "Acceptable use",
+        "warranties": "Disclaimers",
+        "liability": "Limitation of liability",
+        "changes": "Changes to these Terms",
+        "law": "Governing law",
+        "contact": "Contact"
+      }
+    },
+    "sections": {
+      "about": {
+        "title": "About these Terms",
+        "body": "By accessing or using our website and services, you agree to these Terms. If you do not agree, do not use the website."
+      },
+      "eligibility": {
+        "title": "Eligibility",
+        "body": "You must be able to form a binding contract under applicable law to use our services. If you are using the website on behalf of a business, you confirm you are authorized to do so."
+      },
+      "accounts": {
+        "title": "Accounts",
+        "body": "If you create an account, you are responsible for keeping your login details secure and for activity under your account. Tell us promptly if you suspect unauthorized access."
+      },
+      "orders": {
+        "title": "Orders",
+        "body": "Placing an order is an offer to purchase. We may refuse or cancel an order in limited cases, including suspected fraud, incorrect pricing, or inventory issues. If we cancel after payment, we will refund according to the payment method."
+      },
+      "pricing": {
+        "title": "Pricing",
+        "body": "Prices are shown in the currency displayed at checkout and may change at any time. Taxes, shipping, and fees (if any) are shown before you confirm payment."
+      },
+      "shipping": {
+        "title": "Shipping",
+        "body": "Delivery times are estimates and can vary by location and carrier. Risk of loss transfers to you upon delivery, where allowed by law."
+      },
+      "returns": {
+        "title": "Returns",
+        "body": "Return and exchange rules depend on product type and condition. See our returns guidance (or contact support) for steps, time limits, and eligibility."
+      },
+      "payments": {
+        "title": "Payments",
+        "body": "Payments are processed by third party providers. We may receive limited payment data such as status and reference identifiers."
+      },
+      "content": {
+        "title": "Content and intellectual property",
+        "body": "All website content, including designs, text, images, logos, and code, is owned by Triko or its licensors and protected by applicable laws. You may not copy, modify, distribute, or use it without permission."
+      },
+      "acceptableUse": {
+        "title": "Acceptable use",
+        "items": [
+          "Do not misuse the website or attempt to disrupt it",
+          "Do not access accounts or data without authorization",
+          "Do not upload malicious code or perform automated scraping without permission",
+          "Do not use the website for unlawful or harmful activities"
+        ]
+      },
+      "warranties": {
+        "title": "Disclaimers",
+        "body": "The website and services are provided “as is” and “as available,” to the fullest extent permitted by law. We do not guarantee uninterrupted or error free operation."
+      },
+      "liability": {
+        "title": "Limitation of liability",
+        "body": "To the fullest extent permitted by law, Triko will not be liable for indirect, incidental, special, or consequential damages. Where liability cannot be excluded, it will be limited to the minimum extent permitted by law."
+      },
+      "changes": {
+        "title": "Changes to these Terms",
+        "body": "We may update these Terms from time to time. The updated date at the top shows when changes were last made. Continued use after changes means you accept the updated Terms."
+      },
+      "law": {
+        "title": "Governing law",
+        "body": "These Terms are governed by the laws applicable to the entity operating the Triko website, without regard to conflict of law rules."
+      },
+      "contact": {
+        "title": "Contact",
+        "p1": "For questions about these Terms, contact us at",
+        "p2": "For privacy information, see our",
+        "privacyLink": "Privacy Policy",
+        "p3": "page."
+      }
+    },
+    "note": {
+      "title": "Note",
+      "body": "This is a high quality template. For best accuracy, tailor returns, shipping, legal entity details, and consumer rights for your jurisdiction."
+    }
+  },
+  "ExchangePolicy": {
+    "meta": {
+      "title": "Exchange Policy",
+      "description": "Triko exchange rules and how to request an exchange."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Exchange Policy",
+      "description": "Triko does not accept returns. We offer exchanges for selected items under the conditions below.",
+      "windowLabel": "Window:",
+      "windowDays": "5 days from delivery",
+      "notePills": "Underwear is not exchangeable"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Exchange policy contents",
+      "items": {
+        "overview": "Overview",
+        "eligible": "Eligible items",
+        "conditions": "Conditions",
+        "how": "How to request"
+      }
+    },
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "p1": "We do not accept returns. Exchanges are available only for specific categories within the allowed window.",
+        "calloutTitle": "Important",
+        "calloutBody": "For hygiene reasons, underwear cannot be exchanged."
+      },
+      "eligible": {
+        "title": "Eligible items",
+        "items": [
+          "Pajamas can be exchanged within 5 days of delivery",
+          "Kimonos can be exchanged within 5 days of delivery"
+        ]
+      },
+      "conditions": {
+        "title": "Exchange conditions",
+        "items": [
+          "Item must be in original condition",
+          "Item must be unused and undamaged",
+          "Underwear is not eligible for exchange"
+        ]
+      },
+      "how": {
+        "title": "How to request an exchange",
+        "steps": [
+          "Visit our store or email us",
+          "Include your order number and the item you want to exchange",
+          "After confirmation, we will share the next steps"
+        ]
+      }
+    },
+    "cta": {
+      "email": "Email:",
+      "terms": "View Terms"
+    },
+    "footer": {
+      "noteTitle": "Note",
+      "noteBody": "The exchange window starts from the delivery date. Used or damaged items are not eligible."
+    }
+  },
+  "ShippingPolicy": {
+    "meta": {
+      "title": "Shipping Policy",
+      "description": "Delivery timelines for Tbilisi, regions, and international orders."
+    },
+    "contactEmail": "info@triko.ge",
+    "hero": {
+      "kicker": "Policy",
+      "title": "Shipping Policy",
+      "description": "Estimated delivery timelines for Tbilisi, regions, and international orders.",
+      "tbilisiPill": "Tbilisi: before 15:00 — next day",
+      "regionsPill": "Regions: 3–4 business days",
+      "internationalPill": "International: depends on local post"
+    },
+    "toc": {
+      "title": "Contents",
+      "aria": "Shipping policy contents",
+      "items": {
+        "tbilisi": "Tbilisi",
+        "regions": "Regions",
+        "international": "International orders",
+        "support": "Questions and contact"
+      }
+    },
+    "sections": {
+      "tbilisi": {
+        "title": "Tbilisi",
+        "body": "For orders placed before 15:00 in Tbilisi, delivery is made the next day.",
+        "calloutTitle": "Note",
+        "calloutBody": "Orders placed after 15:00 may be delivered on the next business day."
+      },
+      "regions": {
+        "title": "Regions",
+        "body": "For regions, delivery typically takes 3–4 business days."
+      },
+      "international": {
+        "title": "International orders",
+        "body": "International delivery timelines depend on your local postal service."
+      },
+      "support": {
+        "title": "Questions and contact",
+        "body": "If you have any questions about your order or delivery, contact us at:"
+      }
+    },
+    "cta": {
+      "terms": "View Terms"
+    }
+  }
+}
