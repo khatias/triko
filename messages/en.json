@@ -344,9 +344,10 @@
     "whoIsTrikoFor": {
       "title": "Who is Triko for?",
       "desc": "Our unisex designs are created for all genders and lifestyles, allowing freedom of movement, self-expression, and ease in everyday life.",
-      "isTrikoFor1": "For people who value comfort just as much as style.",
-      "isTrikoFor2": "For those who love color, simplicity, and feeling good in what they wear.",
-      "isTrikoFor3": "Triko is for everyone."
+      "isTrikoFor1": "For those who love comfort!",
+      "isTrikoFor2": "For those who love color and boldness!",
+      "isTrikoFor3": "For those for whom quality is just as important as design!",
+      "isTrikoFor4": "Triko is for everyone!"
     },
     "goal": {
       "Cardtitle": "The Vision",
@@ -673,7 +674,7 @@
     "brand": "Triko"
   },
   "Admin": {
-    "Bundles":{
+    "Bundles": {
       "createBundle": "Create Set",
       "topParent": "Top parent",
       "selectTop": "Select top parent",
@@ -683,9 +684,9 @@
       "nameKa": "Name Ka",
       "nameEn": "Name En",
       "topandBottomCantBeSame": "Top and bottom pieces cannot be the same.",
-    "availableSzies": "Available sizes",
-    "sizePreview": "Size preview",
-    "searchPlaceholder":"search by parentCode"
+      "availableSzies": "Available sizes",
+      "sizePreview": "Size preview",
+      "searchPlaceholder": "search by parentCode"
     },
     "Orders": {
       "title": "Orders",

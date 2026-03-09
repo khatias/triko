@@ -107,7 +107,7 @@ export default function AboutPage() {
                 </span>
 
                 <h3 className="text-3xl  italic text-neutral-900">
-                  {t("whoIsTrikoFor.isTrikoFor3")}
+                  {t("whoIsTrikoFor.isTrikoFor1")}
                 </h3>
               </div>
             </div>
@@ -122,7 +122,7 @@ export default function AboutPage() {
                   className="text-3xl 
                  italic text-neutral-900"
                 >
-                  {t("whoIsTrikoFor.isTrikoFor1")}
+                  {t("whoIsTrikoFor.isTrikoFor2")}
                 </h3>
               </div>
             </div>
@@ -134,7 +134,19 @@ export default function AboutPage() {
                 </span>
 
                 <h3 className="text-3xl italic text-neutral-900">
-                  {t("whoIsTrikoFor.isTrikoFor2")}
+                  {t("whoIsTrikoFor.isTrikoFor3")}
+                </h3>
+              </div>
+            </div>
+
+            <div className="group">
+              <div className="flex items-baseline gap-4 mb-4">
+                <span className="text-sm font-bold tracking-widest text-red-600">
+                  04
+                </span>
+
+                <h3 className="text-3xl italic text-neutral-900">
+                  {t("whoIsTrikoFor.isTrikoFor4")}
                 </h3>
               </div>
             </div>
@@ -273,7 +285,10 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="bg-[#fc6759]  text-black my-20 px-10 md:px-20" id="locations">
+      <div
+        className="bg-[#fc6759]  text-black my-20 px-10 md:px-20"
+        id="locations"
+      >
         <div className="py-12  border-b border-neutral-800 flex flex-col md:flex-row justify-between md:items-end">
           {/* <h3 className=" text-3xl italic text-white mb-2">
             {t("locations.title")}
