@@ -12,7 +12,7 @@ import {
   ShoppingCartIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDown } from "lucide-react";
-import logoMobile from '../../assets/logo.png'
+// import logoMobile from "../../assets/logo.png";
 import logo from "../../assets/Logo4.png";
 import LanguageSwitcher from "../toggle/LanguageSwitcher";
 import AccountMenu from "./AccountMenu";
@@ -315,14 +315,13 @@ export default function Navbar({
               })}
             </nav>
           </div>
-       <div className="pb-6">
-              {" "}
-              <SocialMedia />
-            </div>
+          <div className="pb-6">
+            {" "}
+            <SocialMedia />
+          </div>
 
           {/* Footer App-like Bottom Bar */}
           <div className="bg-neutral-50 px-6 py-6 border-t border-neutral-100 flex flex-col gap-4 shrink-0">
-     
             <Link
               href={`/${locale}/aboutUs`}
               onClick={closeMobile}
@@ -495,11 +494,9 @@ export default function Navbar({
           className="absolute left-1/3 -translate-x-1/2"
         >
           <Image
-            src={logoMobile}
+            src={logo}
             alt="Logo"
-            width={80}
-            height={20}
-            className="h-10 w-auto object-contain"
+            className="h-20 w-auto object-contain"
             priority
           />
         </Link>
