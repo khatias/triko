@@ -1,8 +1,8 @@
 {
   "Home": {
     "meta": {
-      "title": "Triko — Everyday Comfort, Made for You",
-      "description": "Discover Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
+      "title": "Triko | Sets, Kimonos & Boxers",
+      "description": "Discover Triko's collection of sets, kimonos, and boxers crafted with refined style, quality fabrics, and thoughtfully designed silhouettes."
     },
     "Hero": {
       "h1": "Soft by design, Made for everyday comfort",
@@ -319,7 +319,7 @@
   "Contact": {
     "meta": {
       "title": "Contact — Triko",
-      "description": "Get in touch with Triko. Find our store locations in Tbilisi and Kutaisi, or reach us online for support and inquiries."
+      "description": "Get in touch with Triko. Find our store locations in Tbilisi, or reach us online for support and inquiries."
     },
 
     "title": "Contact Us",
@@ -564,8 +564,8 @@
   "Products": {
     "title": "Products",
     "meta": {
-      "title": "Products — Triko",
-      "description": "Explore Triko's collection of comfortable pants, pajamas, and loungewear designed for everyday wear. Shop now for soft fabrics and thoughtful fits."
+      "title": "Products | Triko",
+      "description": "Explore Triko’s collection of sets, kimonos, and boxers. Carefully selected styles, quality fabrics, and refined design in one place."
     },
     "empty": {
       "title": "No products found",
