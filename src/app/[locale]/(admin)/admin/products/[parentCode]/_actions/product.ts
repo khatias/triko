@@ -125,7 +125,7 @@ export async function setProductPublishedAction(
 
 /** ---------- upload ---------- */
 
-const MAX_BYTES = 8 * 1024 * 1024; // 8MB (input file limit)
+const MAX_BYTES = 10 * 1024 * 1024; // 10MB (input file limit)
 const ALLOWED_MIME = new Set([
   "image/jpeg",
   "image/png",
@@ -153,7 +153,7 @@ export async function uploadProductPhotoAction(
       return err("Unsupported image type. Use JPG, PNG, WEBP, or AVIF.");
     }
     if (file.size <= 0) return err("Empty file.");
-    if (file.size > MAX_BYTES) return err("Image is too large (max 8MB).");
+    if (file.size > MAX_BYTES) return err("Image is too large (max 10MB).");
 
     // Read file -> buffer
     const inputBuffer = Buffer.from(await file.arrayBuffer());
