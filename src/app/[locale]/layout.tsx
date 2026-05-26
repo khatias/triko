@@ -22,6 +22,9 @@ const noto = Noto_Sans_Georgian({
   display: "swap",
 });
 
+const SITE_URL = "https://triko.ge";
+const OG_IMAGE = "https://triko.ge/og/triko-og.jpg";
+
 function assertLocale(locale: string): asserts locale is Locale {
   if (!routing.locales.includes(locale as Locale)) notFound();
 }
@@ -40,22 +43,30 @@ export async function generateMetadata({
   const description = t("meta.description");
 
   return {
-    metadataBase: new URL("https://triko.ge"),
+    metadataBase: new URL(SITE_URL),
 
     title,
     description,
 
     icons: { icon: "/favicon-v4.ico" },
 
+    alternates: {
+      canonical: `${SITE_URL}/${locale}`,
+      languages: {
+        "en-US": `${SITE_URL}/en`,
+        "ka-GE": `${SITE_URL}/ka`,
+      },
+    },
+
     openGraph: {
       type: "website",
       siteName: "Triko",
       title,
       description,
-      url: `/${locale}`,
+      url: `${SITE_URL}/${locale}`,
       images: [
         {
-          url: "/og/triko-og.jpg",
+          url: OG_IMAGE,
           width: 1200,
           height: 630,
           alt: "Triko",
@@ -67,10 +78,11 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: ["/og/triko-og.jpg"],
+      images: [OG_IMAGE],
     },
   };
 }
+
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await Promise.resolve(params);
   assertLocale(locale);

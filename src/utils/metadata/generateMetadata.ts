@@ -7,7 +7,7 @@ type MetaOptions = {
 };
 
 const SITE_URL = "https://triko.ge";
-const OG_IMAGE = "/og/triko-og.jpg";
+const OG_IMAGE = "https://triko.ge/og/triko-og.jpg";
 
 function normalizePath(path: string) {
   if (!path || path === "/") return "";
@@ -25,7 +25,7 @@ export async function generateLocalizedMetadata(
   const description = t("meta.description");
 
   const cleanPath = normalizePath(path);
-  const localizedPath = `/${locale}${cleanPath}`;
+  const localizedPath = `${SITE_URL}/${locale}${cleanPath}`;
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -36,8 +36,8 @@ export async function generateLocalizedMetadata(
     alternates: {
       canonical: localizedPath,
       languages: {
-        "en-US": `/en${cleanPath}`,
-        "ka-GE": `/ka${cleanPath}`,
+        "en-US": `${SITE_URL}/en${cleanPath}`,
+        "ka-GE": `${SITE_URL}/ka${cleanPath}`,
       },
     },
 
