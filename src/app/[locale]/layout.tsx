@@ -36,13 +36,41 @@ export async function generateMetadata({
 
   const t = await getTranslations({ locale, namespace: "Home" });
 
+  const title = t("meta.title");
+  const description = t("meta.description");
+
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
+    metadataBase: new URL("https://triko.ge"),
+
+    title,
+    description,
+
     icons: { icon: "/favicon-v4.ico" },
+
+    openGraph: {
+      type: "website",
+      siteName: "Triko",
+      title,
+      description,
+      url: `/${locale}`,
+      images: [
+        {
+          url: "/og/triko-og.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Triko",
+        },
+      ],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og/triko-og.jpg"],
+    },
   };
 }
-
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await Promise.resolve(params);
   assertLocale(locale);

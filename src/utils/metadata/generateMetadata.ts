@@ -1,31 +1,67 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 type MetaOptions = {
-  namespace: string; 
-  path: string; 
+  namespace: string;
+  path: string;
 };
+
+const SITE_URL = "https://triko.ge";
+const OG_IMAGE = "/og/triko-og.jpg";
+
+function normalizePath(path: string) {
+  if (!path || path === "/") return "";
+  return path.startsWith("/") ? path : `/${path}`;
+}
 
 export async function generateLocalizedMetadata(
   { params }: { params: Promise<{ locale: string }> },
   { namespace, path }: MetaOptions
-) {
+): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace });
 
+  const title = t("meta.title");
+  const description = t("meta.description");
+
+  const cleanPath = normalizePath(path);
+  const localizedPath = `/${locale}${cleanPath}`;
+
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
+    metadataBase: new URL(SITE_URL),
+
+    title,
+    description,
+
     alternates: {
-      canonical: path,
+      canonical: localizedPath,
       languages: {
-        "en-US": `/en${path}`,
-        "ka-GE": `/ka${path}`,
+        "en-US": `/en${cleanPath}`,
+        "ka-GE": `/ka${cleanPath}`,
       },
     },
+
     openGraph: {
-      title: t("meta.title"),
-      description: t("meta.description"),
+      title,
+      description,
       type: "website",
+      siteName: "Triko",
+      url: localizedPath,
+      images: [
+        {
+          url: OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: "Triko",
+        },
+      ],
     },
-  } as const;
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [OG_IMAGE],
+    },
+  };
 }
