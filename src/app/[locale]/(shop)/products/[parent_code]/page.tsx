@@ -27,9 +27,6 @@ type PageProps = {
 export default async function ProductDetailPage({ params }: PageProps) {
   const { locale, parent_code: raw } = await params;
 
-  // Fix URL encoding issues:
-  // - decode %xx sequences
-  // - convert spaces back to "+" (some routers/servers treat "+" as space)
   const parent_code = decodeURIComponent(raw).replaceAll(" ", "+");
 
   const [h, product] = await Promise.all([
@@ -42,6 +39,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!product) notFound();
 
   const title = displayTitle(product, locale);
+  const titleEn = displayTitle(product, "en");
+  const titleKa = displayTitle(product, "ka");
+
   const description = displayDescription(product, locale) ?? "";
   const groupName = displayGroupName(product, locale);
   const photos = getPhotoUrls(product.photos);
@@ -54,7 +54,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
         aria-hidden="true"
       />
 
-      <main className={`${wrap} relative py-12 `}>
+      <main className={`${wrap} relative py-12`}>
         <nav
           aria-label="Breadcrumb"
           className="mb-16 flex items-center space-x-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-stone-400"
@@ -65,7 +65,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
           >
             {h("home")}
           </Link>
+
           <span className="w-4 h-px bg-stone-300" aria-hidden="true" />
+
           <span className="text-stone-900" aria-current="page">
             {groupName}
           </span>
@@ -74,11 +76,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
         <ProductDetailClient
           locale={locale}
           title={title}
+          titleEn={titleEn}
+          titleKa={titleKa}
           photos={photos}
           variants={product.variants ?? []}
           groupName={groupName}
           description={description}
           basePriceLabel={priceLabel}
+          currency={product.currency}
         />
       </main>
     </div>

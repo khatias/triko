@@ -17,6 +17,8 @@ import {
 type ProductDetailClientProps = {
   locale: string;
   title: string;
+  titleEn: string;
+  titleKa: string;
   photos: string[];
   variants: DbVariant[];
   groupName: string;
@@ -49,6 +51,8 @@ function money(v: number | null, currency: string | null): string | null {
 export default function ProductDetailClient({
   locale,
   title,
+  titleEn,
+  titleKa,
   photos,
   variants,
   groupName,
@@ -128,15 +132,15 @@ export default function ProductDetailClient({
     !isPending &&
     (selectedSingleFinaId != null || selectedBundleIds != null);
 
-  const bundleMeta: BundleMeta = useMemo(
-    () => ({
-      parentCode: selectedVariant?.parent_code ?? null,
-      titleEn: title,
-      titleKa: title,
-      imageUrl: activePhoto ?? photos?.[0] ?? null,
-    }),
-    [selectedVariant, title, activePhoto, photos],
-  );
+const bundleMeta: BundleMeta = useMemo(
+  () => ({
+    parentCode: selectedVariant?.parent_code ?? null,
+    titleEn: titleEn?.trim() || title,
+    titleKa: titleKa?.trim() || title,
+    imageUrl: activePhoto ?? photos?.[0] ?? null,
+  }),
+  [selectedVariant, title, titleEn, titleKa, activePhoto, photos],
+);
 
   const isSinglePending =
     selectedSingleFinaId != null &&

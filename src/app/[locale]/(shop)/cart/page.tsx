@@ -17,7 +17,30 @@ function itemTitle(it: CartItemRow, locale: "en" | "ka") {
   const ka = it.title_ka?.trim() || "";
   const en = it.title_en?.trim() || "";
   const base = it.product_name?.trim() || "Product";
+
   return locale === "ka" ? ka || en || base : en || ka || base;
+}
+
+function cleanBundleCode(code: string) {
+  const trimmed = code.trim();
+
+  /*
+    Examples:
+    X303-0001L  -> X303-0001
+    X303-0003L  -> X303-0003
+    X301-0001   -> X301-0001
+  */
+  const match = trimmed.match(/^(.+-\d+)[A-Za-z]+$/);
+
+  if (match?.[1]) {
+    return match[1];
+  }
+
+  return trimmed;
+}
+
+function safePathPart(v: string) {
+  return v.trim().replaceAll("/", "-");
 }
 
 function extractImageUrl(v: string | null): string | null {
@@ -32,18 +55,26 @@ function extractImageUrl(v: string | null): string | null {
     try {
       const parsed = JSON.parse(trimmed) as unknown;
 
-      if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+      if (
+        typeof parsed === "object" &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
         const rec = parsed as Record<string, unknown>;
         const u = rec.url;
+
         if (typeof u === "string" && isValidHttpUrl(u)) return u;
       }
 
       if (Array.isArray(parsed) && parsed.length > 0) {
         const first = parsed[0] as unknown;
+
         if (typeof first === "string" && isValidHttpUrl(first)) return first;
+
         if (typeof first === "object" && first !== null) {
           const rec = first as Record<string, unknown>;
           const u = rec.url;
+
           if (typeof u === "string" && isValidHttpUrl(u)) return u;
         }
       }
@@ -63,6 +94,7 @@ function groupCartItems(items: CartItemRow[]): CartLine[] {
 
   for (const it of items) {
     const k = it.bundle_key ?? null;
+
     if (k) {
       const arr = bundleMap.get(k) ?? [];
       arr.push(it);
@@ -72,12 +104,15 @@ function groupCartItems(items: CartItemRow[]): CartLine[] {
     }
   }
 
-  const bundles: CartLine[] = Array.from(bundleMap.entries()).map(([key, arr]) => {
-    const sorted = [...arr].sort((a, b) =>
-      String(a.variant_code ?? "").localeCompare(String(b.variant_code ?? "")),
-    );
-    return { kind: "bundle", key, items: sorted };
-  });
+  const bundles: CartLine[] = Array.from(bundleMap.entries()).map(
+    ([key, arr]) => {
+      const sorted = [...arr].sort((a, b) =>
+        String(a.variant_code ?? "").localeCompare(String(b.variant_code ?? "")),
+      );
+
+      return { kind: "bundle", key, items: sorted };
+    },
+  );
 
   return [...bundles, ...singles];
 }
@@ -90,12 +125,28 @@ function bundleTitle(items: CartItemRow[], locale: "en" | "ka") {
         : Boolean(x.title_en?.trim() || x.title_ka?.trim()),
     ) ?? items[0];
 
-  return preferred ? itemTitle(preferred, locale) : locale === "ka" ? "ორეული" : "Set";
+  return preferred
+    ? itemTitle(preferred, locale)
+    : locale === "ka"
+      ? "ორეული"
+      : "Set";
 }
 
 function bundleHref(items: CartItemRow[], locale: "en" | "ka") {
-  const pc = items.find((x) => x.parent_code)?.parent_code ?? null;
-  return pc ? `/${locale}/products/${pc}` : `/${locale}/products`;
+  const codes = items
+    .map((x) => x.variant_code?.trim())
+    .filter((x): x is string => Boolean(x))
+    .map(cleanBundleCode)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+
+  if (codes.length > 0) {
+    return `/${locale}/products/BNDL:${codes.map(safePathPart).join("+")}`;
+  }
+
+  const pc = items.find((x) => x.parent_code)?.parent_code?.trim() ?? null;
+
+  return pc ? `/${locale}/products/${safePathPart(pc)}` : `/${locale}/products`;
 }
 
 function bundleImage(items: CartItemRow[]) {
@@ -103,6 +154,7 @@ function bundleImage(items: CartItemRow[]) {
     const u = extractImageUrl(it.image_url);
     if (u) return u;
   }
+
   return null;
 }
 
@@ -146,9 +198,10 @@ export default async function CartPage(props: {
                     const it = line.items[0];
                     const title = itemTitle(it, locale);
                     const img = extractImageUrl(it.image_url);
+
                     const href = it.parent_code
-                      ? `/${locale}/products/${it.parent_code}`
-                      : `/${locale}`;
+                      ? `/${locale}/products/${safePathPart(it.parent_code)}`
+                      : `/${locale}/products`;
 
                     return (
                       <div
@@ -165,7 +218,7 @@ export default async function CartPage(props: {
                               alt={title}
                               fill
                               sizes="(max-width: 640px) 100vw, 128px"
-                              className="object-cover object-center hover:scale-105 transition-transform duration-500"
+                              className="object-cover object-center transition-transform duration-500 hover:scale-105"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-zinc-300">
@@ -179,18 +232,19 @@ export default async function CartPage(props: {
                             <h3 className="text-base font-semibold leading-snug text-zinc-900 sm:text-lg">
                               <Link
                                 href={href}
-                                className="hover:text-zinc-600 transition-colors"
+                                className="transition-colors hover:text-zinc-600"
                               >
                                 {title}
                               </Link>
                             </h3>
 
-                            <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500 font-medium">
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-zinc-500">
                               {it.variant_size && (
                                 <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1">
                                   Size: {it.variant_size}
                                 </span>
                               )}
+
                               {it.variant_code && (
                                 <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1">
                                   Ref: {it.variant_code}
@@ -214,6 +268,7 @@ export default async function CartPage(props: {
                     .map((x) => {
                       const size = x.variant_size ? `Size ${x.variant_size}` : "";
                       const ref = x.variant_code ? `Ref ${x.variant_code}` : "";
+
                       return [size, ref].filter(Boolean).join(" ");
                     })
                     .filter(Boolean);
@@ -233,7 +288,7 @@ export default async function CartPage(props: {
                             alt={title}
                             fill
                             sizes="(max-width: 640px) 100vw, 128px"
-                            className="object-cover object-center hover:scale-105 transition-transform duration-500"
+                            className="object-cover object-center transition-transform duration-500 hover:scale-105"
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-zinc-300">
@@ -247,14 +302,14 @@ export default async function CartPage(props: {
                           <h3 className="text-base font-semibold leading-snug text-zinc-900 sm:text-lg">
                             <Link
                               href={href}
-                              className="hover:text-zinc-600 transition-colors"
+                              className="transition-colors hover:text-zinc-600"
                             >
                               {title}
                             </Link>
                           </h3>
 
                           {metaParts.length ? (
-                            <div className="mt-2 flex flex-wrap gap-2 text-xs text-zinc-500 font-medium">
+                            <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium text-zinc-500">
                               {metaParts.map((m, idx) => (
                                 <span
                                   key={`${line.key}:${idx}`}
@@ -275,18 +330,19 @@ export default async function CartPage(props: {
               </div>
             </div>
 
-            <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-8">
+            <div className="lg:sticky lg:top-8 lg:col-span-5 xl:col-span-4">
               <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg shadow-zinc-200/50">
-                <div className="bg-zinc-50/80 px-6 py-5 border-b border-zinc-100 backdrop-blur-sm">
+                <div className="border-b border-zinc-100 bg-zinc-50/80 px-6 py-5 backdrop-blur-sm">
                   <h2 className="text-lg font-bold text-zinc-900">
                     {t("orderSummary")}
                   </h2>
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="space-y-5 p-6">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-zinc-500">{t("products")}</span>
+
                       <span className="font-semibold text-zinc-900">
                         {state.cart.subtotal} ₾
                       </span>
@@ -307,9 +363,10 @@ export default async function CartPage(props: {
                     {state.cart.discount_total &&
                       state.cart.discount_total !== "0.00" && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-emerald-600 font-medium">
+                          <span className="font-medium text-emerald-600">
                             {t("discount")}
                           </span>
+
                           <span className="font-bold text-emerald-600">
                             -{state.cart.discount_total} ₾
                           </span>
@@ -317,17 +374,19 @@ export default async function CartPage(props: {
                       )}
                   </div>
 
-                  <div className="border-t border-dashed border-zinc-200"></div>
+                  <div className="border-t border-dashed border-zinc-200" />
 
                   <div className="flex items-end justify-between">
-                    <span className="text-base font-bold text-zinc-900 pb-1">
+                    <span className="pb-1 text-base font-bold text-zinc-900">
                       {t("total")}
                     </span>
+
                     <div className="text-right">
                       <span className="block text-3xl font-extrabold tracking-tight text-zinc-900">
                         {state.cart.total} ₾
                       </span>
-                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">
+
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                         Including VAT
                       </span>
                     </div>
@@ -335,7 +394,7 @@ export default async function CartPage(props: {
 
                   <Link
                     href={`/${locale}/checkout`}
-                    className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 transition-all hover:bg-black hover:scale-[1.01] active:scale-[0.99]"
+                    className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-zinc-900/10 transition-all hover:scale-[1.01] hover:bg-black active:scale-[0.99]"
                   >
                     {t("checkout")}
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
