@@ -7,7 +7,7 @@ type MetaOptions = {
 };
 
 const SITE_URL = "https://triko.ge";
-const OG_IMAGE = "https://triko.ge/og/triko-og.jpg";
+const OG_IMAGE = "https://triko.ge/og/triko-og-v2.jpg";
 
 function normalizePath(path: string) {
   if (!path || path === "/") return "";

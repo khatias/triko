@@ -23,7 +23,7 @@ const noto = Noto_Sans_Georgian({
 });
 
 const SITE_URL = "https://triko.ge";
-const OG_IMAGE = "https://triko.ge/og/triko-og.jpg";
+const OG_IMAGE = "https://triko.ge/og/triko-og-v2.jpg";
 
 function assertLocale(locale: string): asserts locale is Locale {
   if (!routing.locales.includes(locale as Locale)) notFound();
