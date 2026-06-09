@@ -623,6 +623,16 @@
       "title": "Checkout — Triko",
       "description": "Complete your order securely. Add your contact and delivery details, review your items, and choose a payment method."
     },
+    "deliveryInfo": {
+      "title": "Delivery information",
+      "subtitle": "Please review the delivery times and choose the correct delivery zone for your address.",
+      "tbilisiTiming": "Orders received before 14:30 within Tbilisi are delivered the next day, except Sundays.",
+      "regionTiming": "Regional deliveries arrive within 2–4 business days, excluding weekends.",
+      "mountainVillage": "For mountainous villages, delivery is available only up to an asphalt road. Parcels are dispatched several times per week.",
+      "suburbTitle": "Delivery to Tbilisi suburbs",
+      "suburbInstruction": "If your address is in one of the areas listed below, choose “Tbilisi suburb” as your delivery zone.",
+      "suburbsList": "Tabakhmela, Avshniani, Tsinubani, Lower Ponichala, Upper Ponichala, Dighomi Village, Shindisi, Telovani, Lisi Village, Kiketi, Tskneti, Tskluleti, Tsavkisi, Tkhinvala, Zahesi, Okrokana, Kveseti, Didgori, Lilo, Lochini Settlement, Betania, Mskhaldidi, Mukhiani Summer Houses, Nasaguri, Gldani Village, Akhaldaba, Kojori, Gldanula."
+    },
     "reviewTitle": "Review your products",
     "packaging": "Packaging bag",
     "qtyLabel": "Qty:",

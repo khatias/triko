@@ -17,6 +17,8 @@ import {
   MapPin,
   AlertCircle,
   Truck,
+  ChevronDown,
+  Info,
 } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -428,7 +430,64 @@ export default function CheckoutFormClient({
               </div>
             )}
           </section>
+          {/* DELIVERY INFORMATION */}
+          <section className="mt-6 overflow-hidden rounded-2xl border border-orange-100 bg-orange-50/70 shadow-sm">
+            <div className="flex items-start gap-3 p-5">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                <Info className="h-4 w-4" />
+              </div>
 
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-orange-950">
+                  {t("deliveryInfo.title")}
+                </h3>
+
+                <p className="mt-1 text-xs leading-5 text-orange-900/70">
+                  {t("deliveryInfo.subtitle")}
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t border-orange-100 bg-white/60 px-5 py-4">
+              <ul className="space-y-2 text-sm leading-6 text-slate-700">
+                <li className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
+                  <span>{t("deliveryInfo.tbilisiTiming")}</span>
+                </li>
+
+                <li className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
+                  <span>{t("deliveryInfo.regionTiming")}</span>
+                </li>
+
+                <li className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" />
+                  <span>{t("deliveryInfo.mountainVillage")}</span>
+                </li>
+              </ul>
+
+              <details className="group mt-4 overflow-hidden rounded-xl border border-orange-100 bg-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-orange-900">
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-orange-600" />
+                    {t("deliveryInfo.suburbTitle")}
+                  </span>
+
+                  <ChevronDown className="h-4 w-4 shrink-0 text-orange-600 transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+
+                <div className="border-t border-orange-100 px-4 py-4">
+                  <p className="text-sm font-medium leading-6 text-slate-800">
+                    {t("deliveryInfo.suburbInstruction")}
+                  </p>
+
+                  <p className="mt-3 text-xs leading-6 text-slate-600">
+                    {t("deliveryInfo.suburbsList")}
+                  </p>
+                </div>
+              </details>
+            </div>
+          </section>
           {/* 3. Review */}
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold tracking-tight text-gray-900">
