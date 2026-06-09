@@ -47,7 +47,20 @@ function money(v: number | null, currency: string | null): string | null {
   if (v == null) return null;
   return formatPrice(v, currency);
 }
+function moneyRange(
+  min: number | null,
+  max: number | null,
+  currency: string | null,
+): string | null {
+  if (min == null && max == null) return null;
 
+  const lo = min ?? max!;
+  const hi = max ?? min!;
+
+  if (lo === hi) return formatPrice(lo, currency);
+
+  return `${formatPrice(lo, currency)}–${formatPrice(hi, currency)}`;
+}
 export default function ProductDetailClient({
   locale,
   title,
@@ -77,7 +90,54 @@ export default function ProductDetailClient({
   const cartT = useTranslations("Cart");
 
   const sizeRows = useMemo(() => buildSizes(variants as Variant[]), [variants]);
+  const productDiscountSummary = useMemo(() => {
+    const rows = (variants as Variant[]).map((variant) => {
+      const price = variant.price ?? null;
+      const listPrice = variant.list_price ?? null;
 
+      const hasDiscount =
+        variant.has_discount === true ||
+        (price != null && listPrice != null && price < listPrice);
+
+      return {
+        price,
+        listPrice,
+        hasDiscount,
+      };
+    });
+
+    const currentPrices = rows
+      .map((row) => row.price)
+      .filter((value): value is number => value != null);
+
+    const originalPrices = rows
+      .map((row) => row.listPrice)
+      .filter((value): value is number => value != null);
+
+    const hasDiscount = rows.some((row) => row.hasDiscount);
+
+    return {
+      hasDiscount,
+      currentLabel:
+        currentPrices.length > 0
+          ? moneyRange(
+              Math.min(...currentPrices),
+              Math.max(...currentPrices),
+              currency,
+            )
+          : null,
+      originalLabel:
+        originalPrices.length > 0
+          ? moneyRange(
+              Math.min(...originalPrices),
+              Math.max(...originalPrices),
+              currency,
+            )
+          : null,
+    };
+  }, [variants, currency]);
+
+  const productHasDiscount = productDiscountSummary.hasDiscount;
   const selectedRow = useMemo(() => {
     if (!selected) return null;
     return sizeRows.find((r) => r.label === selected) ?? null;
@@ -132,15 +192,15 @@ export default function ProductDetailClient({
     !isPending &&
     (selectedSingleFinaId != null || selectedBundleIds != null);
 
-const bundleMeta: BundleMeta = useMemo(
-  () => ({
-    parentCode: selectedVariant?.parent_code ?? null,
-    titleEn: titleEn?.trim() || title,
-    titleKa: titleKa?.trim() || title,
-    imageUrl: activePhoto ?? photos?.[0] ?? null,
-  }),
-  [selectedVariant, title, titleEn, titleKa, activePhoto, photos],
-);
+  const bundleMeta: BundleMeta = useMemo(
+    () => ({
+      parentCode: selectedVariant?.parent_code ?? null,
+      titleEn: titleEn?.trim() || title,
+      titleKa: titleKa?.trim() || title,
+      imageUrl: activePhoto ?? photos?.[0] ?? null,
+    }),
+    [selectedVariant, title, titleEn, titleKa, activePhoto, photos],
+  );
 
   const isSinglePending =
     selectedSingleFinaId != null &&
@@ -155,59 +215,54 @@ const bundleMeta: BundleMeta = useMemo(
   const isThisSelectionPending = isSinglePending || isBundlePending;
 
   const priceBlock = useMemo(() => {
-    if (!selectedVariant) {
-      return (
-        <p className="text-3xl md:text-4xl font-semibold tracking-tight text-stone-950">
-          {basePriceLabel}
-        </p>
-      );
-    }
+    const selectedPrice = selectedVariant?.price ?? null;
+    const selectedListPrice = selectedVariant?.list_price ?? null;
 
-    const eff = selectedVariant.price ?? null;
-    const list = selectedVariant.list_price ?? null;
+    const selectedHasDiscount =
+      selectedVariant?.has_discount === true ||
+      (selectedPrice != null &&
+        selectedListPrice != null &&
+        selectedPrice < selectedListPrice);
 
-    const effLabel = money(eff, currency);
-    const listLabel = money(list, currency);
+    const hasDiscount = selectedVariant
+      ? selectedHasDiscount
+      : productDiscountSummary.hasDiscount;
 
-    const hasDiscount =
-      selectedVariant.has_discount === true ||
-      (eff != null && list != null && eff < list);
+    const effectiveLabel = selectedVariant
+      ? money(selectedPrice, currency)
+      : (productDiscountSummary.currentLabel ?? basePriceLabel);
 
-    if (!effLabel) {
-      return (
-        <p className="text-3xl md:text-4xl font-semibold tracking-tight text-stone-950">
-          {basePriceLabel}
-        </p>
-      );
-    }
-
-    if (hasDiscount && listLabel) {
-      return (
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-          <span className="text-3xl md:text-4xl font-semibold tracking-tight text-stone-950">
-            {effLabel}
-          </span>
-          <span className="text-sm text-stone-400 line-through font-semibold">
-            {listLabel}
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/35 bg-[#D4AF37]/10 px-3 py-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37]" />
-            <span className="text-[10px] uppercase tracking-[0.25em] font-black text-[#B45309]">
-              {t("sale")}
-            </span>
-          </span>
-        </div>
-      );
-    }
+    const listLabel = selectedVariant
+      ? money(selectedListPrice, currency)
+      : productDiscountSummary.originalLabel;
 
     return (
-      <div className="flex items-end gap-3">
-        <span className="text-3xl md:text-4xl font-semibold tracking-tight text-stone-950">
-          {effLabel}
-        </span>
+      <div className="space-y-3">
+        {hasDiscount ? (
+          <span className="inline-flex items-center rounded-full bg-red-600 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-white shadow-[0_8px_24px_rgba(220,38,38,0.25)]">
+            {t("sale")}
+          </span>
+        ) : null}
+
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+          {hasDiscount && listLabel ? (
+            <span className="text-base font-semibold tracking-wide text-stone-400 line-through decoration-red-500 decoration-2">
+              {listLabel}
+            </span>
+          ) : null}
+
+          <span
+            className={[
+              "text-3xl md:text-4xl font-semibold tracking-tight",
+              hasDiscount ? "text-red-600" : "text-stone-950",
+            ].join(" ")}
+          >
+            {effectiveLabel ?? "—"}
+          </span>
+        </div>
       </div>
     );
-  }, [selectedVariant, basePriceLabel, currency, t]);
+  }, [selectedVariant, productDiscountSummary, basePriceLabel, currency, t]);
 
   function goPrevPhoto() {
     if (!photos.length) return;
@@ -359,6 +414,11 @@ const bundleMeta: BundleMeta = useMemo(
                 >
                   <div className="relative aspect-4/5">
                     {/* ✅ loading layer */}
+                    {productHasDiscount ? (
+                      <div className="pointer-events-none absolute left-5 top-5 z-20 rounded-full bg-red-600 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-white shadow-[0_8px_24px_rgba(220,38,38,0.35)]">
+                        {t("sale")}
+                      </div>
+                    ) : null}
                     <div
                       className={[
                         "absolute inset-0 bg-stone-100",

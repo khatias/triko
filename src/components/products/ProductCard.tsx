@@ -150,7 +150,7 @@ export default function ProductCard({
                 <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 via-black/0 to-black/0 opacity-70" />
 
                 {hasDiscount ? (
-                  <div className="absolute left-4 top-4 rounded-full bg-white/70 backdrop-blur-xl px-3 py-1 text-[9px] font-bold uppercase tracking-[0.28em] text-stone-900 ring-1 ring-white/30 shadow-sm">
+                  <div className="absolute left-4 top-4 rounded-full bg-red-600 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white shadow-[0_8px_24px_rgba(220,38,38,0.35)] ring-1 ring-red-500">
                     Sale
                   </div>
                 ) : null}
@@ -263,18 +263,37 @@ export default function ProductCard({
               </div>
 
               {/* PRICE */}
-              <div className="text-right shrink-0">
+              {/* PRICE */}
+              <div className="shrink-0 text-right">
                 {hasDiscount && listLabel ? (
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-stone-400 line-through decoration-stone-300 decoration-1">
-                    {listLabel} ₾
-                  </p>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-red-600">
+                      Sale
+                    </span>
+
+                    <p className="text-[12px] font-medium tracking-[0.12em] text-stone-400 line-through decoration-red-400 decoration-2">
+                      {listLabel} ₾
+                    </p>
+                  </div>
                 ) : null}
 
-                <p className="font-serif-display italic text-lg text-stone-900">
+                <p
+                  className={[
+                    "font-serif-display italic text-xl",
+                    hasDiscount
+                      ? "font-semibold text-red-600"
+                      : "text-stone-900",
+                  ].join(" ")}
+                >
                   {effectiveLabel ? `${effectiveLabel} ₾` : "—"}
                 </p>
 
-                <div className="mt-1 h-px w-0 bg-stone-900 transition-all duration-500 group-hover:w-full ml-auto" />
+                <div
+                  className={[
+                    "mt-1 ml-auto h-px w-0 transition-all duration-500 group-hover:w-full",
+                    hasDiscount ? "bg-red-600" : "bg-stone-900",
+                  ].join(" ")}
+                />
               </div>
             </div>
 
