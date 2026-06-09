@@ -61,6 +61,7 @@ type BogPrepareOkNew = {
   currency: string;
   total: number;
   shipping_total?: number; // optional for backward compat
+  packaging_total?: number; // optional for backward compat
   public_status_token: string;
 };
 
@@ -88,7 +89,8 @@ type BogFinalizeFail = {
 type BogFinalizeResult = BogFinalizeOk | BogFinalizeFail;
 
 function parseBogPrepareResult(raw: unknown): BogPrepareResult {
-  if (!isObject(raw)) return { ok: false, status: 500, message: "Invalid RPC response" };
+  if (!isObject(raw))
+    return { ok: false, status: 500, message: "Invalid RPC response" };
 
   const ok = readBoolean(raw, "ok");
   if (ok !== true) {
@@ -111,7 +113,14 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
       return { ok: false, status: 500, message: "Invalid already response" };
     }
 
-    return { ok: true, already: true, bog_order_id, redirect_url, details_url, public_status_token };
+    return {
+      ok: true,
+      already: true,
+      bog_order_id,
+      redirect_url,
+      details_url,
+      public_status_token,
+    };
   }
 
   const idempotency_key = readString(raw, "idempotency_key");
@@ -125,6 +134,8 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
 
   const shipping_total = readNumberStrict(raw, "shipping_total") ?? undefined;
 
+  const packaging_total = readNumberStrict(raw, "packaging_total") ?? undefined;
+
   return {
     ok: true,
     already: false,
@@ -132,12 +143,14 @@ function parseBogPrepareResult(raw: unknown): BogPrepareResult {
     currency,
     total,
     shipping_total,
+    packaging_total,
     public_status_token,
   };
 }
 
 function parseBogFinalizeResult(raw: unknown): BogFinalizeResult {
-  if (!isObject(raw)) return { ok: false, status: 500, message: "Invalid RPC response" };
+  if (!isObject(raw))
+    return { ok: false, status: 500, message: "Invalid RPC response" };
 
   const ok = readBoolean(raw, "ok");
   if (ok !== true) {
@@ -156,7 +169,10 @@ function parseBogFinalizeResult(raw: unknown): BogFinalizeResult {
   };
 }
 
-function getBogHref(bog: BogCreateOrderResponse, rel: "redirect" | "details"): string {
+function getBogHref(
+  bog: BogCreateOrderResponse,
+  rel: "redirect" | "details",
+): string {
   const href = bog._links?.[rel]?.href;
   if (typeof href !== "string" || href.length === 0) {
     throw new Error(`[BOG] Missing _links.${rel}.href`);
@@ -171,13 +187,19 @@ function buildReturnUrl(args: {
   status: "success" | "fail";
   publicStatusToken: string;
 }): string {
-  const u = new URL(`/${args.localeSeg}/payment/return/${args.orderId}`, args.publicSiteUrl);
+  const u = new URL(
+    `/${args.localeSeg}/payment/return/${args.orderId}`,
+    args.publicSiteUrl,
+  );
   u.searchParams.set("status", args.status);
   u.searchParams.set("token", args.publicStatusToken);
   return u.toString();
 }
 
-type OrderShippingRow = { shipping_total: number };
+type OrderTotalsRow = {
+  shipping_total: number;
+  packaging_total: number;
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -202,9 +224,12 @@ export async function POST(req: NextRequest) {
 
     const supabase = await createClient();
 
-    const { data: prepRaw, error: prepErr } = await supabase.rpc("bog_prepare_create_order", {
-      p_order_id: orderId,
-    });
+    const { data: prepRaw, error: prepErr } = await supabase.rpc(
+      "bog_prepare_create_order",
+      {
+        p_order_id: orderId,
+      },
+    );
 
     if (prepErr) {
       console.error("[BOG] prepare rpc failed", prepErr);
@@ -233,15 +258,19 @@ export async function POST(req: NextRequest) {
     }
 
     // shipping_total: prefer RPC, fallback to orders table (for backward compat)
+    // Prefer RPC values, but fall back to the order snapshot
+    // during the backward-compatible rollout.
     let shippingTotal: number | null = prep.shipping_total ?? null;
 
-    if (shippingTotal === null) {
+    let packagingTotal: number | null = prep.packaging_total ?? null;
+
+    if (shippingTotal === null || packagingTotal === null) {
       const { data: ord, error: ordErr } = await supabase
         .from("orders")
-        .select("shipping_total")
+        .select("shipping_total,packaging_total")
         .eq("id", orderId)
         .maybeSingle()
-        .overrideTypes<OrderShippingRow, { merge: false }>();
+        .overrideTypes<OrderTotalsRow, { merge: false }>();
 
       if (ordErr || !ord) {
         return NextResponse.json<BogCreateOrderApiResponse>(
@@ -250,7 +279,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      shippingTotal = toNumber(ord.shipping_total);
+      if (shippingTotal === null) {
+        shippingTotal = toNumber(ord.shipping_total);
+      }
+
+      if (packagingTotal === null) {
+        packagingTotal = toNumber(ord.packaging_total);
+      }
     }
 
     const idempotencyKey = prep.idempotency_key;
@@ -307,6 +342,7 @@ export async function POST(req: NextRequest) {
         unit_price: toNumber(it.unit_price),
         description: it.product_name ?? undefined,
       })),
+
       ...(shippingTotal > 0
         ? [
             {
@@ -314,6 +350,17 @@ export async function POST(req: NextRequest) {
               quantity: 1,
               unit_price: shippingTotal,
               description: "Shipping",
+            },
+          ]
+        : []),
+
+      ...(packagingTotal > 0
+        ? [
+            {
+              product_id: "packaging",
+              quantity: 1,
+              unit_price: packagingTotal,
+              description: "Packaging bag",
             },
           ]
         : []),
@@ -378,14 +425,17 @@ export async function POST(req: NextRequest) {
       throw new Error("[BOG] Invalid redirect url from provider");
     }
 
-    const { data: finRaw, error: finErr } = await supabase.rpc("bog_finalize_create_order", {
-      p_order_id: orderId,
-      p_bog_order_id: bogOrderId,
-      p_redirect_url: redirectUrl,
-      p_details_url: detailsUrl,
-      p_amount: totalAmount,
-      p_currency: asBogCurrency(currency),
-    });
+    const { data: finRaw, error: finErr } = await supabase.rpc(
+      "bog_finalize_create_order",
+      {
+        p_order_id: orderId,
+        p_bog_order_id: bogOrderId,
+        p_redirect_url: redirectUrl,
+        p_details_url: detailsUrl,
+        p_amount: totalAmount,
+        p_currency: asBogCurrency(currency),
+      },
+    );
 
     if (finErr) {
       console.error("[BOG] finalize rpc failed", finErr);
