@@ -5,7 +5,11 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export type ShippingZone = "tbilisi" | "region_city" | "region_village";
+export type ShippingZone =
+  | "tbilisi"
+  | "tbilisi_suburb"
+  | "region_city"
+  | "region_village";
 
 const RpcRowSchema = z.object({
   cart_id: z.string().uuid(),

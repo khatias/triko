@@ -29,7 +29,8 @@ export async function addAddressAction(formData: FormData) {
     shipping_zone: String(formData.get("shipping_zone") || "").trim() as
       | "tbilisi"
       | "region_city"
-      | "region_village",
+      | "region_village"
+      | "tbilisi_suburb",
     region: (formData.get("region") as string)
       ? String(formData.get("region")).trim()
       : null,

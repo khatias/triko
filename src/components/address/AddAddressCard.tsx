@@ -6,7 +6,12 @@ import { Input, Button } from "../UI/primitives";
 import { useTranslations } from "next-intl";
 import { PlusIcon } from "lucide-react";
 
-type ShippingZone = "" | "region_city" | "region_village" | "tbilisi";
+type ShippingZone =
+  | ""
+  | "region_city"
+  | "region_village"
+  | "tbilisi"
+  | "tbilisi_suburb";
 
 export default function AddAddressCard2({
   action,
@@ -18,7 +23,8 @@ export default function AddAddressCard2({
   const [open, setOpen] = React.useState(false);
   const [shippingZone, setShippingZone] = React.useState<ShippingZone>("");
 
-  const isTbilisi = shippingZone === "tbilisi";
+  const isTbilisi =
+    shippingZone === "tbilisi" || shippingZone === "tbilisi_suburb";
   const isRegionCity = shippingZone === "region_city";
   const isRegionVillage = shippingZone === "region_village";
 
@@ -48,7 +54,10 @@ export default function AddAddressCard2({
           <form
             action={async (fd) => {
               // Force consistent payload
-              if (shippingZone === "tbilisi") {
+              if (
+                shippingZone === "tbilisi" ||
+                shippingZone === "tbilisi_suburb"
+              ) {
                 fd.set("city", "Tbilisi");
                 fd.set("region", "");
               }
@@ -76,6 +85,7 @@ export default function AddAddressCard2({
               <option value="" disabled>
                 {t("shippingZone")}
               </option>
+              <option value="tbilisi_suburb">{t("regionTbilisiSuburb")}</option>
               <option value="region_city">{t("regionCity")}</option>
               <option value="region_village">{t("regionVillage")}</option>
               <option value="tbilisi">{t("regionTbilisi")}</option>

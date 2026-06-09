@@ -15,8 +15,12 @@ export async function generateMetadata(ctx: {
   });
 }
 
-export type ShippingZone = "tbilisi" | "region_city" | "region_village";
-
+export type ShippingZone =
+  | "tbilisi"
+  | "tbilisi_suburb"
+  | "region_city"
+  | "region_village";
+  
 export type AddressRow = {
   id: string;
   line1: string;

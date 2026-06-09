@@ -369,9 +369,11 @@ export default function CheckoutFormClient({
                 const zoneLabel =
                   addr.shipping_zone === "tbilisi"
                     ? "Tbilisi"
-                    : addr.shipping_zone === "region_city"
-                      ? "City"
-                      : "Village";
+                    : addr.shipping_zone === "tbilisi_suburb"
+                      ? "Tbilisi suburb"
+                      : addr.shipping_zone === "region_city"
+                        ? "City"
+                        : "Village";
 
                 return (
                   <button
