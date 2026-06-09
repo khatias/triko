@@ -35,9 +35,7 @@ import {
   setShippingZoneAction,
   type ShippingZone,
 } from "../actions/setShippingZone";
-import {
-  makeGeorgiaPhoneSchema,
-} from "@/lib/validation/profile";
+import { makeGeorgiaPhoneSchema } from "@/lib/validation/profile";
 import { hasImg, toNumber } from "@/utils/type-guards";
 import { formatPrice } from "@/lib/helpers";
 import { nameSchema } from "@/lib/validation/profile";
@@ -82,6 +80,10 @@ export type SummaryInfo = {
   subtotal: number;
   discount_total: number;
   shipping_total: number;
+
+  packaging_qty: number;
+  packaging_total: number;
+
   total: number;
 };
 
@@ -582,6 +584,17 @@ export default function CheckoutFormClient({
                 )}
 
                 <div className="flex items-center justify-between">
+                  {liveSummary.packaging_total > 0 && (
+                    <div className="flex items-center justify-between">
+                      <dt className="text-sm text-gray-500">
+                        {t("packaging")} × {liveSummary.packaging_qty}
+                      </dt>
+
+                      <dd className="text-sm font-medium text-gray-900">
+                        {formatPrice(liveSummary.packaging_total, "GEL")}
+                      </dd>
+                    </div>
+                  )}
                   <dt className="flex items-center gap-2 text-sm text-gray-500">
                     {t("shipping")}{" "}
                     <Truck size={14} className="text-gray-300" />

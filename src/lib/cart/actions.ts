@@ -31,6 +31,11 @@ export type CartRow = {
   subtotal: string;
   discount_total: string;
   shipping_total: string;
+
+  packaging_type: string;
+  packaging_qty: number;
+  packaging_total: string;
+
   total: string;
   store_id: number;
   price_id: number | null;
@@ -155,6 +160,13 @@ function parseCartRow(v: unknown): CartRow {
     subtotal: asMoneyString(v.subtotal, "cart.subtotal"),
     discount_total: asMoneyString(v.discount_total, "cart.discount_total"),
     shipping_total: asMoneyString(v.shipping_total, "cart.shipping_total"),
+    packaging_type: isString(v.packaging_type) ? v.packaging_type : "none",
+
+    packaging_qty: asNullableInt(v.packaging_qty, "cart.packaging_qty") ?? 0,
+
+    packaging_total:
+      asNullableMoneyString(v.packaging_total, "cart.packaging_total") ??
+      "0.00",
     total: asMoneyString(v.total, "cart.total"),
     store_id: asInt(v.store_id, "cart.store_id"),
     price_id: asNullableInt(v.price_id, "cart.price_id"),

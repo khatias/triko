@@ -606,6 +606,7 @@
     "products": "Products",
     "deliveryFee": "Delivery Fee",
     "discount": "Discount",
+    "packaging": "Packaging bag",
     "shippingPriceText": "Shipping fee will be added at checkout.",
     "errors": {
       "onlyLeft": "Only {available} left in stock.",
@@ -622,6 +623,7 @@
       "description": "Complete your order securely. Add your contact and delivery details, review your items, and choose a payment method."
     },
     "reviewTitle": "Review your products",
+    "packaging": "Packaging bag",
     "qtyLabel": "Qty:",
     "contactTitle": "Contact information",
     "fullNameLabel": "Full name",

@@ -14,6 +14,8 @@ const RpcRowSchema = z.object({
   subtotal: z.coerce.number(),
   discount_total: z.coerce.number(),
   shipping_total: z.coerce.number(),
+  packaging_qty: z.coerce.number().int().nonnegative().optional().default(0),
+  packaging_total: z.coerce.number().nonnegative().optional().default(0),
   total: z.coerce.number(),
 });
 
@@ -27,6 +29,8 @@ export type SetShippingZoneResult =
         discount_total: number;
         shipping_total: number;
         total: number;
+        packaging_qty: number;
+        packaging_total: number;
       };
       cart: {
         cart_id: string;
@@ -104,6 +108,8 @@ export async function setShippingZoneAction(
       subtotal: row.subtotal,
       discount_total: row.discount_total,
       shipping_total: row.shipping_total,
+      packaging_qty: row.packaging_qty,
+      packaging_total: row.packaging_total,
       total: row.total,
     },
     cart: {

@@ -130,9 +130,9 @@ export default async function CheckoutPage({
 
   const { data: cart, error: cartError } = await supabase
     .from("carts")
-    .select(
-      "id, subtotal, discount_total, shipping_total, total, shipping_zone, shipping_address_id",
-    )
+   .select(
+  "id, subtotal, discount_total, shipping_total, packaging_qty, packaging_total, total, shipping_zone, shipping_address_id",
+)
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: false })
@@ -186,12 +186,14 @@ export default async function CheckoutPage({
             full_name: profile?.full_name ?? null,
             phone: profile?.phone ?? null,
           }}
-          summary={{
-            subtotal: Number(cart?.subtotal ?? 0),
-            discount_total: Number(cart?.discount_total ?? 0),
-            shipping_total: Number(cart?.shipping_total ?? 0),
-            total: Number(cart?.total ?? 0),
-          }}
+      summary={{
+  subtotal: Number(cart?.subtotal ?? 0),
+  discount_total: Number(cart?.discount_total ?? 0),
+  shipping_total: Number(cart?.shipping_total ?? 0),
+  packaging_qty: Number(cart?.packaging_qty ?? 0),
+  packaging_total: Number(cart?.packaging_total ?? 0),
+  total: Number(cart?.total ?? 0),
+}}
           initialZone={initialZone}
           initialSelectedAddrId={initialSelectedAddrId}
         />

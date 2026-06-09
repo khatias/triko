@@ -107,7 +107,9 @@ function groupCartItems(items: CartItemRow[]): CartLine[] {
   const bundles: CartLine[] = Array.from(bundleMap.entries()).map(
     ([key, arr]) => {
       const sorted = [...arr].sort((a, b) =>
-        String(a.variant_code ?? "").localeCompare(String(b.variant_code ?? "")),
+        String(a.variant_code ?? "").localeCompare(
+          String(b.variant_code ?? ""),
+        ),
       );
 
       return { kind: "bundle", key, items: sorted };
@@ -266,7 +268,9 @@ export default async function CartPage(props: {
 
                   const metaParts = items
                     .map((x) => {
-                      const size = x.variant_size ? `Size ${x.variant_size}` : "";
+                      const size = x.variant_size
+                        ? `Size ${x.variant_size}`
+                        : "";
                       const ref = x.variant_code ? `Ref ${x.variant_code}` : "";
 
                       return [size, ref].filter(Boolean).join(" ");
@@ -372,6 +376,17 @@ export default async function CartPage(props: {
                           </span>
                         </div>
                       )}
+                    {Number(state.cart.packaging_total) > 0 && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-zinc-600">
+                          {t("packaging")} × {state.cart.packaging_qty}
+                        </span>
+
+                        <span className="font-semibold text-zinc-900">
+                          {state.cart.packaging_total} ₾
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="border-t border-dashed border-zinc-200" />
