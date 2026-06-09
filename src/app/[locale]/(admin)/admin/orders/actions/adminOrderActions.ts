@@ -10,6 +10,11 @@ type ShippingStatus =
   | "in_transit"
   | "delivered";
 
+type UpdatedOrderRow = {
+  order_id: string;
+  shipping_status: string | null;
+};
+
 export async function updateShippingStatusAction(input: {
   locale: string;
   orderId: string;
@@ -19,18 +24,34 @@ export async function updateShippingStatusAction(input: {
 
   const { supabase } = await requireAdmin(locale);
 
-  const patch: { shipping_status: string | null } = {
-    shipping_status: shipping_status ? shipping_status : null,
-  };
+  const { data, error } = await supabase.rpc(
+    "admin_update_order_shipping_status",
+    {
+      p_order_id: orderId,
+      p_shipping_status: shipping_status || null,
+    },
+  );
 
-  const { error } = await supabase
-    .from("orders")
-    .update(patch)
-    .eq("id", orderId);
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new Error(`SHIPPING_STATUS_UPDATE_FAILED: ${error.message}`);
+  }
+
+  const updatedOrder: UpdatedOrderRow | null =
+    Array.isArray(data) && data.length > 0
+      ? (data[0] as UpdatedOrderRow)
+      : null;
+
+  if (!updatedOrder) {
+    throw new Error(
+      "SHIPPING_STATUS_UPDATE_FAILED: No order row was returned.",
+    );
+  }
 
   revalidatePath(`/${locale}/admin/orders`);
   revalidatePath(`/${locale}/admin/orders/${orderId}`);
 
-  return { ok: true as const };
+  return {
+    ok: true as const,
+    shipping_status: updatedOrder.shipping_status,
+  };
 }
