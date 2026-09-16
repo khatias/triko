@@ -378,6 +378,16 @@
       "title": "From Georgia to the World",
       "desc": "Proudly founded in Georgia, Triko began as a local brand and is now growing internationally. While our roots remain in Tbilisi, our vision is global—bringing Georgian creativity, care, and craftsmanship to customers around the world."
     },
+    "legal": {
+      "tag": "Company Details",
+      "title1": "Legal",
+      "title2": "Information",
+      "entityLabel": "Entity",
+      "entityName": "Triko 1 LLC",
+      "addressLabel": "Registered Address",
+      "addressValue": "Krtsanisi District, Vakhtang Gorgasali III St., No. 2, Apartment 12, Building No. 1, Tbilisi, 0114, Georgia",
+      "contactLabel": "Contact"
+    },
     "locations": {
       "title": "Visit Us",
       "subtitle": "Directory & Showrooms",
@@ -385,7 +395,7 @@
       "viewOnMap": "View on map",
       "items": {
         "store1": {
-          "title": "Addresses",
+          "title": "Our Stores",
           "address": "51 Davit Aghmashenebeli Ave, T'bilisi, Georgia",
           "mapsHref": "http://google.com/maps/place/51+Davit+Aghmashenebeli+Ave,+T'bilisi,+Georgia/@41.705437,44.7985251,17z/data=!3m1!4b1!4m6!3m5!1s0x40440cdf727ba4f1:0x4fa20f2a50ff5e5f!8m2!3d41.705437!4d44.8010947!16s%2Fg%2F11bw4mw8rs?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D"
         }

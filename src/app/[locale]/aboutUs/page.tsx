@@ -284,7 +284,71 @@ export default function AboutPage() {
           </p>
         </div>
       </section>
+      {/* 7. LEGAL INFORMATION */}
+      <section className="relative w-full py-20 lg:py-32 px-6 bg-[#FFDE85] border-t border-neutral-900/10">
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row gap-12 lg:gap-32 items-start">
+          {/* Left: Heading */}
+          <div className="md:w-1/3">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <span className="w-3 h-3 border border-neutral-900 rounded-full"></span>
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-900">
+                {t("legal.tag")}
+              </span>
+            </div>
+            <h2 className="font-black uppercase tracking-tight leading-[1.1] text-4xl sm:text-5xl text-[#fc6759]">
+              {t("legal.title1")}
+              <br />
+              {t("legal.title2")}
+            </h2>
+          </div>
 
+          {/* Right: Information Structure */}
+          <div className="md:w-2/3 border-t md:border-t-0 md:border-l border-neutral-900/10 pt-8 md:pt-0 md:pl-12 lg:pl-20">
+            <div className="max-w-xl space-y-10">
+              {/* Entity */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#fc6759] mb-2">
+                  {t("legal.entityLabel")}
+                </p>
+                <p className="text-2xl text-neutral-900">
+                  {t("legal.entityName")}
+                </p>
+              </div>
+
+              {/* Address */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#fc6759] mb-2">
+                  {t("legal.addressLabel")}
+                </p>
+                <p className="text-lg text-neutral-700 font-light leading-relaxed">
+                  {t("legal.addressValue")}
+                </p>
+              </div>
+
+              {/* Contact */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#fc6759] mb-3">
+                  {t("legal.contactLabel")}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-10 text-lg font-light text-neutral-900">
+                  <a
+                    href="mailto:info@triko.ge"
+                    className="hover:text-[#fc6759] transition-colors border-b border-transparent hover:border-[#fc6759] pb-0.5 inline-block w-max"
+                  >
+                    info@triko.ge
+                  </a>
+                  <a
+                    href="tel:+995593491144"
+                    className="hover:text-[#fc6759] transition-colors border-b border-transparent hover:border-[#fc6759] pb-0.5 inline-block w-max"
+                  >
+                    +995 593 49 11 44
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       <div
         className="bg-[#fc6759]  text-black my-20 px-10 md:px-20"
         id="locations"
