@@ -94,8 +94,16 @@ export async function POST(req: NextRequest) {
   }
 
   // Build redirectTo from the request origin (works in dev + prod)
-  const origin = req.headers.get("origin") ?? "";
-  const redirectTo = `${origin}/${locale}/reset-password`;
+  // Build a stable callback URL for development and production
+  const siteUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin
+  ).replace(/\/+$/, "");
+
+  const callbackUrl = new URL("/api/callback", siteUrl);
+
+  callbackUrl.searchParams.set("next", `/${locale}/reset-password`);
+
+  const redirectTo = callbackUrl.toString();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
