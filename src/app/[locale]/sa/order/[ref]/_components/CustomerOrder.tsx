@@ -640,7 +640,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-6">
       <dt className="shrink-0 text-zinc-500">{label}</dt>
-      <dd className="min-w-0 break-words text-right font-medium">{children}</dd>
+      <dd className="min-w-0 wrap-break-word text-right font-medium">{children}</dd>
     </div>
   );
 }
