@@ -8,6 +8,7 @@ import Footer from "@/components/footer/Footer";
 import { Noto_Sans_Georgian } from "next/font/google";
 import { Toaster } from "sonner";
 import PublicOnly from "@/components/PublicOnly";
+import SiteChrome from "./sa/order/[ref]/_components/SiteChrome";
 
 type Locale = "ka" | "en";
 
@@ -90,20 +91,24 @@ export default async function LocaleLayout({ children, params }: Props) {
   const messages = await getMessages({ locale });
 
   return (
-    <div className={`${noto.className} antialiased bg-white text-zinc-900`}>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <PublicOnly>
-          <Header locale={locale} />
-        </PublicOnly>
+<div className={`${noto.className} antialiased bg-white text-zinc-900`}>
+  <NextIntlClientProvider locale={locale} messages={messages}>
+    <PublicOnly>
+      <SiteChrome>
+        <Header locale={locale} />
+      </SiteChrome>
+    </PublicOnly>
 
-        {children}
+    {children}
 
-        <Toaster richColors position="top-right" />
+    <Toaster richColors position="top-right" />
 
-        <PublicOnly>
-          <Footer />
-        </PublicOnly>
-      </NextIntlClientProvider>
-    </div>
+    <PublicOnly>
+      <SiteChrome>
+        <Footer />
+      </SiteChrome>
+    </PublicOnly>
+  </NextIntlClientProvider>
+</div>
   );
 }

@@ -330,8 +330,7 @@ export default function CustomerOrder({
   // -------------------------------------------------------------------
 
   return (
-    <main className="min-h-dvh bg-stone-100 px-4 py-8 text-zinc-900 print:bg-white print:py-0">
-      <div className="mx-auto w-full max-w-md">
+<main className="min-h-dvh bg-stone-100 px-4 py-8 text-zinc-900 print:min-h-0 print:bg-white print:px-0 print:py-0">      <div className="mx-auto w-full max-w-md">
         <header className="mb-6 flex items-center justify-between print:mb-4">
           <span className="text-xl font-semibold tracking-[0.2em]">
             {BRAND_NAME}
@@ -536,8 +535,7 @@ function Receipt({
 
   return (
     <div className="space-y-4">
-      <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200 print:shadow-none">
-        <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
+<section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-zinc-200 print:break-inside-avoid print:shadow-none">        <div className="flex flex-col items-center px-6 pb-6 pt-8 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
             <Check className="h-7 w-7" strokeWidth={2.5} aria-hidden />
           </div>
