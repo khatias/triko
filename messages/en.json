@@ -787,7 +787,8 @@
       "products": "Products",
       "groups": "Groups",
       "site": "Site parameters",
-      "sets": "Sets"
+      "sets": "Sets",
+      "payments": "Payments"
     },
     "groups": {
       "title": "Groups",

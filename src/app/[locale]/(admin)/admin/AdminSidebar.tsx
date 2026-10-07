@@ -10,7 +10,9 @@ import {
   LogOut,
   Menu,
   X,
+  DollarSign
 } from "lucide-react";
+
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { handleLogout } from "@/utils/auth/handleLogOut";
@@ -31,7 +33,18 @@ export function AdminSidebar() {
     { key: "products", href: `/admin/products`, icon: Package, exact: false },
     { key: "groups", href: `/admin/groups`, icon: Layers, exact: false },
     { key: "site", href: `/admin/site`, icon: LayoutDashboard, exact: false },
-    { key: "sets", href: `/admin/bundles/new`, icon: ShoppingBag, exact: false }
+    {
+      key: "sets",
+      href: `/admin/bundles/new`,
+      icon: ShoppingBag,
+      exact: false,
+    },
+    {
+      key: "payments",
+      href: `/admin/payments`,
+      icon: DollarSign,
+      exact: false,
+    },
   ] as const;
 
   const isActive = (href: string, exact: boolean) =>
